@@ -21,10 +21,7 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Generate Gradle Wrapper
-        run: gradle wrapper
-
-      - name: Make Gradle executable
+      - name: Make Gradle Executable
         run: chmod +x gradlew
 
       - name: Build Release Bundle
