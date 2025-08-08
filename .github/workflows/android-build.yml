@@ -7,7 +7,6 @@ jobs:
   build:
     name: Build AAB
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -21,7 +20,19 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Make Gradle Executable
+      - name: Clean any leftover/broken wrapper
+        run: rm -f gradle/wrapper/gradle-wrapper.jar
+
+      - name: Download Gradle 8.2.1
+        run: |
+          curl -sL https://services.gradle.org/distributions/gradle-8.2.1-bin.zip -o gradle.zip
+          unzip -q gradle.zip
+          echo "$PWD/gradle-8.2.1/bin" >> $GITHUB_PATH
+
+      - name: Generate Gradle Wrapper (8.2.1)
+        run: gradle wrapper --gradle-version 8.2.1
+
+      - name: Make Gradle executable
         run: chmod +x gradlew
 
       - name: Build Release Bundle
