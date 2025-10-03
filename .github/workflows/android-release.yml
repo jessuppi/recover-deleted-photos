@@ -7,6 +7,7 @@ jobs:
   build:
     name: Build AAB
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -35,21 +36,28 @@ jobs:
       - name: Make Gradle executable
         run: chmod +x gradlew
 
-      - name: Decode keystore
+      - name: Restore keystore from secret
         run: echo "${{ secrets.RELEASE_KEYSTORE }}" | base64 --decode > upload-key.jks
         shell: bash
 
-      - name: Build (signed) Release Bundle
-        run: ./gradlew bundleRelease
-        env:
-          RELEASE_STORE_PASSWORD: ${{ secrets.RELEASE_STORE_PASSWORD }}
-          RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+      - name: Write Gradle signing properties
+        run: |
+          mkdir -p ~/.gradle
+          cat > ~/.gradle/gradle.properties <<EOF
+RELEASE_STORE_FILE=$GITHUB_WORKSPACE/upload-key.jks
+RELEASE_STORE_PASSWORD=${{ secrets.RELEASE_STORE_PASSWORD }}
+RELEASE_KEY_ALIAS=${{ secrets.RELEASE_KEY_ALIAS }}
+RELEASE_KEY_PASSWORD=${{ secrets.RELEASE_KEY_PASSWORD }}
+EOF
+
+      - name: Build signed Release bundle
+        run: ./gradlew --no-daemon clean bundleRelease
 
       - name: Verify AAB signature
         run: jarsigner -verify app/build/outputs/bundle/release/app-release.aab
         shell: bash
 
-      - name: Upload AAB Artifact
+      - name: Upload AAB artifact
         uses: actions/upload-artifact@v4
         with:
           name: app-release
