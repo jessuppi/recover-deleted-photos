@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace 'top.thinapps.recoverdeletedphotos'
+    namespace "top.thinapps.recoverdeletedphotos"
     compileSdk 34
 
     defaultConfig {
@@ -36,7 +36,7 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = '17'
+        jvmTarget = "17"
     }
 }
 
