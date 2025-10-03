@@ -15,7 +15,7 @@ jobs:
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
-          distribution: 'temurin'
+          distribution: temurin
           java-version: '17'
 
       - name: Set up Android SDK
@@ -28,7 +28,7 @@ jobs:
         run: |
           curl -sL https://services.gradle.org/distributions/gradle-8.2.1-bin.zip -o gradle.zip
           unzip -q gradle.zip
-          echo "$PWD/gradle-8.2.1/bin" >> $GITHUB_PATH
+          echo "$PWD/gradle-8.2.1/bin" >> "$GITHUB_PATH"
 
       - name: Generate Gradle Wrapper (8.2.1)
         run: gradle wrapper --gradle-version 8.2.1
@@ -43,8 +43,8 @@ jobs:
 
       - name: Write Gradle signing properties
         run: |
-          mkdir -p ~/.gradle
-          cat > ~/.gradle/gradle.properties <<EOF
+          mkdir -p "$HOME/.gradle"
+          cat > "$HOME/.gradle/gradle.properties" <<EOF
 RELEASE_STORE_FILE=$HOME/keystore/upload-key.jks
 RELEASE_STORE_PASSWORD=${{ secrets.RELEASE_STORE_PASSWORD }}
 RELEASE_KEY_ALIAS=${{ secrets.RELEASE_KEY_ALIAS }}
@@ -56,10 +56,9 @@ EOF
 
       - name: Verify AAB signature
         run: jarsigner -verify app/build/outputs/bundle/release/app-release.aab
-        shell: bash
 
       - name: Upload AAB artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: app-release
           path: app/build/outputs/bundle/release/app-release.aab
