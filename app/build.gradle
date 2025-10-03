@@ -1,24 +1,32 @@
 plugins {
     id 'com.android.application'
-    id 'kotlin-android'
+    id 'org.jetbrains.kotlin.android'
 }
 
 android {
-    namespace 'com.example.recoverdeletedphotos'
+    namespace 'top.thinapps.recoverdeletedphotos'
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.example.recoverdeletedphotos"
+        applicationId "top.thinapps.recoverdeletedphotos"
         minSdk 21
         targetSdk 34
-        versionCode 1
-        versionName "0.1.0"
+        versionCode 2
+        versionName "0.2.0"
+    }
+
+    signingConfigs {
+        release {
+            storeFile file(project.findProperty("RELEASE_STORE_FILE"))
+            storePassword project.findProperty("RELEASE_STORE_PASSWORD")
+            keyAlias project.findProperty("RELEASE_KEY_ALIAS")
+            keyPassword project.findProperty("RELEASE_KEY_PASSWORD")
+        }
     }
 
     buildTypes {
         release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
         }
     }
 
@@ -30,11 +38,9 @@ android {
     kotlinOptions {
         jvmTarget = '17'
     }
-}
 
 dependencies {
     implementation "androidx.core:core-ktx:1.13.1"
     implementation "androidx.appcompat:appcompat:1.6.1"
     implementation "com.google.android.material:material:1.11.0"
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.0"
 }
