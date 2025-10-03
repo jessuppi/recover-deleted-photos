@@ -37,14 +37,15 @@ jobs:
         run: chmod +x gradlew
 
       - name: Restore keystore from secret
-        run: echo "${{ secrets.RELEASE_KEYSTORE }}" | base64 --decode > upload-key.jks
-        shell: bash
+        run: |
+          mkdir -p "$HOME/keystore"
+          echo "${{ secrets.RELEASE_KEYSTORE }}" | base64 --decode > "$HOME/keystore/upload-key.jks"
 
       - name: Write Gradle signing properties
         run: |
           mkdir -p ~/.gradle
           cat > ~/.gradle/gradle.properties <<EOF
-RELEASE_STORE_FILE=$GITHUB_WORKSPACE/upload-key.jks
+RELEASE_STORE_FILE=$HOME/keystore/upload-key.jks
 RELEASE_STORE_PASSWORD=${{ secrets.RELEASE_STORE_PASSWORD }}
 RELEASE_KEY_ALIAS=${{ secrets.RELEASE_KEY_ALIAS }}
 RELEASE_KEY_PASSWORD=${{ secrets.RELEASE_KEY_PASSWORD }}
