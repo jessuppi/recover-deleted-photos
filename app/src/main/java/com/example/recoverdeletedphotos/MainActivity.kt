@@ -1,4 +1,4 @@
-package com.example.recoverdeletedphotos
+package top.thinapps.recoverdeletedphotos
 
 import android.os.Bundle
 import android.view.Gravity
