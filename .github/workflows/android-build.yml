@@ -35,8 +35,19 @@ jobs:
       - name: Make Gradle executable
         run: chmod +x gradlew
 
-      - name: Build Release Bundle
+      - name: Decode keystore
+        run: echo "${{ secrets.RELEASE_KEYSTORE }}" | base64 --decode > upload-key.jks
+        shell: bash
+
+      - name: Build (signed) Release Bundle
         run: ./gradlew bundleRelease
+        env:
+          RELEASE_STORE_PASSWORD: ${{ secrets.RELEASE_STORE_PASSWORD }}
+          RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+
+      - name: Verify AAB signature
+        run: jarsigner -verify app/build/outputs/bundle/release/app-release.aab
+        shell: bash
 
       - name: Upload AAB Artifact
         uses: actions/upload-artifact@v4
