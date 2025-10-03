@@ -2,9 +2,9 @@ package top.thinapps.recoverdeletedphotos
 
 import android.os.Bundle
 import android.view.Gravity
+import android.view.ViewGroup
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import android.view.ViewGroup
 
 class MainActivity : AppCompatActivity() {
 
