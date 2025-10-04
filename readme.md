@@ -2,6 +2,9 @@
 
 ## Changelog
 
+### 0.3.0
+- updated to target API level 35
+
 ### 0.2.0
 - first signed release (AAB)
 - updated package name to `top.thinapps.recoverdeletedphotos`
