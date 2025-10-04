@@ -44,17 +44,17 @@ jobs:
       - name: Clean any leftover/broken wrapper
         run: rm -f gradle/wrapper/gradle-wrapper.jar
 
-      # download gradle 8.2.1 for consistent builds
-      - name: Download Gradle 8.2.1
+      # download gradle 8.7 for consistent builds
+      - name: Download Gradle 8.7
         run: |
           set -euo pipefail
-          curl -sL https://services.gradle.org/distributions/gradle-8.2.1-bin.zip -o gradle.zip
+          curl -sL https://services.gradle.org/distributions/gradle-8.7-bin.zip -o gradle.zip
           unzip -q gradle.zip
-          echo "$PWD/gradle-8.2.1/bin" >> "$GITHUB_PATH"
+          echo "$PWD/gradle-8.7/bin" >> "$GITHUB_PATH"
 
-      # generate gradle wrapper for version 8.2.1
-      - name: Generate Gradle Wrapper (8.2.1)
-        run: gradle wrapper --gradle-version 8.2.1
+      # generate gradle wrapper for version 8.7
+      - name: Generate Gradle Wrapper (8.7)
+        run: gradle wrapper --gradle-version 8.7
 
       # make gradlew executable for ci
       - name: Make Gradle executable
