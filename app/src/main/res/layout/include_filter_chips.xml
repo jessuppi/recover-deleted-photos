@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<HorizontalScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp"
+    android:paddingTop="8dp"
+    android:paddingBottom="8dp"
+    android:overScrollMode="never">
+
+    <!-- horizontal chip row that scrolls on small screens -->
+    <com.google.android.material.chip.ChipGroup
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:singleSelection="false"
+        app:selectionRequired="false"
+        app:chipSpacingHorizontal="8dp">
+
+        <!-- static, non-interactive chips; visual only in 0.5.0 -->
+        <com.google.android.material.chip.Chip
+            style="@style/Widget.Material3.Chip.Filter"
+            android:text="@string/filter_photos"
+            android:checkable="false" />
+
+        <com.google.android.material.chip.Chip
+            style="@style/Widget.Material3.Chip.Filter"
+            android:text="@string/filter_videos"
+            android:checkable="false" />
+
+        <com.google.android.material.chip.Chip
+            style="@style/Widget.Material3.Chip.Filter"
+            android:text="@string/filter_audio"
+            android:checkable="false" />
+
+    </com.google.android.material.chip.ChipGroup>
+</HorizontalScrollView>
