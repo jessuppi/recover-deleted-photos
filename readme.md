@@ -2,6 +2,12 @@
 
 ## Changelog
 
+### 0.5.0
+- added Top App Bar using MaterialToolbar with app title
+- added static filter chips row (Photos, Videos, Audio) for future filtering
+- introduced activity_main.xml layout composing toolbar, chips, and content container
+- updated MainActivity to load activity_main.xml
+
 ### 0.4.0
 - migrated app to Material 3 theme for modern UI styling
 - changed to automatic system dark mode support
