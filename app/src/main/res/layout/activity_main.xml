@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorSurface">
+
+    <!-- top app bar (material toolbar) using theme colors -->
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/topAppBar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:title="@string/app_name"
+        android:background="?attr/colorSurface"
+        android:titleTextColor="?attr/colorOnSurface"
+        app:navigationIconTint="?attr/colorOnSurface" />
+
+    <!-- static filter chips (ui-only for 0.5.0) -->
+    <include layout="@layout/include_filter_chips" />
+
+    <!-- content container that fills the rest of the screen -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <!-- temporary placeholder until real content exists -->
+        <include layout="@layout/view_empty_state" />
+    </FrameLayout>
+
+</LinearLayout>
