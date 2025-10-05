@@ -1,0 +1,11 @@
+<resources>
+    <!-- primary brand and surface palette -->
+    <color name="md_seed">#2962FF</color>
+    <color name="md_secondary">#6C7BFF</color>
+    <color name="md_surface">#FFFFFFFF</color>
+    <color name="md_on_surface">#FF1C1B1F</color>
+    <color name="md_outline">#FF79747E</color>
+
+    <!-- adaptive icon background (used by ic_launcher.xml) -->
+    <color name="ic_launcher_background">#1976D2</color>
+</resources>
