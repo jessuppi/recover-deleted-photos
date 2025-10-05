@@ -2,6 +2,13 @@
 
 ## Changelog
 
+### 0.4.0
+- migrated app to Material 3 theme for modern UI styling
+- changed to automatic system dark mode support
+- switched to XML-based layout (view_empty_state.xml) for proper theming
+- added placeholder empty state screen with icon and text
+- defined minimal theme colors and theme structure
+
 ### 0.3.0
 - updated to target API level 35
 
