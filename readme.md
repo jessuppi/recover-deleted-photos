@@ -2,6 +2,11 @@
 
 ## Changelog
 
+### 0.6.5
+- disabled edge-to-edge layout for cleaner toolbar appearance  
+- added multi-select support and recover selected button  
+- added sorting options for date, size, and name  
+
 ### 0.6.4
 - fixed results screen showing blank by setting a layout manager
 - added empty state when no media is found
