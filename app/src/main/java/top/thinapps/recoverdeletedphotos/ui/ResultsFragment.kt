@@ -11,6 +11,7 @@ import coil.load
 import top.thinapps.recoverdeletedphotos.databinding.FragmentResultsBinding
 import top.thinapps.recoverdeletedphotos.databinding.ItemMediaBinding
 import top.thinapps.recoverdeletedphotos.model.MediaItem
+import java.text.DecimalFormat
 
 class ResultsFragment : Fragment() {
     private var _vb: FragmentResultsBinding? = null
@@ -38,7 +39,9 @@ class ResultsFragment : Fragment() {
             val vb = ItemMediaBinding.inflate(LayoutInflater.from(parent.context), parent, false)
             return VH(vb)
         }
+
         override fun onBindViewHolder(holder: VH, position: Int) = holder.bind(getItem(position))
+
         companion object {
             val DIFF = object : DiffUtil.ItemCallback<MediaItem>() {
                 override fun areItemsTheSame(a: MediaItem, b: MediaItem) = a.id == b.id
@@ -50,8 +53,24 @@ class ResultsFragment : Fragment() {
     class VH(private val vb: ItemMediaBinding) : RecyclerView.ViewHolder(vb.root) {
         fun bind(it: MediaItem) {
             vb.name.text = it.displayName ?: "unknown"
-            vb.meta.text = "${it.sizeReadable} • ${it.dateReadable}"
+
+            // convert size manually to readable string to prevent crash
+            val readableSize = readableSize(it.sizeBytes)
+            vb.meta.text = "$readableSize • ${it.dateReadable}"
+
             vb.thumb.load(it.uri)
+        }
+
+        // format bytes to kb or mb for quick display
+        private fun readableSize(size: Long): String {
+            val kb = 1024.0
+            val mb = kb * 1024
+            val df = DecimalFormat("#.#")
+            return when {
+                size >= mb -> "${df.format(size / mb)} MB"
+                size >= kb -> "${df.format(size / kb)} KB"
+                else -> "$size B"
+            }
         }
     }
 
