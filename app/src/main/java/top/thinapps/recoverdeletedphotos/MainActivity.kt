@@ -1,8 +1,8 @@
 package top.thinapps.recoverdeletedphotos
 
 import android.os.Bundle
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.WindowCompat
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import top.thinapps.recoverdeletedphotos.databinding.ActivityMainBinding
@@ -12,7 +12,10 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+
+        // keep content below system bars
+        WindowCompat.setDecorFitsSystemWindows(window, true)
+
         vb = ActivityMainBinding.inflate(layoutInflater)
         setContentView(vb.root)
 
