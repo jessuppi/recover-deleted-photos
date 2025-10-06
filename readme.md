@@ -2,6 +2,10 @@
 
 ## Changelog
 
+### 0.6.1
+- fixed crash after scan by moving file size formatting to ui
+- updated results fragment for stability and compatibility
+
 ### 0.6.0
 - added media permissions for Android 13+
 - upgraded Material Components to 1.13.0 for DynamicLight support
