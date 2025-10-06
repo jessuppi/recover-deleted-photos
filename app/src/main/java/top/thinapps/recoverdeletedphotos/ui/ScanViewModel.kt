@@ -5,5 +5,5 @@ import top.thinapps.recoverdeletedphotos.model.MediaItem
 
 class ScanViewModel : ViewModel() {
     // holds scan results across fragments
-    var items: List<MediaItem> = emptyList()
+    var results: List<MediaItem> = emptyList()
 }
