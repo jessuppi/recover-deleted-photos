@@ -1,7 +1,7 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
 
     <!-- material 3 base theme with system light/dark support -->
-    <style name="Theme.RecoverDeletedPhotos" parent="Theme.Material3.DynamicLight">
+    <style name="Theme.RecoverDeletedPhotos" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- brand and surface colors -->
         <item name="colorPrimary">@color/md_seed</item>
         <item name="colorSecondary">@color/md_secondary</item>
