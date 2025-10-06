@@ -17,19 +17,16 @@
         app:selectionRequired="false"
         app:chipSpacingHorizontal="8dp">
 
-        <!-- static, non-interactive chips; visual only in 0.5.0 -->
+        <!-- static, non-interactive chips; visual only in 0.5.1 -->
         <com.google.android.material.chip.Chip
-            style="@style/Widget.Material3.Chip.Filter"
             android:text="@string/filter_photos"
             android:checkable="false" />
 
         <com.google.android.material.chip.Chip
-            style="@style/Widget.Material3.Chip.Filter"
             android:text="@string/filter_videos"
             android:checkable="false" />
 
         <com.google.android.material.chip.Chip
-            style="@style/Widget.Material3.Chip.Filter"
             android:text="@string/filter_audio"
             android:checkable="false" />
 
