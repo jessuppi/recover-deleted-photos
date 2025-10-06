@@ -7,6 +7,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.LinearLayoutManager
 import coil.load
 import top.thinapps.recoverdeletedphotos.databinding.FragmentResultsBinding
 import top.thinapps.recoverdeletedphotos.databinding.ItemMediaBinding
@@ -18,7 +19,7 @@ class ResultsFragment : Fragment() {
     private val vb get() = _vb!!
     private val adapter = MediaAdapter()
 
-    // read items from shared viewmodel instead of nav args to avoid bundle limits
+    // read items from shared viewmodel to avoid bundle limits
     private val vm: ScanViewModel by activityViewModels()
 
     override fun onCreateView(inflater: LayoutInflater, c: ViewGroup?, s: Bundle?): View {
@@ -27,8 +28,15 @@ class ResultsFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        // recycler setup
+        vb.list.setHasFixedSize(true)
+        vb.list.layoutManager = LinearLayoutManager(requireContext())
         vb.list.adapter = adapter
-        adapter.submitList(vm.results)
+
+        // submit data and toggle empty view if present
+        val data = vm.results
+        adapter.submitList(data)
+        vb.empty?.visibility = if (data.isEmpty()) View.VISIBLE else View.GONE
     }
 
     override fun onDestroyView() {
@@ -41,7 +49,6 @@ class ResultsFragment : Fragment() {
             val vb = ItemMediaBinding.inflate(LayoutInflater.from(parent.context), parent, false)
             return VH(vb)
         }
-
         override fun onBindViewHolder(holder: VH, position: Int) = holder.bind(getItem(position))
 
         companion object {
