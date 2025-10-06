@@ -16,8 +16,8 @@
         android:titleTextColor="?attr/colorOnSurface"
         app:navigationIconTint="?attr/colorOnSurface" />
 
-    <!-- static filter chips (ui-only for 0.5.0) -->
-    <include layout="@layout/include_filter_chips" />
+    <!-- chips temporarily disabled in 0.5.2 to avoid launch crash -->
+    <!-- <include layout="@layout/include_filter_chips" /> -->
 
     <!-- content container that fills the rest of the screen -->
     <FrameLayout
