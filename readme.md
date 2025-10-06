@@ -2,6 +2,9 @@
 
 ## Changelog
 
+### 0.5.1
+- removed explicit styles in include_filter_chips.xml to prevent crash
+
 ### 0.5.0
 - added Top App Bar using MaterialToolbar with app title
 - added static filter chips row (Photos, Videos, Audio) for future filtering
