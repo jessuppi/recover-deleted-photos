@@ -1,20 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
     android:padding="12dp"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/list"
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="0dp"
+        android:layout_weight="1">
 
-    <!-- simple empty state -->
-    <TextView
-        android:id="@+id/empty"
-        android:layout_width="wrap_content"
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <TextView
+            android:id="@+id/empty"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="no results"
+            android:layout_gravity="center"
+            android:visibility="gone" />
+    </FrameLayout>
+
+    <!-- simple bottom bar -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/recoverButton"
+        style="@style/Widget.Material3.Button.FilledTonalButton"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="no results"
-        android:layout_gravity="center"
-        android:visibility="gone" />
-</FrameLayout>
+        android:text="@string/recover_selected"
+        android:enabled="false" />
+</LinearLayout>
