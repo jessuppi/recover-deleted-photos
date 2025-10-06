@@ -14,8 +14,7 @@
         android:title="@string/app_name"
         android:background="?attr/colorSurface"
         android:titleTextColor="?attr/colorOnSurface"
-        app:navigationIconTint="?attr/colorOnSurface"
-        app:menu="@menu/menu_main" />
+        app:navigationIconTint="?attr/colorOnSurface" />
 
     <!-- main navigation host for fragments -->
     <androidx.fragment.app.FragmentContainerView
