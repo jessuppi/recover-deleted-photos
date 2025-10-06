@@ -2,8 +2,8 @@ package top.thinapps.recoverdeletedphotos.ui
 
 import android.os.Bundle
 import android.view.*
-import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -18,6 +18,9 @@ class ResultsFragment : Fragment() {
     private val vb get() = _vb!!
     private val adapter = MediaAdapter()
 
+    // read items from shared viewmodel instead of nav args to avoid bundle limits
+    private val vm: ScanViewModel by activityViewModels()
+
     override fun onCreateView(inflater: LayoutInflater, c: ViewGroup?, s: Bundle?): View {
         _vb = FragmentResultsBinding.inflate(inflater, c, false)
         return vb.root
@@ -25,8 +28,7 @@ class ResultsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         vb.list.adapter = adapter
-        val items = requireArguments().getParcelableArrayList<MediaItem>(KEY_ITEMS) ?: arrayListOf()
-        adapter.submitList(items)
+        adapter.submitList(vm.results)
     }
 
     override fun onDestroyView() {
@@ -54,7 +56,7 @@ class ResultsFragment : Fragment() {
         fun bind(it: MediaItem) {
             vb.name.text = it.displayName ?: "unknown"
 
-            // convert size manually to readable string to prevent crash
+            // convert size to readable string without needing a context
             val readableSize = readableSize(it.sizeBytes)
             vb.meta.text = "$readableSize • ${it.dateReadable}"
 
@@ -72,10 +74,5 @@ class ResultsFragment : Fragment() {
                 else -> "$size B"
             }
         }
-    }
-
-    companion object {
-        private const val KEY_ITEMS = "items"
-        fun args(items: List<MediaItem>) = bundleOf(KEY_ITEMS to ArrayList(items))
     }
 }
