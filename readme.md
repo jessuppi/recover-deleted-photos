@@ -4,7 +4,8 @@
 
 ### 0.6.0
 - added media permissions for Android 13+
-- expanded Material theming structure
+- upgraded Material Components to 1.13.0 for DynamicLight support
+- expanded Material theming structure and files
 - added navigation with home, scan, and results screens
 - replaced placeholder layout with fragments + viewbinding
 - new coroutine-based media scanner and progress ui
