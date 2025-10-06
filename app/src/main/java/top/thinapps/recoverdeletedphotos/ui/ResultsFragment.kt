@@ -1,15 +1,13 @@
 package top.thinapps.recoverdeletedphotos.ui
 
 import android.os.Bundle
-import android.view.*
-import android.widget.Toast
-import androidx.core.view.MenuHost
-import androidx.core.view.MenuProvider
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
@@ -20,18 +18,17 @@ import top.thinapps.recoverdeletedphotos.model.MediaItem
 import java.text.DecimalFormat
 
 class ResultsFragment : Fragment() {
+
     private var _vb: FragmentResultsBinding? = null
     private val vb get() = _vb!!
+
+    // keep track of selected ids for multi select
+    private val selectedIds = mutableSetOf<Long>()
+
+    // shared vm holds the results
     private val vm: ScanViewModel by activityViewModels()
 
-    // simple selection set and current sort
-    private val selected = linkedSetOf<Long>()
-    private var currentSort: Sort = Sort.DATE_DESC
-
-    private val adapter = MediaAdapter(
-        isSelected = { id -> id in selected },
-        onToggle = { item -> toggle(item) }
-    )
+    private lateinit var adapter: MediaAdapter
 
     override fun onCreateView(inflater: LayoutInflater, c: ViewGroup?, s: Bundle?): View {
         _vb = FragmentResultsBinding.inflate(inflater, c, false)
@@ -39,76 +36,46 @@ class ResultsFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        // recycler setup
-        vb.list.setHasFixedSize(true)
-        vb.list.layoutManager = LinearLayoutManager(requireContext())
+        adapter = MediaAdapter(
+            onToggleSelect = { item -> toggleSelection(item) }
+        )
+
         vb.list.adapter = adapter
+        adapter.submitList(vm.results)
 
-        // actions
+        // empty state
+        vb.empty.isVisible = vm.results.isEmpty()
+        vb.list.isVisible = vm.results.isNotEmpty()
+
+        // recover button starts disabled until something is selected
+        updateRecoverButton()
+
         vb.recoverButton.setOnClickListener {
-            // placeholder action no file writes here
-            val count = selected.size
-            Toast.makeText(requireContext(), "recover $count items (coming soon)", Toast.LENGTH_SHORT).show()
+            // placeholder for future recovery action
+            // you can iterate selectedIds to act on chosen items
         }
-
-        // menu host for sort controls
-        (requireActivity() as MenuHost).addMenuProvider(object : MenuProvider {
-            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                menuInflater.inflate(R.menu.menu_results, menu)
-            }
-            override fun onMenuItemSelected(item: MenuItem): Boolean {
-                when (item.itemId) {
-                    R.id.action_sort_date -> setSort(Sort.DATE_DESC)
-                    R.id.action_sort_size -> setSort(Sort.SIZE_DESC)
-                    R.id.action_sort_name -> setSort(Sort.NAME_ASC)
-                    R.id.action_select_all -> selectAll()
-                    R.id.action_clear_selection -> clearSelection()
-                    else -> return false
-                }
-                return true
-            }
-        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
-
-        // initial render
-        applyData()
     }
 
-    private fun applyData() {
-        val data = sortList(vm.results, currentSort)
-        adapter.submitList(data)
-        vb.empty.visibility = if (data.isEmpty()) View.VISIBLE else View.GONE
-        updateBottomBar()
+    private fun toggleSelection(item: MediaItem) {
+        if (selectedIds.contains(item.id)) {
+            selectedIds.remove(item.id)
+        } else {
+            selectedIds.add(item.id)
+        }
+        updateRecoverButton()
+        // update only the changed row
+        val idx = adapter.currentList.indexOfFirst { it.id == item.id }
+        if (idx != -1) adapter.notifyItemChanged(idx)
     }
 
-    private fun setSort(sort: Sort) {
-        currentSort = sort
-        applyData()
-        Toast.makeText(requireContext(), "sorted by ${sort.label}", Toast.LENGTH_SHORT).show()
-    }
-
-    private fun selectAll() {
-        selected.clear()
-        sortList(vm.results, currentSort).forEach { selected += it.id }
-        adapter.notifyDataSetChanged()
-        updateBottomBar()
-    }
-
-    private fun clearSelection() {
-        selected.clear()
-        adapter.notifyDataSetChanged()
-        updateBottomBar()
-    }
-
-    private fun toggle(item: MediaItem) {
-        if (!selected.add(item.id)) selected.remove(item.id)
-        adapter.notifyItemChanged(adapter.currentList.indexOf(item))
-        updateBottomBar()
-    }
-
-    private fun updateBottomBar() {
-        val count = selected.size
+    private fun updateRecoverButton() {
+        val count = selectedIds.size
         vb.recoverButton.isEnabled = count > 0
-        vb.recoverButton.text = if (count > 0) getString(R.string.recover_selected_count, count) else getString(R.string.recover_selected)
+        vb.recoverButton.text = if (count > 0) {
+            getString(R.string.recover_selected_count, count)
+        } else {
+            getString(R.string.recover_selected)
+        }
     }
 
     override fun onDestroyView() {
@@ -116,33 +83,24 @@ class ResultsFragment : Fragment() {
         super.onDestroyView()
     }
 
-    private fun sortList(list: List<MediaItem>, sort: Sort): List<MediaItem> = when (sort) {
-        Sort.DATE_DESC -> list.sortedByDescending { it.dateAddedSec }
-        Sort.SIZE_DESC -> list.sortedByDescending { it.sizeBytes }
-        Sort.NAME_ASC -> list.sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.displayName ?: "" })
-    }
-
-    enum class Sort(val label: String) {
-        DATE_DESC("date"),
-        SIZE_DESC("size"),
-        NAME_ASC("name")
-    }
+    // recycler adapter
 
     class MediaAdapter(
-        private val isSelected: (Long) -> Boolean,
-        private val onToggle: (MediaItem) -> Unit
+        private val onToggleSelect: (MediaItem) -> Unit
     ) : ListAdapter<MediaItem, VH>(DIFF) {
 
-        init { setHasStableIds(true) }
-
-        override fun getItemId(position: Int): Long = getItem(position).id
-
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
-            val vb = ItemMediaBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-            return VH(vb, isSelected, onToggle)
+            val vb = ItemMediaBinding.inflate(
+                LayoutInflater.from(parent.context),
+                parent,
+                false
+            )
+            return VH(vb, onToggleSelect)
         }
 
-        override fun onBindViewHolder(holder: VH, position: Int) = holder.bind(getItem(position))
+        override fun onBindViewHolder(holder: VH, position: Int) {
+            holder.bind(getItem(position))
+        }
 
         companion object {
             val DIFF = object : DiffUtil.ItemCallback<MediaItem>() {
@@ -154,23 +112,29 @@ class ResultsFragment : Fragment() {
 
     class VH(
         private val vb: ItemMediaBinding,
-        private val isSelected: (Long) -> Boolean,
-        private val onToggle: (MediaItem) -> Unit
+        private val onToggleSelect: (MediaItem) -> Unit
     ) : RecyclerView.ViewHolder(vb.root) {
 
-        fun bind(it: MediaItem) {
-            vb.name.text = it.displayName ?: "unknown"
-            vb.meta.text = "${readableSize(it.sizeBytes)} • ${it.dateReadable}"
-            vb.thumb.load(it.uri)
+        fun bind(item: MediaItem) {
+            // simple text binding
+            vb.name.text = item.displayName ?: "unknown"
+            vb.meta.text = "${readableSize(item.sizeBytes)} • ${item.dateReadable}"
 
-            // reflect selection
-            vb.check.isChecked = isSelected(it.id)
+            // thumbnail
+            vb.thumb.load(item.uri)
 
-            // simple click toggles selection
-            vb.root.setOnClickListener { onToggle(it) }
-            vb.check.setOnClickListener { onToggle(it) }
+            // make it obvious when selected (activated state can be styled in item layout)
+            vb.root.isActivated = false // caller can tweak if you add payloads later
+
+            // important: pass the bound item, not the view
+            vb.root.setOnClickListener { onToggleSelect(item) }
+            vb.root.setOnLongClickListener {
+                onToggleSelect(item)
+                true
+            }
         }
 
+        // format bytes to kb or mb for quick display
         private fun readableSize(size: Long): String {
             val kb = 1024.0
             val mb = kb * 1024
