@@ -4,24 +4,24 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import top.thinapps.recoverdeletedphotos.R
 import top.thinapps.recoverdeletedphotos.databinding.FragmentScanBinding
+import top.thinapps.recoverdeletedphotos.model.MediaItem
 import top.thinapps.recoverdeletedphotos.scan.MediaScanner
 
 class ScanFragment : Fragment() {
     private var _vb: FragmentScanBinding? = null
     private val vb get() = _vb!!
     private var job: Job? = null
+
+    // shared viewmodel for storing scan results
     private val vm: ScanViewModel by activityViewModels()
 
     override fun onCreateView(inflater: LayoutInflater, c: ViewGroup?, s: Bundle?): View {
@@ -35,44 +35,19 @@ class ScanFragment : Fragment() {
     }
 
     private fun start() {
-        // run on lifecycle scope tied to view to avoid leaks
-        job = viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
-            try {
-                // init progress
-                _vb?.progress?.setProgressCompat(0, false)
-                _vb?.percent?.text = getString(R.string.percent_format, 0)
-
-                // do scan work off the main thread and post progress safely
-                val items = withContext(Dispatchers.IO) {
-                    MediaScanner(requireContext().applicationContext).scan { pct ->
-                        // post progress updates to main only if view still alive
-                        launch(Dispatchers.Main) {
-                            _vb?.let {
-                                it.progress.setProgressCompat(pct, true)
-                                it.percent.text = getString(R.string.percent_format, pct)
-                            }
-                        }
-                    }
-                }
-
-                // store results for next screen
-                vm.results = items
-
-                // small delay for ux smoothness
-                delay(150)
-
-                // only navigate if this fragment is still current and resumed
-                val current = findNavController().currentDestination?.id
-                if (isResumed && current == R.id.scanFragment) {
-                    findNavController().navigate(R.id.action_scan_to_results)
-                }
-            } catch (t: Throwable) {
-                // show a simple message and go back instead of crashing
-                if (isAdded) {
-                    Toast.makeText(requireContext(), "scan failed", Toast.LENGTH_SHORT).show()
-                    requireActivity().onBackPressedDispatcher.onBackPressed()
-                }
+        job = viewLifecycleOwner.lifecycleScope.launch {
+            vb.progress.setProgressCompat(0, false)
+            val items = MediaScanner(requireContext()).scan { pct ->
+                vb.progress.setProgressCompat(pct, true)
+                vb.percent.text = getString(R.string.percent_format, pct)
             }
+
+            // store results in shared viewmodel
+            vm.results = items
+
+            // small delay for ux smoothness
+            delay(250)
+            findNavController().navigate(R.id.action_scan_to_results)
         }
     }
 
