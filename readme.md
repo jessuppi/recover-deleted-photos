@@ -2,6 +2,14 @@
 
 ## Changelog
 
+### 0.6.0
+- added media permissions for Android 13+
+- expanded Material theming structure
+- added navigation with home, scan, and results screens
+- replaced placeholder layout with fragments + viewbinding
+- new coroutine-based media scanner and progress ui
+- added coil for image thumbnails
+
 ### 0.5.2
 - commented out filter chips include in activity_main.xml to prevent crash
 
