@@ -6,27 +6,25 @@
     android:layout_height="match_parent"
     android:background="?attr/colorSurface">
 
-    <!-- top app bar (material toolbar) using theme colors -->
+    <!-- top app bar (material toolbar) -->
     <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/topAppBar"
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:title="@string/app_name"
         android:background="?attr/colorSurface"
         android:titleTextColor="?attr/colorOnSurface"
-        app:navigationIconTint="?attr/colorOnSurface" />
+        app:navigationIconTint="?attr/colorOnSurface"
+        app:menu="@menu/menu_main" />
 
-    <!-- chips temporarily disabled in 0.5.2 to avoid launch crash -->
-    <!-- <include layout="@layout/include_filter_chips" /> -->
-
-    <!-- content container that fills the rest of the screen -->
-    <FrameLayout
+    <!-- main navigation host for fragments -->
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/nav_host"
+        android:name="androidx.navigation.fragment.NavHostFragment"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1">
-
-        <!-- temporary placeholder until real content exists -->
-        <include layout="@layout/view_empty_state" />
-    </FrameLayout>
+        android:layout_weight="1"
+        app:navGraph="@navigation/nav_graph"
+        app:defaultNavHost="true" />
 
 </LinearLayout>
