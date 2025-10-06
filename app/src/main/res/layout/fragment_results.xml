@@ -13,23 +13,22 @@
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/list"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"/>
 
         <TextView
             android:id="@+id/empty"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="no results"
             android:layout_gravity="center"
-            android:visibility="gone" />
+            android:text="@string/empty_art"
+            android:visibility="gone"/>
     </FrameLayout>
 
-    <!-- simple bottom bar -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/recoverButton"
-        style="@style/Widget.Material3.Button.FilledTonalButton"
+        style="?attr/materialButtonTonalStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/recover_selected"
-        android:enabled="false" />
+        android:enabled="false"/>
 </LinearLayout>
