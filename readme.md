@@ -2,6 +2,9 @@
 
 ## Changelog
 
+### 0.5.2
+- commented out filter chips include in activity_main.xml to prevent crash
+
 ### 0.5.1
 - removed explicit styles in include_filter_chips.xml to prevent crash
 
