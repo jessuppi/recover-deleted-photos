@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/action_sort_date"
+        android:title="sort by date" />
+    <item
+        android:id="@+id/action_sort_size"
+        android:title="sort by size" />
+    <item
+        android:id="@+id/action_sort_name"
+        android:title="sort by name" />
+    <item
+        android:id="@+id/action_select_all"
+        android:title="select all" />
+    <item
+        android:id="@+id/action_clear_selection"
+        android:title="clear selection" />
+</menu>
