@@ -3,4 +3,14 @@
     <string name="filter_photos">Photos</string>
     <string name="filter_videos">Videos</string>
     <string name="filter_audio">Audio</string>
+    <string name="home_title">Recover deleted photos</string>
+    <string name="home_subtitle">Scan your device and preview recoverable media</string>
+    <string name="start_scan">Start scan</string>
+    <string name="scan_title">Scanning</string>
+    <string name="results_title">Results</string>
+    <string name="percent_start">0%</string>
+    <string name="percent_format">%1$d%%</string>
+    <string name="empty_art">Empty state</string>
+    <string name="cancel">Cancel</string>
+    <string name="perms_denied">Permissions required to scan media</string>
 </resources>
