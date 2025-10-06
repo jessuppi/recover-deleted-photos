@@ -2,6 +2,10 @@
 
 ## Changelog
 
+### 0.6.4
+- fixed results screen showing blank by setting a layout manager
+- added empty state when no media is found
+
 ### 0.6.3
 - prevent scan screen from disappearing by guarding lifecycle and navigation in scan fragment
 - handle errors during scan without closing the app
