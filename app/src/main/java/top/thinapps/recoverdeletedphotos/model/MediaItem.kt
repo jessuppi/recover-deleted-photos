@@ -14,6 +14,8 @@ data class MediaItem(
     val sizeBytes: Long,
     val dateAddedSec: Long
 ) : Parcelable {
-    val sizeReadable: String get() = android.text.format.Formatter.formatShortFileSize(null, sizeBytes)
-    val dateReadable: String get() = DateFormat.getDateInstance().format(Date(dateAddedSec * 1000))
+
+    // removed context call to fix crash during size formatting
+    val dateReadable: String
+        get() = DateFormat.getDateInstance().format(Date(dateAddedSec * 1000))
 }
