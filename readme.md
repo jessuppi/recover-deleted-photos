@@ -2,6 +2,10 @@
 
 ## Changelog
 
+### 0.6.2
+- fixed issue where the app returned to the start screen after scanning
+- improved scan and navigation flow for smoother and more reliable behavior
+
 ### 0.6.1
 - fixed crash after scan by moving file size formatting to ui
 - updated results fragment for stability and compatibility
