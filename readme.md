@@ -2,6 +2,10 @@
 
 ## Changelog
 
+### 0.6.3
+- prevent scan screen from disappearing by guarding lifecycle and navigation in scan fragment
+- handle errors during scan without closing the app
+
 ### 0.6.2
 - fixed issue where the app returned to the start screen after scanning
 - improved scan and navigation flow for smoother and more reliable behavior
