@@ -2,7 +2,7 @@
 
 ## Changelog
 
-### 0.6.5
+### 0.7.0
 - disabled edge-to-edge layout for cleaner toolbar appearance  
 - added multi-select support and recover selected button  
 - added sorting options for date, size, and name  
