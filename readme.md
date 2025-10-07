@@ -2,6 +2,10 @@
 
 ## Changelog
 
+### 0.7.2
+- added sorting filter dropdown (date, size, name)
+- recover button now enables when items are checked (not just long-pressed)
+
 ### 0.7.1
 - fixed missing LinearLayoutManager so scan results and thumbnails display again
 - fixed click handling and selection updates in results list
