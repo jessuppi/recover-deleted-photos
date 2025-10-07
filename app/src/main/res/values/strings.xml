@@ -24,36 +24,11 @@
     <string name="recover_selected">Recover Selected</string>
     <string name="recover_selected_count">Recover Selected (%1$d)</string>
 
-    <!-- old short labels (kept for safety if referenced anywhere) -->
-    <string name="sort_date_newest">Date (newest)</string>
-    <string name="sort_size_largest">Size (largest)</string>
-    <string name="sort_name_az">Name (A-Z)</string>
-
-    <!-- sorting (android-style phrasing) -->
+    <!-- sorting options -->
     <string name="sort_newest_first">Newest date first</string>
     <string name="sort_oldest_first">Oldest date first</string>
     <string name="sort_largest_first">Largest first</string>
     <string name="sort_smallest_first">Smallest first</string>
     <string name="sort_name_az_full">Name A → Z</string>
     <string name="sort_name_za_full">Name Z → A</string>
-
-    <!-- spinner data used by ResultsFragment -->
-    <string-array name="sort_options_labels">
-        <item>@string/sort_newest_first</item>
-        <item>@string/sort_oldest_first</item>
-        <item>@string/sort_largest_first</item>
-        <item>@string/sort_smallest_first</item>
-        <item>@string/sort_name_az_full</item>
-        <item>@string/sort_name_za_full</item>
-    </string-array>
-
-    <!-- must match enum names in ResultsFragment.SortMode -->
-    <string-array name="sort_options_values">
-        <item>DATE_NEWEST</item>
-        <item>DATE_OLDEST</item>
-        <item>SIZE_LARGEST</item>
-        <item>SIZE_SMALLEST</item>
-        <item>NAME_AZ</item>
-        <item>NAME_ZA</item>
-    </string-array>
 </resources>
