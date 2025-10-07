@@ -10,7 +10,8 @@
         android:id="@+id/sortDropdown"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp" />
+        android:layout_marginBottom="8dp"
+        android:prompt="@string/results_title" />
 
     <FrameLayout
         android:layout_width="match_parent"
@@ -20,7 +21,9 @@
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/list"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingBottom="72dp" />
 
         <TextView
             android:id="@+id/empty"
@@ -36,6 +39,7 @@
         style="?attr/materialButtonTonalStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:minHeight="48dp"
         android:text="@string/recover_selected"
         android:enabled="false" />
 </LinearLayout>
