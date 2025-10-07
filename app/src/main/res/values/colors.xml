@@ -8,4 +8,7 @@
 
     <!-- adaptive icon background (used by ic_launcher.xml) -->
     <color name="ic_launcher_background">#1976D2</color>
+
+    <!-- selection highlight -->
+    <color name="selection_highlight">#1A2196F3</color>
 </resources>
