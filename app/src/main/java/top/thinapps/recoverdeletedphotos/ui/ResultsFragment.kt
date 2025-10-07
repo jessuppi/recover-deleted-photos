@@ -127,8 +127,9 @@ class ResultsFragment : Fragment() {
         vb.empty.isVisible = sorted.isEmpty()
         vb.list.isVisible = sorted.isNotEmpty()
 
+        // ensure recycler always jumps to top after sorting regardless of layout timing
         if (scrollToTop && sorted.isNotEmpty()) {
-            vb.list.post { vb.list.scrollToPosition(0) }
+            vb.list.layoutManager?.scrollToPositionWithOffset(0, 0)
         }
     }
 
