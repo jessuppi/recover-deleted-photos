@@ -82,8 +82,8 @@ class ResultsFragment : Fragment() {
             getString(R.string.sort_oldest_first),
             getString(R.string.sort_largest_first),
             getString(R.string.sort_smallest_first),
-            getString(R.string.sort_name_az),
-            getString(R.string.sort_name_za)
+            getString(R.string.sort_name_az_full),
+            getString(R.string.sort_name_za_full)
         )
         spinner.adapter = ArrayAdapter(
             requireContext(),
