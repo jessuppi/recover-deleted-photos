@@ -8,6 +8,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
@@ -37,10 +38,14 @@ class ResultsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         adapter = MediaAdapter(
+            isSelected = { id -> id in selectedIds },
             onToggleSelect = { item -> toggleSelection(item) }
         )
 
+        // important: set a layout manager so items render
+        vb.list.layoutManager = LinearLayoutManager(requireContext())
         vb.list.adapter = adapter
+
         adapter.submitList(vm.results)
 
         // empty state
@@ -52,7 +57,7 @@ class ResultsFragment : Fragment() {
 
         vb.recoverButton.setOnClickListener {
             // placeholder for future recovery action
-            // you can iterate selectedIds to act on chosen items
+            // iterate selectedIds to act on chosen items
         }
     }
 
@@ -86,6 +91,7 @@ class ResultsFragment : Fragment() {
     // recycler adapter
 
     class MediaAdapter(
+        private val isSelected: (Long) -> Boolean,
         private val onToggleSelect: (MediaItem) -> Unit
     ) : ListAdapter<MediaItem, VH>(DIFF) {
 
@@ -95,7 +101,7 @@ class ResultsFragment : Fragment() {
                 parent,
                 false
             )
-            return VH(vb, onToggleSelect)
+            return VH(vb, isSelected, onToggleSelect)
         }
 
         override fun onBindViewHolder(holder: VH, position: Int) {
@@ -112,6 +118,7 @@ class ResultsFragment : Fragment() {
 
     class VH(
         private val vb: ItemMediaBinding,
+        private val isSelected: (Long) -> Boolean,
         private val onToggleSelect: (MediaItem) -> Unit
     ) : RecyclerView.ViewHolder(vb.root) {
 
@@ -123,10 +130,10 @@ class ResultsFragment : Fragment() {
             // thumbnail
             vb.thumb.load(item.uri)
 
-            // make it obvious when selected (activated state can be styled in item layout)
-            vb.root.isActivated = false // caller can tweak if you add payloads later
+            // show selected state
+            vb.root.isActivated = isSelected(item.id)
 
-            // important: pass the bound item, not the view
+            // pass the bound item, not the view
             vb.root.setOnClickListener { onToggleSelect(item) }
             vb.root.setOnLongClickListener {
                 onToggleSelect(item)
