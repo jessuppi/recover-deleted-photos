@@ -23,4 +23,9 @@
     <string name="empty_art">No results found</string>
     <string name="recover_selected">Recover Selected</string>
     <string name="recover_selected_count">Recover Selected (%1$d)</string>
+
+    <!-- sorting -->
+    <string name="sort_date_newest">Date (newest)</string>
+    <string name="sort_size_largest">Size (largest)</string>
+    <string name="sort_name_az">Name (A-Z)</string>
 </resources>
