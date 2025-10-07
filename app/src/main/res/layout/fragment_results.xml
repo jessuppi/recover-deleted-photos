@@ -5,6 +5,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <!-- sort dropdown used by resultsfragment to sort by date, size, or name -->
+    <Spinner
+        android:id="@+id/sortDropdown"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp" />
+
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -13,7 +20,7 @@
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/list"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="match_parent" />
 
         <TextView
             android:id="@+id/empty"
@@ -21,7 +28,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:text="@string/empty_art"
-            android:visibility="gone"/>
+            android:visibility="gone" />
     </FrameLayout>
 
     <com.google.android.material.button.MaterialButton
@@ -30,5 +37,5 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/recover_selected"
-        android:enabled="false"/>
+        android:enabled="false" />
 </LinearLayout>
