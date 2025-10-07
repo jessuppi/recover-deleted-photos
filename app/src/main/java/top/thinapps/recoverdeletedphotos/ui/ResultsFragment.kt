@@ -127,9 +127,11 @@ class ResultsFragment : Fragment() {
         vb.empty.isVisible = sorted.isEmpty()
         vb.list.isVisible = sorted.isNotEmpty()
 
-        // ensure recycler always jumps to top after sorting regardless of layout timing
+        // always jump to top after sorting (works regardless of layout timing)
         if (scrollToTop && sorted.isNotEmpty()) {
-            vb.list.layoutManager?.scrollToPositionWithOffset(0, 0)
+            (vb.list.layoutManager as? LinearLayoutManager)
+                ?.scrollToPositionWithOffset(0, 0)
+                ?: vb.list.scrollToPosition(0)
         }
     }
 
@@ -197,8 +199,13 @@ class ResultsFragment : Fragment() {
             // thumbnail
             vb.thumb.load(item.uri)
 
-            // show selected state
-            vb.root.isActivated = isSelected(item.id)
+            // selection state + light highlight
+            val selected = isSelected(item.id)
+            vb.root.isActivated = selected
+            vb.root.setBackgroundColor(
+                if (selected) vb.root.context.getColor(R.color.selection_highlight)
+                else vb.root.context.getColor(android.R.color.transparent)
+            )
 
             // clicks toggle selection
             vb.root.setOnClickListener { onToggleSelect(item) }
@@ -209,7 +216,7 @@ class ResultsFragment : Fragment() {
             // optional checkbox support if present
             findOptionalCheckbox()?.let { check ->
                 check.setOnCheckedChangeListener(null)
-                check.isChecked = isSelected(item.id)
+                check.isChecked = selected
                 check.setOnCheckedChangeListener { _, _ -> onToggleSelect(item) }
             }
         }
