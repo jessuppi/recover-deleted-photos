@@ -2,6 +2,10 @@
 
 ## Changelog
 
+### 0.7.4
+- clear scan results on exit/cancel to prevent bounce-back and improve privacy
+- added a subtle background highlight for selected items in results
+
 ### 0.7.3
 - added advanced sorting options: Date (Newest/Oldest), Size (Largest/Smallest), Name (A–Z/Z–A)
 - automatically scrolls results to top when changing sort order
