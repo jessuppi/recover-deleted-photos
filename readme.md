@@ -2,6 +2,10 @@
 
 ## Changelog
 
+### 0.7.1
+- fixed missing LinearLayoutManager so scan results and thumbnails display again
+- fixed click handling and selection updates in results list
+
 ### 0.7.0
 - disabled edge-to-edge layout for cleaner toolbar appearance  
 - added multi-select support and recover selected button  
