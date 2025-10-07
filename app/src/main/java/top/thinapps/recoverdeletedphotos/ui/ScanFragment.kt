@@ -65,6 +65,9 @@ class ScanFragment : Fragment() {
                 val current = findNavController().currentDestination?.id
                 if (isResumed && current == R.id.scanFragment) {
                     findNavController().navigate(R.id.action_scan_to_results)
+
+                    // clear results immediately after navigation to avoid auto return to results and protect privacy
+                    vm.results = emptyList()
                 }
             } catch (t: Throwable) {
                 // show a simple message and go back instead of crashing
@@ -78,6 +81,8 @@ class ScanFragment : Fragment() {
 
     private fun cancel() {
         job?.cancel()
+        // clear any partial results to avoid leaking scanned data if canceled
+        vm.results = emptyList()
         requireActivity().onBackPressedDispatcher.onBackPressed()
     }
 
