@@ -2,6 +2,11 @@
 
 ## Changelog
 
+### 0.7.3
+- added advanced sorting options: Date (Newest/Oldest), Size (Largest/Smallest), Name (A–Z/Z–A)
+- automatically scrolls results to top when changing sort order
+- polished layout spacing and spinner prompt for better UX
+
 ### 0.7.2
 - added sorting filter dropdown (date, size, name)
 - recover button now enables when items are checked (not just long-pressed)
