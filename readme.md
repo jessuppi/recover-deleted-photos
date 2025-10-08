@@ -2,6 +2,10 @@
 
 ## Changelog
 
+### 0.7.5
+- fixed navigation so Back from Results now goes directly to Home (no scanning flash or double-tap) replacing the incomplete 0.7.4 patch
+- cleared results only when leaving Results for proper privacy without breaking scans
+
 ### 0.7.4
 - clear scan results on exit/cancel to prevent bounce-back and improve privacy
 - added a subtle background highlight for selected items in results
