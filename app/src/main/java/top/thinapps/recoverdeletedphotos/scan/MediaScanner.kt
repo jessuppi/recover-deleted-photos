@@ -1,7 +1,7 @@
 package top.thinapps.recoverdeletedphotos.scan
 
 import android.content.Context
-import android.net.Uri
+import android.content.ContentUris
 import android.provider.MediaStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -39,7 +39,7 @@ class MediaScanner(private val context: Context) {
                 var found = 0
                 while (c.moveToNext()) {
                     val id = c.getLong(idIdx)
-                    val contentUri = Uri.withAppendedPath(uri, id.toString())
+                    val contentUri = ContentUris.withAppendedId(uri, id)
                     val name = c.getString(nameIdx)
                     val size = c.getLong(sizeIdx)
                     val dateAdded = c.getLong(dateIdx)
@@ -56,7 +56,7 @@ class MediaScanner(private val context: Context) {
                     onProgress(found, total) // per-row; UI throttles display rate
                 }
 
-                // final emission (in case total==found but the UI tick is catching up)
+                // final emission for any trailing UI catch-up
                 onProgress(found, total)
             }
 
