@@ -15,6 +15,8 @@
     <string name="scan_title">Scanning</string>
     <string name="percent_start">0%</string>
     <string name="percent_format">%1$d%%</string>
+    <string name="found_count_start">Found 0 files</string>
+    <string name="found_count">Found %1$d files</string>
     <string name="cancel">Cancel</string>
     <string name="perms_denied">Permissions are required to scan media</string>
 
