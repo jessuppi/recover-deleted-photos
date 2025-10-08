@@ -2,6 +2,11 @@
 
 ## Changelog
 
+### 0.7.8
+- scan: “Found X files” now increments in lockstep with the visible progress bar
+- scan: smoother, slower, truth-based bar (higher granularity + time-throttled updates)
+- ui: removed right-edge sliver on some devices (explicit track/indicator colors, LTR, track thickness)
+
 ### 0.7.7
 - progress bar now reaches 100% before navigating, with a brief 300ms pause at completion
 - fixed progress bar track colors (removed blue sliver)
