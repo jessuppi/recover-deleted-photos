@@ -59,7 +59,7 @@ class ScanFragment : Fragment() {
                 vb.percent.text = getString(R.string.percent_format, 0)
                 vb.foundCount.text = getString(R.string.found_count_start)
 
-                // start a simple ui ticker that advances at a capped rate but never exceeds realPercent
+                // ui ticker: advance at capped rate, never exceed realPercent
                 val ticker = launch(Dispatchers.Main) {
                     var last = SystemClock.uptimeMillis()
                     while (isActive) {
@@ -78,7 +78,7 @@ class ScanFragment : Fragment() {
                         delay(uiTickMs)
                     }
 
-                    // final clamp to real values
+                    // final clamp to real values (may be <100 here; we force 100 after join)
                     vb.progress.setProgressCompat(realPercent, true)
                     vb.percent.text = getString(R.string.percent_format, realPercent)
                     vb.foundCount.text = getString(R.string.found_count, realFound)
@@ -93,12 +93,23 @@ class ScanFragment : Fragment() {
                     }
                 }
 
-                // store results and finish ui
+                // store results
                 vm.results = items
-                scanningDone = true
-                ticker.join() // let the visual bar catch up; no fake minimum delay
 
-                // only navigate if we are still on scan
+                // ensure the bar visibly reaches 100% before leaving
+                realPercent = 100         // force real target to 100
+                scanningDone = true
+                ticker.join()             // wait for ticker to catch up
+
+                // snap to 100 without animation to avoid a 1px leftover
+                vb.progress.setProgressCompat(100, false)
+                vb.percent.text = getString(R.string.percent_format, 100)
+                vb.foundCount.text = getString(R.string.found_count, realFound)
+
+                // brief pause so users see completion
+                delay(300)
+
+                // navigate only if still on scan
                 val current = findNavController().currentDestination?.id
                 if (isResumed && current == R.id.scanFragment) {
                     val opts = NavOptions.Builder()
