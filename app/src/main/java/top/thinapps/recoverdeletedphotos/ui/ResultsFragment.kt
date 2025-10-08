@@ -153,6 +153,8 @@ class ResultsFragment : Fragment() {
     }
 
     override fun onDestroyView() {
+        // Clear results when leaving Results screen for privacy and to avoid stale re-entry.
+        vm.results = emptyList()
         _vb = null
         super.onDestroyView()
     }
