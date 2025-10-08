@@ -2,6 +2,10 @@
 
 ## Changelog
 
+### 0.7.6
+- added live “Found X files” under the progress bar
+- progress bar reflects true percent (found/total) with throttled updates
+
 ### 0.7.5
 - fixed navigation so Back from Results now goes directly to Home (no scanning flash or double-tap) replacing the incomplete 0.7.4 patch
 - cleared results only when leaving Results for proper privacy without breaking scans
