@@ -20,6 +20,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
 
+    <TextView
+        android:id="@+id/foundCount"
+        android:layout_marginTop="4dp"
+        android:text="@string/found_count_start"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
     <com.google.android.material.button.MaterialButton
         android:id="@+id/cancelButton"
         style="@style/Widget.Material3.Button.OutlinedButton"
