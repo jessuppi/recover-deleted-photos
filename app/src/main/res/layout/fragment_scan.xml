@@ -14,9 +14,11 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:indeterminate="false"
+        android:layoutDirection="ltr"
         app:indicatorColor="?attr/colorPrimary"
         app:trackColor="?attr/colorSurfaceVariant"
-        app:trackCornerRadius="0dp" />
+        app:trackCornerRadius="0dp"
+        app:trackThickness="8dp" />
 
     <TextView
         android:id="@+id/percent"
