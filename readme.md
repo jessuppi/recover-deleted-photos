@@ -2,6 +2,10 @@
 
 ## Changelog
 
+### 0.7.7
+- progress bar now reaches 100% before navigating, with a brief 300ms pause at completion
+- fixed progress bar track colors (removed blue sliver)
+
 ### 0.7.6
 - added live “Found X files” under the progress bar
 - progress bar reflects true percent (found/total) with throttled updates
