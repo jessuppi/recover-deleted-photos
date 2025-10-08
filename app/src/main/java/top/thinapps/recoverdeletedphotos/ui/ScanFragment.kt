@@ -27,18 +27,19 @@ class ScanFragment : Fragment() {
     private var job: Job? = null
     private val vm: ScanViewModel by activityViewModels()
 
-    // live progress from scanner
+    // real progress from scanner
     @Volatile private var realFound = 0
     @Volatile private var realTotal = 1
-    @Volatile private var realPercent = 0
+    @Volatile private var realUnits = 0   // 0..progressMax
 
-    // throttled ui state
-    private var displayedPercent = 0
+    // throttled ui state (what we show)
+    private var displayedUnits = 0
     @Volatile private var scanningDone = false
 
     // ui throttle settings
-    private val uiTickMs = 120L
-    private val ratePctPerSec = 70f
+    private val progressMax = 1000        // higher granularity = smoother bar, fewer 1px artifacts
+    private val uiTickMs = 140L           // update cadence
+    private val rateUnitsPerSec = 200f    // lower = slower visual speed
 
     override fun onCreateView(inflater: LayoutInflater, c: ViewGroup?, s: Bundle?): View {
         _vb = FragmentScanBinding.inflate(inflater, c, false)
@@ -55,11 +56,12 @@ class ScanFragment : Fragment() {
             try {
                 // init ui
                 vb.progress.isIndeterminate = false
+                vb.progress.max = progressMax
                 vb.progress.setProgressCompat(0, false)
                 vb.percent.text = getString(R.string.percent_format, 0)
                 vb.foundCount.text = getString(R.string.found_count_start)
 
-                // ui ticker: advance at capped rate, never exceed realPercent
+                // ticker: advance at capped rate, never exceed realUnits
                 val ticker = launch(Dispatchers.Main) {
                     var last = SystemClock.uptimeMillis()
                     while (isActive) {
@@ -67,29 +69,35 @@ class ScanFragment : Fragment() {
                         val dt = (now - last) / 1000f
                         last = now
 
-                        val step = (ratePctPerSec * dt).toInt().coerceAtLeast(1)
-                        displayedPercent = minOf(realPercent, displayedPercent + step)
+                        val stepUnits = (rateUnitsPerSec * dt).toInt().coerceAtLeast(1)
+                        displayedUnits = minOf(realUnits, displayedUnits + stepUnits)
 
-                        vb.progress.setProgressCompat(displayedPercent, true)
-                        vb.percent.text = getString(R.string.percent_format, displayedPercent)
-                        vb.foundCount.text = getString(R.string.found_count, realFound)
+                        val pct = ((displayedUnits * 100f) / progressMax).toInt().coerceIn(0, 100)
+                        vb.progress.setProgressCompat(displayedUnits, true)
+                        vb.percent.text = getString(R.string.percent_format, pct)
 
-                        if (scanningDone && displayedPercent >= realPercent) break
+                        // keep "Found X" in sync with what the user sees
+                        val displayedFound = minOf(realFound, (displayedUnits * realTotal) / progressMax)
+                        vb.foundCount.text = getString(R.string.found_count, displayedFound)
+
+                        if (scanningDone && displayedUnits >= realUnits) break
                         delay(uiTickMs)
                     }
 
-                    // final clamp to real values (may be <100 here; we force 100 after join)
-                    vb.progress.setProgressCompat(realPercent, true)
-                    vb.percent.text = getString(R.string.percent_format, realPercent)
-                    vb.foundCount.text = getString(R.string.found_count, realFound)
+                    // final clamp to current realUnits
+                    val finalPct = ((realUnits * 100f) / progressMax).toInt().coerceIn(0, 100)
+                    vb.progress.setProgressCompat(realUnits, true)
+                    vb.percent.text = getString(R.string.percent_format, finalPct)
+                    val finalFound = minOf(realFound, (realUnits * realTotal) / progressMax)
+                    vb.foundCount.text = getString(R.string.found_count, finalFound)
                 }
 
-                // run the scan on io; feed found/total back to the ui ticker
+                // run the scan on io; feed real progress
                 val items = withContext(Dispatchers.IO) {
                     MediaScanner(requireContext().applicationContext).scan { found, total ->
                         realFound = found
                         realTotal = if (total <= 0) 1 else total
-                        realPercent = ((realFound * 100f) / realTotal).toInt().coerceIn(0, 100)
+                        realUnits = ((realFound.toLong() * progressMax) / realTotal).toInt().coerceIn(0, progressMax)
                     }
                 }
 
@@ -97,16 +105,16 @@ class ScanFragment : Fragment() {
                 vm.results = items
 
                 // ensure the bar visibly reaches 100% before leaving
-                realPercent = 100         // force real target to 100
+                realUnits = progressMax
                 scanningDone = true
-                ticker.join()             // wait for ticker to catch up
+                ticker.join()
 
-                // snap to 100 without animation to avoid a 1px leftover
-                vb.progress.setProgressCompat(100, false)
+                // snap to 100 without animation to avoid right-edge sliver
+                vb.progress.setProgressCompat(progressMax, false)
                 vb.percent.text = getString(R.string.percent_format, 100)
                 vb.foundCount.text = getString(R.string.found_count, realFound)
 
-                // brief pause so users see completion
+                // brief pause at completion
                 delay(300)
 
                 // navigate only if still on scan
