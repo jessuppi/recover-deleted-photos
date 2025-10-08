@@ -13,7 +13,7 @@
         style="@style/Widget.Material3.LinearProgressIndicator"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:indeterminate="false"
+        android:indeterminate="false"
         app:indicatorColor="?attr/colorPrimary"
         app:trackColor="?attr/colorSurfaceVariant"
         app:trackCornerRadius="0dp" />
