@@ -30,15 +30,16 @@ class ScanFragment : Fragment() {
     private var job: Job? = null
     private val vm: ScanViewModel by activityViewModels()
 
+    // keep references so we can cancel animations on destroy
     private val runningAnims = mutableListOf<ObjectAnimator>()
     private var countAnimator: ValueAnimator? = null
 
-    // pacing
-    private val COUNT_ANIM_MS = 3800L      // slower number ramp
-    private val POST_ANIM_DWELL_MS = 1200L // linger after finishing
+    // timing knobs (tweak feel here)
+    private val COUNT_ANIM_MS = 3800L      // number ramp 0 -> total
+    private val POST_ANIM_DWELL_MS = 1200L // pause after finishing
     private val PULSE_CYCLE_MS = 2800L     // slower halo
 
-    // signal when the count animation fully completes
+    // gate so we don’t navigate until the animation + dwell completes
     private lateinit var countAnimDone: CompletableDeferred<Unit>
 
     override fun onCreateView(inflater: LayoutInflater, c: ViewGroup?, s: Bundle?): View {
@@ -52,23 +53,24 @@ class ScanFragment : Fragment() {
     }
 
     private fun start() {
+        // view-tied scope prevents leaks if user leaves mid-scan
         job = viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
             try {
-                // init ui
+                // init UI
                 vb.totalLabel.text = getString(R.string.total_files_label)
                 vb.totalCount.text = getString(R.string.total_files_count, 0)
                 countAnimDone = CompletableDeferred()
 
-                // start pulse halo
+                // cosmetic pulse (two rings, out of phase)
                 startPulses()
 
-                // scan and grab the true total; animate the number once to that total
+                // run scan on IO; use first total to kick the counter animation
                 val items = withContext(Dispatchers.IO) {
                     var totalSeen = 0
                     MediaScanner(requireContext().applicationContext).scan { _, total ->
                         if (totalSeen == 0 && total > 0) {
                             totalSeen = total
-                            // animate on MAIN, bound to the view lifecycle
+                            // launch animator on MAIN, bound to lifecycle
                             viewLifecycleOwner.lifecycleScope.launch {
                                 animateCountTo(totalSeen)
                             }
@@ -76,15 +78,17 @@ class ScanFragment : Fragment() {
                     }
                 }
 
+                // pass results to VM for next screen
                 vm.results = items
 
-                // wait for the count animation + dwell before navigating
+                // wait for count animation + dwell before navigating
                 countAnimDone.await()
 
+                // navigate if still on this fragment
                 val current = findNavController().currentDestination?.id
                 if (isResumed && current == R.id.scanFragment) {
                     val opts = NavOptions.Builder()
-                        .setPopUpTo(R.id.scanFragment, true)
+                        .setPopUpTo(R.id.scanFragment, true) // remove Scan from back stack
                         .build()
                     findNavController().navigate(R.id.action_scan_to_results, null, opts)
                 }
@@ -101,7 +105,7 @@ class ScanFragment : Fragment() {
         // cancel any previous animator to avoid overlap
         countAnimator?.cancel()
 
-        // smooth ease-out using FastOutSlowIn
+        // smooth ease-out count using ValueAnimator
         countAnimator = ValueAnimator.ofInt(0, target).apply {
             duration = COUNT_ANIM_MS
             interpolator = FastOutSlowInInterpolator()
@@ -110,7 +114,7 @@ class ScanFragment : Fragment() {
                 vb.totalCount.text = getString(R.string.total_files_count, v)
             }
             addListener(onEnd = {
-                // hold briefly so users register completion
+                // linger so the number registers, then unblock navigation
                 viewLifecycleOwner.lifecycleScope.launch {
                     delay(POST_ANIM_DWELL_MS)
                     if (!countAnimDone.isCompleted) countAnimDone.complete(Unit)
@@ -121,6 +125,7 @@ class ScanFragment : Fragment() {
     }
 
     private fun startPulses() {
+        // two repeating halo pulses (scale + fade) out of phase
         fun pulse(view: View, delayMs: Long) {
             val scaleX = ObjectAnimator.ofFloat(view, View.SCALE_X, 1f, 1.6f).apply {
                 duration = PULSE_CYCLE_MS
@@ -147,15 +152,15 @@ class ScanFragment : Fragment() {
             scaleX.start(); scaleY.start(); alpha.start()
         }
         pulse(vb.pulse1, 0)
-        pulse(vb.pulse2, PULSE_CYCLE_MS / 2) // staggered for a continuous wave
+        pulse(vb.pulse2, PULSE_CYCLE_MS / 2) // stagger for continuous wave
     }
 
     private fun stopPulses() {
+        // cancel animations and reset halo views
         runningAnims.forEach { it.cancel() }
         runningAnims.clear()
         countAnimator?.cancel()
         countAnimator = null
-
         vb.pulse1.alpha = 0f
         vb.pulse1.scaleX = 1f
         vb.pulse1.scaleY = 1f
