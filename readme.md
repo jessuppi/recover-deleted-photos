@@ -2,6 +2,9 @@
 
 ## Changelog
 
+### 0.8.2
+- slower scan count-up with a brief pause before navigation; softer pulse animation
+
 ### 0.8.1
 - fix: prevented scan-screen crash by launching the count animation on the main (UI) thread
 - fix: initialized total count label to "0" in layout (no formatted placeholder at inflate)
