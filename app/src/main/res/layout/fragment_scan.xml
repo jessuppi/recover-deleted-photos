@@ -1,38 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:padding="24dp"
     android:orientation="vertical"
     android:gravity="center_horizontal"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <com.google.android.material.progressindicator.LinearProgressIndicator
-        android:id="@+id/progress"
-        style="@style/Widget.Material3.LinearProgressIndicator"
-        android:layout_width="match_parent"
+    <TextView
+        android:id="@+id/totalLabel"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:indeterminate="false"
-        android:layoutDirection="ltr"
-        app:indicatorColor="?attr/colorPrimary"
-        app:trackColor="?attr/colorSurfaceVariant"
-        app:trackCornerRadius="0dp"
-        app:trackThickness="8dp" />
+        android:text="@string/total_files_label"
+        android:textAppearance="?attr/textAppearanceTitleMedium" />
 
-    <TextView
-        android:id="@+id/percent"
-        android:layout_marginTop="12dp"
-        android:text="@string/percent_start"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+    <FrameLayout
+        android:id="@+id/pulseContainer"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:layout_marginTop="12dp">
 
-    <TextView
-        android:id="@+id/foundCount"
-        android:layout_marginTop="4dp"
-        android:text="@string/found_count_start"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        <View
+            android:id="@+id/pulse1"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:alpha="0.0"
+            android:background="@drawable/pulse_circle"/>
+
+        <View
+            android:id="@+id/pulse2"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:alpha="0.0"
+            android:background="@drawable/pulse_circle"/>
+
+        <TextView
+            android:id="@+id/totalCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/total_files_count"
+            android:textStyle="bold"
+            android:textSize="36sp"
+            android:fontFamily="monospace"/>
+    </FrameLayout>
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/cancelButton"
