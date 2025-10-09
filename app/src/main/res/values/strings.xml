@@ -17,6 +17,8 @@
     <string name="percent_format">%1$d%%</string>
     <string name="found_count_start">Found 0 files</string>
     <string name="found_count">Found %1$d files</string>
+    <string name="total_files_label">Total files on device</string>
+    <string name="total_files_count">%1$,d</string>
     <string name="cancel">Cancel</string>
     <string name="perms_denied">Permissions are required to scan media</string>
 
