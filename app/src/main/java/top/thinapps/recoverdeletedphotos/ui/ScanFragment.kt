@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.animation.LinearInterpolator
 import android.widget.Toast
+import androidx.core.animation.doOnEnd
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
@@ -113,13 +114,13 @@ class ScanFragment : Fragment() {
                 val v = a.animatedValue as Int
                 vb.totalCount.text = getString(R.string.total_files_count, v)
             }
-            addListener(onEnd = {
+            doOnEnd {
                 // linger so the number registers, then unblock navigation
                 viewLifecycleOwner.lifecycleScope.launch {
                     delay(POST_ANIM_DWELL_MS)
                     if (!countAnimDone.isCompleted) countAnimDone.complete(Unit)
                 }
-            })
+            }
         }
         countAnimator?.start()
     }
