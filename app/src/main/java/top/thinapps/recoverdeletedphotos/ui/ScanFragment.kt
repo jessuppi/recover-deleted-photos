@@ -1,20 +1,21 @@
 package top.thinapps.recoverdeletedphotos.ui
 
+import android.animation.ObjectAnimator
 import android.os.Bundle
-import android.os.SystemClock
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.LinearInterpolator
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import top.thinapps.recoverdeletedphotos.R
@@ -27,19 +28,7 @@ class ScanFragment : Fragment() {
     private var job: Job? = null
     private val vm: ScanViewModel by activityViewModels()
 
-    // real progress from scanner
-    @Volatile private var realFound = 0
-    @Volatile private var realTotal = 1
-    @Volatile private var realUnits = 0   // 0..progressMax
-
-    // throttled ui state (what we show)
-    private var displayedUnits = 0
-    @Volatile private var scanningDone = false
-
-    // ui throttle settings
-    private val progressMax = 1000        // higher granularity = smoother bar, fewer 1px artifacts
-    private val uiTickMs = 140L           // update cadence
-    private val rateUnitsPerSec = 200f    // lower = slower visual speed
+    private val runningAnims = mutableListOf<ObjectAnimator>()
 
     override fun onCreateView(inflater: LayoutInflater, c: ViewGroup?, s: Bundle?): View {
         _vb = FragmentScanBinding.inflate(inflater, c, false)
@@ -55,69 +44,31 @@ class ScanFragment : Fragment() {
         job = viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
             try {
                 // init ui
-                vb.progress.isIndeterminate = false
-                vb.progress.max = progressMax
-                vb.progress.setProgressCompat(0, false)
-                vb.percent.text = getString(R.string.percent_format, 0)
-                vb.foundCount.text = getString(R.string.found_count_start)
+                vb.totalLabel.text = getString(R.string.total_files_label)
+                vb.totalCount.text = getString(R.string.total_files_count, 0)
 
-                // ticker: advance at capped rate, never exceed realUnits
-                val ticker = launch(Dispatchers.Main) {
-                    var last = SystemClock.uptimeMillis()
-                    while (isActive) {
-                        val now = SystemClock.uptimeMillis()
-                        val dt = (now - last) / 1000f
-                        last = now
+                // start pulse halo (two out-of-phase rings)
+                startPulses()
 
-                        val stepUnits = (rateUnitsPerSec * dt).toInt().coerceAtLeast(1)
-                        displayedUnits = minOf(realUnits, displayedUnits + stepUnits)
-
-                        val pct = ((displayedUnits * 100f) / progressMax).toInt().coerceIn(0, 100)
-                        vb.progress.setProgressCompat(displayedUnits, true)
-                        vb.percent.text = getString(R.string.percent_format, pct)
-
-                        // keep "Found X" in sync with what the user sees
-                        val displayedFound = minOf(realFound, (displayedUnits * realTotal) / progressMax)
-                        vb.foundCount.text = getString(R.string.found_count, displayedFound)
-
-                        if (scanningDone && displayedUnits >= realUnits) break
-                        delay(uiTickMs)
-                    }
-
-                    // final clamp to current realUnits
-                    val finalPct = ((realUnits * 100f) / progressMax).toInt().coerceIn(0, 100)
-                    vb.progress.setProgressCompat(realUnits, true)
-                    vb.percent.text = getString(R.string.percent_format, finalPct)
-                    val finalFound = minOf(realFound, (realUnits * realTotal) / progressMax)
-                    vb.foundCount.text = getString(R.string.found_count, finalFound)
-                }
-
-                // run the scan on io; feed real progress
+                // scan and grab the true total; animate the number once to that total
                 val items = withContext(Dispatchers.IO) {
-                    MediaScanner(requireContext().applicationContext).scan { found, total ->
-                        realFound = found
-                        realTotal = if (total <= 0) 1 else total
-                        realUnits = ((realFound.toLong() * progressMax) / realTotal).toInt().coerceIn(0, progressMax)
+                    var totalSeen = 0
+                    MediaScanner(requireContext().applicationContext).scan { _, total ->
+                        if (totalSeen == 0 && total > 0) {
+                            totalSeen = total
+                            launch {
+                                animateCountTo(total)
+                            }
+                        }
                     }
                 }
 
-                // store results
                 vm.results = items
 
-                // ensure the bar visibly reaches 100% before leaving
-                realUnits = progressMax
-                scanningDone = true
-                ticker.join()
-
-                // snap to 100 without animation to avoid right-edge sliver
-                vb.progress.setProgressCompat(progressMax, false)
-                vb.percent.text = getString(R.string.percent_format, 100)
-                vb.foundCount.text = getString(R.string.found_count, realFound)
-
-                // brief pause at completion
+                // short dwell to let the total register
                 delay(300)
 
-                // navigate only if still on scan
+                // navigate
                 val current = findNavController().currentDestination?.id
                 if (isResumed && current == R.id.scanFragment) {
                     val opts = NavOptions.Builder()
@@ -134,13 +85,69 @@ class ScanFragment : Fragment() {
         }
     }
 
+    private suspend fun animateCountTo(target: Int) {
+        // quick, lightweight “odometer” count-up
+        val durationMs = 1000L
+        val frames = 60
+        val step = (durationMs / frames).coerceAtLeast(8)
+        var v = 0
+        while (v < target) {
+            v = (v + (target / frames).coerceAtLeast(1)).coerceAtMost(target)
+            vb.totalCount.text = getString(R.string.total_files_count, v)
+            delay(step)
+        }
+    }
+
+    private fun startPulses() {
+        fun pulse(view: View, delayMs: Long) {
+            val scaleX = ObjectAnimator.ofFloat(view, View.SCALE_X, 1f, 1.6f).apply {
+                duration = 1200
+                interpolator = FastOutSlowInInterpolator()
+                repeatCount = ObjectAnimator.INFINITE
+                repeatMode = ObjectAnimator.RESTART
+                startDelay = delayMs
+            }
+            val scaleY = ObjectAnimator.ofFloat(view, View.SCALE_Y, 1f, 1.6f).apply {
+                duration = 1200
+                interpolator = FastOutSlowInInterpolator()
+                repeatCount = ObjectAnimator.INFINITE
+                repeatMode = ObjectAnimator.RESTART
+                startDelay = delayMs
+            }
+            val alpha = ObjectAnimator.ofFloat(view, View.ALPHA, 0.28f, 0f).apply {
+                duration = 1200
+                interpolator = LinearInterpolator()
+                repeatCount = ObjectAnimator.INFINITE
+                repeatMode = ObjectAnimator.RESTART
+                startDelay = delayMs
+            }
+            runningAnims += listOf(scaleX, scaleY, alpha)
+            scaleX.start(); scaleY.start(); alpha.start()
+        }
+        pulse(vb.pulse1, 0)
+        pulse(vb.pulse2, 600) // staggered for a continuous wave
+    }
+
+    private fun stopPulses() {
+        runningAnims.forEach { it.cancel() }
+        runningAnims.clear()
+        vb.pulse1.alpha = 0f
+        vb.pulse1.scaleX = 1f
+        vb.pulse1.scaleY = 1f
+        vb.pulse2.alpha = 0f
+        vb.pulse2.scaleX = 1f
+        vb.pulse2.scaleY = 1f
+    }
+
     private fun cancel() {
         job?.cancel()
+        stopPulses()
         requireActivity().onBackPressedDispatcher.onBackPressed()
     }
 
     override fun onDestroyView() {
         job?.cancel()
+        stopPulses()
         _vb = null
         super.onDestroyView()
     }
