@@ -2,6 +2,10 @@
 
 ## Changelog
 
+### 0.8.1
+- fix: prevented scan-screen crash by launching the count animation on the main (UI) thread
+- fix: initialized total count label to "0" in layout (no formatted placeholder at inflate)
+
 ### 0.8.0
 - replaced the progress bar with a single animated total file count
 - added a subtle pulse halo behind the count for visual feedback
