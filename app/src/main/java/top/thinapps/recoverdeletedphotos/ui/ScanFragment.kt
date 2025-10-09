@@ -1,6 +1,7 @@
 package top.thinapps.recoverdeletedphotos.ui
 
 import android.animation.ObjectAnimator
+import android.animation.ValueAnimator
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -13,6 +14,7 @@ import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -29,6 +31,15 @@ class ScanFragment : Fragment() {
     private val vm: ScanViewModel by activityViewModels()
 
     private val runningAnims = mutableListOf<ObjectAnimator>()
+    private var countAnimator: ValueAnimator? = null
+
+    // pacing
+    private val COUNT_ANIM_MS = 3800L      // slower number ramp
+    private val POST_ANIM_DWELL_MS = 1200L // linger after finishing
+    private val PULSE_CYCLE_MS = 2800L     // slower halo
+
+    // signal when the count animation fully completes
+    private lateinit var countAnimDone: CompletableDeferred<Unit>
 
     override fun onCreateView(inflater: LayoutInflater, c: ViewGroup?, s: Bundle?): View {
         _vb = FragmentScanBinding.inflate(inflater, c, false)
@@ -46,8 +57,9 @@ class ScanFragment : Fragment() {
                 // init ui
                 vb.totalLabel.text = getString(R.string.total_files_label)
                 vb.totalCount.text = getString(R.string.total_files_count, 0)
+                countAnimDone = CompletableDeferred()
 
-                // start pulse halo (two out-of-phase rings)
+                // start pulse halo
                 startPulses()
 
                 // scan and grab the true total; animate the number once to that total
@@ -56,9 +68,9 @@ class ScanFragment : Fragment() {
                     MediaScanner(requireContext().applicationContext).scan { _, total ->
                         if (totalSeen == 0 && total > 0) {
                             totalSeen = total
-                            // launch the animator on MAIN, bound to the view lifecycle (fix)
+                            // animate on MAIN, bound to the view lifecycle
                             viewLifecycleOwner.lifecycleScope.launch {
-                                animateCountTo(total)
+                                animateCountTo(totalSeen)
                             }
                         }
                     }
@@ -66,10 +78,9 @@ class ScanFragment : Fragment() {
 
                 vm.results = items
 
-                // short dwell to let the total register
-                delay(300)
+                // wait for the count animation + dwell before navigating
+                countAnimDone.await()
 
-                // navigate
                 val current = findNavController().currentDestination?.id
                 if (isResumed && current == R.id.scanFragment) {
                     val opts = NavOptions.Builder()
@@ -87,36 +98,46 @@ class ScanFragment : Fragment() {
     }
 
     private suspend fun animateCountTo(target: Int) {
-        // quick, lightweight “odometer” count-up
-        val durationMs = 1000L
-        val frames = 60
-        val step = (durationMs / frames).coerceAtLeast(8)
-        var v = 0
-        while (v < target) {
-            v = (v + (target / frames).coerceAtLeast(1)).coerceAtMost(target)
-            vb.totalCount.text = getString(R.string.total_files_count, v)
-            delay(step)
+        // cancel any previous animator to avoid overlap
+        countAnimator?.cancel()
+
+        // smooth ease-out using FastOutSlowIn
+        countAnimator = ValueAnimator.ofInt(0, target).apply {
+            duration = COUNT_ANIM_MS
+            interpolator = FastOutSlowInInterpolator()
+            addUpdateListener { a ->
+                val v = a.animatedValue as Int
+                vb.totalCount.text = getString(R.string.total_files_count, v)
+            }
+            addListener(onEnd = {
+                // hold briefly so users register completion
+                viewLifecycleOwner.lifecycleScope.launch {
+                    delay(POST_ANIM_DWELL_MS)
+                    if (!countAnimDone.isCompleted) countAnimDone.complete(Unit)
+                }
+            })
         }
+        countAnimator?.start()
     }
 
     private fun startPulses() {
         fun pulse(view: View, delayMs: Long) {
             val scaleX = ObjectAnimator.ofFloat(view, View.SCALE_X, 1f, 1.6f).apply {
-                duration = 1200
+                duration = PULSE_CYCLE_MS
                 interpolator = FastOutSlowInInterpolator()
                 repeatCount = ObjectAnimator.INFINITE
                 repeatMode = ObjectAnimator.RESTART
                 startDelay = delayMs
             }
             val scaleY = ObjectAnimator.ofFloat(view, View.SCALE_Y, 1f, 1.6f).apply {
-                duration = 1200
+                duration = PULSE_CYCLE_MS
                 interpolator = FastOutSlowInInterpolator()
                 repeatCount = ObjectAnimator.INFINITE
                 repeatMode = ObjectAnimator.RESTART
                 startDelay = delayMs
             }
-            val alpha = ObjectAnimator.ofFloat(view, View.ALPHA, 0.28f, 0f).apply {
-                duration = 1200
+            val alpha = ObjectAnimator.ofFloat(view, View.ALPHA, 0.22f, 0f).apply {
+                duration = PULSE_CYCLE_MS
                 interpolator = LinearInterpolator()
                 repeatCount = ObjectAnimator.INFINITE
                 repeatMode = ObjectAnimator.RESTART
@@ -126,12 +147,15 @@ class ScanFragment : Fragment() {
             scaleX.start(); scaleY.start(); alpha.start()
         }
         pulse(vb.pulse1, 0)
-        pulse(vb.pulse2, 600) // staggered for a continuous wave
+        pulse(vb.pulse2, PULSE_CYCLE_MS / 2) // staggered for a continuous wave
     }
 
     private fun stopPulses() {
         runningAnims.forEach { it.cancel() }
         runningAnims.clear()
+        countAnimator?.cancel()
+        countAnimator = null
+
         vb.pulse1.alpha = 0f
         vb.pulse1.scaleX = 1f
         vb.pulse1.scaleY = 1f
