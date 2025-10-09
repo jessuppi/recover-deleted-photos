@@ -2,6 +2,12 @@
 
 ## Changelog
 
+### 0.8.3
+- cancel button now actually stops the scan mid-process rather than only closing the screen
+- cancel button now stops animations and returns home via the app nav path (not back actions)
+- cancel responds faster during large scans thanks to per-item cancellation checks and periodic yielding
+- canceling no longer shows a failure toast, avoiding confusion when stopping on purpose
+
 ### 0.8.2
 - slower scan count-up with a brief pause before navigation; softer pulse animation
 
