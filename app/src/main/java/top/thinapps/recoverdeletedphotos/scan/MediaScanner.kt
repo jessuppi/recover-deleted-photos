@@ -5,11 +5,14 @@ import android.content.ContentUris
 import android.provider.MediaStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.yield
+import kotlin.coroutines.coroutineContext
 import top.thinapps.recoverdeletedphotos.model.MediaItem
 
 class MediaScanner(private val context: Context) {
 
-    // emits real found and total so the UI can show "Found X files" and true percent
+    // emits real found and total so the ui can show "found x files" and true percent
     suspend fun scan(onProgress: (found: Int, total: Int) -> Unit): List<MediaItem> =
         withContext(Dispatchers.IO) {
             val out = mutableListOf<MediaItem>()
@@ -38,6 +41,8 @@ class MediaScanner(private val context: Context) {
 
                 var found = 0
                 while (c.moveToNext()) {
+                    if (!coroutineContext.isActive) break
+
                     val id = c.getLong(idIdx)
                     val contentUri = ContentUris.withAppendedId(uri, id)
                     val name = c.getString(nameIdx)
@@ -53,10 +58,14 @@ class MediaScanner(private val context: Context) {
                     )
 
                     found++
-                    onProgress(found, total) // per-row; UI throttles display rate
+                    onProgress(found, total)
+
+                    if (found % 64 == 0) {
+                        yield()
+                        if (!coroutineContext.isActive) break
+                    }
                 }
 
-                // final emission for any trailing UI catch-up
                 onProgress(found, total)
             }
 
