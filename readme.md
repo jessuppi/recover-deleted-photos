@@ -2,6 +2,10 @@
 
 ## Changelog
 
+### 0.8.0
+- replaced the progress bar with a single animated total file count
+- added a subtle pulse halo behind the count for visual feedback
+
 ### 0.7.8
 - scan: “Found X files” now increments in lockstep with the visible progress bar
 - scan: smoother, slower, truth-based bar (higher granularity + time-throttled updates)
