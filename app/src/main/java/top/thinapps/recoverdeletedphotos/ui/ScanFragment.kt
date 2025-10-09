@@ -56,7 +56,8 @@ class ScanFragment : Fragment() {
                     MediaScanner(requireContext().applicationContext).scan { _, total ->
                         if (totalSeen == 0 && total > 0) {
                             totalSeen = total
-                            launch {
+                            // launch the animator on MAIN, bound to the view lifecycle (fix)
+                            viewLifecycleOwner.lifecycleScope.launch {
                                 animateCountTo(total)
                             }
                         }
