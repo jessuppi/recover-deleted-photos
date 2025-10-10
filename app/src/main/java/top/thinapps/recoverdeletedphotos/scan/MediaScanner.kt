@@ -3,6 +3,8 @@ package top.thinapps.recoverdeletedphotos.scan
 import android.content.ContentUris
 import android.content.Context
 import android.net.Uri
+import android.os.Build
+import android.os.Bundle
 import android.provider.MediaStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.isActive
@@ -13,13 +15,7 @@ import top.thinapps.recoverdeletedphotos.model.MediaItem
 
 class MediaScanner(private val context: Context) {
 
-    /**
-     * Scans selected media types. Emits (found, total) so UI can show true progress.
-     *
-     * @param includeImages scan MediaStore.Images when true
-     * @param includeVideos scan MediaStore.Video when true
-     * @param includeAudio  scan MediaStore.Audio when true
-     */
+    // scans selected media types; includes trashed on api 30+; excludes pending always
     suspend fun scan(
         includeImages: Boolean,
         includeVideos: Boolean,
@@ -28,7 +24,7 @@ class MediaScanner(private val context: Context) {
     ): List<MediaItem> = withContext(Dispatchers.IO) {
         val out = mutableListOf<MediaItem>()
 
-        // Build which tables to query based on selection
+        // build which tables to query
         val queries = mutableListOf<QuerySpec>()
         if (includeImages) {
             queries += QuerySpec(
@@ -60,21 +56,25 @@ class MediaScanner(private val context: Context) {
 
         if (queries.isEmpty()) return@withContext emptyList<MediaItem>()
 
-        // Compute total across all selected sources; coerce >= 1 so UI math is safe
+        // compute total across selected sources using the same trash-inclusive query path
         val total = queries.sumOf { q ->
-            context.contentResolver.query(q.uri, arrayOf(q.id), null, null, null)
-                ?.use { it.count } ?: 0
+            context.contentResolver.query(
+                q.uri,
+                arrayOf(q.id),
+                trashExtras(sortCol = q.date),
+                null
+            )?.use { it.count } ?: 0
         }.coerceAtLeast(1)
 
         var found = 0
         for (q in queries) {
             val projection = arrayOf(q.id, q.name, q.size, q.date)
+
             context.contentResolver.query(
                 q.uri,
                 projection,
-                null,
-                null,
-                "${q.date} DESC"
+                trashExtras(sortCol = q.date),
+                null
             )?.use { c ->
                 val idIdx = c.getColumnIndexOrThrow(q.id)
                 val nameIdx = c.getColumnIndexOrThrow(q.name)
@@ -101,7 +101,7 @@ class MediaScanner(private val context: Context) {
                     found++
                     onProgress(found, total)
 
-                    // yield periodically so cancel is snappy and UI stays smooth
+                    // yield periodically so cancel is snappy and ui stays smooth
                     if ((found and 63) == 0) {
                         yield()
                         if (!coroutineContext.isActive) break
@@ -110,10 +110,33 @@ class MediaScanner(private val context: Context) {
             }
         }
 
-        // final emission for any trailing UI catch-up
+        // final emission for any trailing ui catch-up
         onProgress(found, total)
 
         out
+    }
+
+    // builds bundle extras that include trashed rows on api 30+ and keep pending excluded
+    private fun trashExtras(sortCol: String): Bundle? {
+        return if (Build.VERSION.SDK_INT >= 30) {
+            Bundle().apply {
+                putStringArray(
+                    android.content.ContentResolver.QUERY_ARG_SORT_COLUMNS,
+                    arrayOf(sortCol)
+                )
+                putInt(
+                    android.content.ContentResolver.QUERY_ARG_SORT_DIRECTION,
+                    android.content.ContentResolver.QUERY_SORT_DIRECTION_DESCENDING
+                )
+                putInt(
+                    MediaStore.QUERY_ARG_MATCH_TRASHED,
+                    MediaStore.MATCH_INCLUDE
+                )
+                // do not set QUERY_ARG_MATCH_PENDING so pending stays excluded
+            }
+        } else {
+            null
+        }
     }
 
     private data class QuerySpec(
