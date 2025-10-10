@@ -2,6 +2,12 @@
 
 ## Changelog
 
+### 0.10.0
+- added media-type picker on scan: Photos / Videos / Audio
+- scanner now queries Images, Video, and Audio files with accurate totals
+- permission prompts align with the selected media type (refined behavior)
+- updated layout and strings for the new selector and clearer “no media” messaging
+
 ### 0.9.1
 - prevent double starts and double navigation from permission callbacks or rotation
 - permission screen shows “Open Settings” when storage access is permanently denied
