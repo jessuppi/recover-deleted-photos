@@ -35,4 +35,47 @@
         android:text="@string/start_scan"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
+
+    <!-- media type picker (placed UNDER the Start Scan button) -->
+    <LinearLayout
+        android:id="@+id/homeTypeRow"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingTop="12dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/filter_type_label" />
+
+        <RadioGroup
+            android:id="@+id/homeTypeRadioGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/homeTypePhotos"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/type_photos"
+                android:checked="true"/>
+
+            <RadioButton
+                android:id="@+id/homeTypeVideos"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:text="@string/type_videos"/>
+
+            <RadioButton
+                android:id="@+id/homeTypeAudio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:text="@string/type_audio"/>
+        </RadioGroup>
+    </LinearLayout>
+
 </LinearLayout>
