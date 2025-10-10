@@ -2,11 +2,11 @@
 <manifest package="top.thinapps.recoverdeletedphotos"
     xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- android 13+ granular media permissions -->
-    <uses-permission-sdk-33 android:name="android.permission.READ_MEDIA_IMAGES" />
-    <uses-permission-sdk-33 android:name="android.permission.READ_MEDIA_VIDEO" />
+    <!-- Android 13+ granular media permissions -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
 
-    <!-- pre-android 13 fallback -->
+    <!-- Pre-Android 13 fallback -->
     <uses-permission
         android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
