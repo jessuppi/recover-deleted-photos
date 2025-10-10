@@ -2,6 +2,11 @@
 
 ## Changelog
 
+### 0.9.1
+- prevent double starts and double navigation from permission callbacks or rotation
+- permission screen shows “Open Settings” when storage access is permanently denied
+- least-privilege: request video access only when enabled via SCAN_VIDEO build flag
+
 ### 0.9.0
 - added Android 13+ media permissions with legacy fallback; scans start only after access is granted
 - added “permission needed,” “no media found,” and “scan error” screens with clear primary actions (grant, retry, home)
