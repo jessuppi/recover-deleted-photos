@@ -13,7 +13,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.LinearInterpolator
-import android.widget.RadioButton
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.animation.doOnEnd
 import androidx.core.content.ContextCompat
@@ -43,29 +42,35 @@ class ScanFragment : Fragment() {
     private var job: Job? = null
     private val vm: ScanViewModel by activityViewModels()
 
-    // keep references so we can cancel animations on destroy
+    // animations
     private val runningAnims = mutableListOf<ObjectAnimator>()
     private var countAnimator: ValueAnimator? = null
 
-    // timing knobs
+    // timing
     private val COUNT_ANIM_MS = 3800L
     private val POST_ANIM_DWELL_MS = 1200L
     private val PULSE_CYCLE_MS = 2800L
 
-    // gate so we don’t navigate until the animation + dwell completes
+    // gates
     private lateinit var countAnimDone: CompletableDeferred<Unit>
-
-    // start/nav guards
     private var started = false
     private var navigating = false
 
-    // permission launcher (requests are built from the selected type)
+    // media type from Home (default PHOTOS)
+    private val selectedType: TypeChoice by lazy {
+        when (arguments?.getString("type")) {
+            "VIDEOS" -> TypeChoice.VIDEOS
+            "AUDIO"  -> TypeChoice.AUDIO
+            else     -> TypeChoice.PHOTOS
+        }
+    }
+
+    // permission launcher for selected type
     private val requestPerm = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
-        val type = currentType()
-        val wanted = requiredPerms(type)
+        val wanted = requiredPerms(selectedType)
         val granted = wanted.all { result[it] == true }
         if (granted) {
-            if (!started) { started = true; start(type) }
+            if (!started) { started = true; start(selectedType) }
         } else {
             showPermissionState()
         }
@@ -79,20 +84,7 @@ class ScanFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         vb.cancelButton.setOnClickListener { cancel() }
 
-        // default selection (Photos)
-        vb.typePhotos?.isChecked = true
-
-        // when the user switches type (before starting), reflect permission state
-        listOfNotNull(vb.typePhotos, vb.typeVideos, vb.typeAudio).forEach { rb: RadioButton ->
-            rb.setOnCheckedChangeListener { _, _ ->
-                if (!started) {
-                    val t = currentType()
-                    if (!hasPermission(t)) showPermissionState() else showScanUI(true)
-                }
-            }
-        }
-
-        val t = currentType()
+        val t = selectedType
         if (hasPermission(t)) {
             if (!started) { started = true; start(t) }
         } else {
@@ -100,16 +92,10 @@ class ScanFragment : Fragment() {
         }
     }
 
-    private fun currentType(): TypeChoice = when {
-        vb.typeVideos?.isChecked == true -> TypeChoice.VIDEOS
-        vb.typeAudio?.isChecked == true  -> TypeChoice.AUDIO
-        else                             -> TypeChoice.PHOTOS
-    }
+    // ---------- permissions ----------
 
-    // ---- permissions ----
-
-    private fun requiredPerms(type: TypeChoice): Array<String> {
-        return if (Build.VERSION.SDK_INT < 33) {
+    private fun requiredPerms(type: TypeChoice): Array<String> =
+        if (Build.VERSION.SDK_INT < 33) {
             arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
         } else {
             when (type) {
@@ -118,14 +104,11 @@ class ScanFragment : Fragment() {
                 TypeChoice.AUDIO  -> arrayOf(Manifest.permission.READ_MEDIA_AUDIO)
             }
         }
-    }
 
-    private fun hasPermission(type: TypeChoice): Boolean {
-        val perms = requiredPerms(type)
-        return perms.all { p ->
+    private fun hasPermission(type: TypeChoice): Boolean =
+        requiredPerms(type).all { p ->
             ContextCompat.checkSelfPermission(requireContext(), p) == PackageManager.PERMISSION_GRANTED
         }
-    }
 
     private fun permanentlyDenied(type: TypeChoice): Boolean {
         if (Build.VERSION.SDK_INT < 33) {
@@ -137,22 +120,20 @@ class ScanFragment : Fragment() {
         return !anyShow && !hasPermission(type)
     }
 
-    // ---- flow ----
+    // ---------- flow ----------
 
     private fun start(type: TypeChoice) {
         showScanUI(true)
-        // view-tied scope prevents leaks if user leaves mid-scan
         job = viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
             try {
-                // init ui
+                // init UI
                 vb.totalLabel.text = getString(R.string.total_files_label)
                 vb.totalCount.text = getString(R.string.total_files_count, 0)
                 countAnimDone = CompletableDeferred()
 
-                // cosmetic pulse (two rings, out of phase)
                 startPulses()
 
-                // run scan on io; use first total to kick the counter animation
+                // scan on IO; kick the counter when first total arrives
                 val items = withContext(Dispatchers.IO) {
                     var totalSeen = 0
                     MediaScanner(requireContext().applicationContext).scan(
@@ -162,39 +143,29 @@ class ScanFragment : Fragment() {
                     ) { _, total ->
                         if (totalSeen == 0 && total > 0) {
                             totalSeen = total
-                            // launch animator on main, bound to lifecycle
-                            viewLifecycleOwner.lifecycleScope.launch {
-                                animateCountTo(totalSeen)
-                            }
+                            viewLifecycleOwner.lifecycleScope.launch { animateCountTo(totalSeen) }
                         }
                     }
                 }
 
-                // no media found state
                 if (items.isEmpty()) {
                     stopPulses()
                     showNoMediaState()
                     return@launch
                 }
 
-                // pass results to vm for next screen
                 vm.results = items
 
-                // wait for count animation + dwell before navigating
                 countAnimDone.await()
 
-                // navigate if still on this fragment with guard
                 val current = findNavController().currentDestination?.id
                 if (!navigating && isResumed && current == R.id.scanFragment) {
                     navigating = true
                     vb.cancelButton.isEnabled = false
-                    val opts = NavOptions.Builder()
-                        .setPopUpTo(R.id.scanFragment, true)
-                        .build()
+                    val opts = NavOptions.Builder().setPopUpTo(R.id.scanFragment, true).build()
                     findNavController().navigate(R.id.action_scan_to_results, null, opts)
                 }
             } catch (t: Throwable) {
-                // ignore user-initiated cancel
                 if (t is CancellationException) return@launch
                 stopPulses()
                 showErrorState()
@@ -203,10 +174,7 @@ class ScanFragment : Fragment() {
     }
 
     private suspend fun animateCountTo(target: Int) {
-        // cancel any previous animator to avoid overlap
         countAnimator?.cancel()
-
-        // smooth ease-out count using valueanimator
         countAnimator = ValueAnimator.ofInt(0, target).apply {
             duration = COUNT_ANIM_MS
             interpolator = FastOutSlowInInterpolator()
@@ -215,7 +183,6 @@ class ScanFragment : Fragment() {
                 vb.totalCount.text = getString(R.string.total_files_count, v)
             }
             doOnEnd {
-                // linger so the number registers, then unblock navigation
                 viewLifecycleOwner.lifecycleScope.launch {
                     delay(POST_ANIM_DWELL_MS)
                     if (!countAnimDone.isCompleted) countAnimDone.complete(Unit)
@@ -226,7 +193,6 @@ class ScanFragment : Fragment() {
     }
 
     private fun startPulses() {
-        // two repeating halo pulses (scale + fade) out of phase
         fun pulse(view: View, delayMs: Long) {
             val scaleX = ObjectAnimator.ofFloat(view, View.SCALE_X, 1f, 1.6f).apply {
                 duration = PULSE_CYCLE_MS
@@ -257,7 +223,6 @@ class ScanFragment : Fragment() {
     }
 
     private fun stopPulses() {
-        // cancel animations and reset halo views
         runningAnims.forEach { it.cancel() }
         runningAnims.clear()
         countAnimator?.cancel()
@@ -271,7 +236,6 @@ class ScanFragment : Fragment() {
     }
 
     private fun cancel() {
-        // stop scan and animations then deterministically go home
         job?.cancel()
         stopPulses()
         val nav = findNavController()
@@ -288,7 +252,7 @@ class ScanFragment : Fragment() {
         }
     }
 
-    // ---- UI state toggles ----
+    // ---------- UI state toggles ----------
 
     private fun showScanUI(show: Boolean) {
         vb.scanContent.visibility = if (show) View.VISIBLE else View.GONE
@@ -300,16 +264,16 @@ class ScanFragment : Fragment() {
         showScanUI(false)
         vb.stateTitle.text = getString(R.string.perm_required_title)
         vb.stateMessage.text = getString(R.string.perm_required_msg)
-        val type = currentType()
-        vb.statePrimary.text = if (permanentlyDenied(type)) getString(R.string.open_settings) else getString(R.string.perm_grant)
+        val t = selectedType
+        vb.statePrimary.text = if (permanentlyDenied(t)) getString(R.string.open_settings) else getString(R.string.perm_grant)
         vb.statePrimary.setOnClickListener {
-            if (permanentlyDenied(type)) {
+            if (permanentlyDenied(t)) {
                 val i = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
                     data = Uri.fromParts("package", requireContext().packageName, null)
                 }
                 startActivity(i)
             } else {
-                requestPerm.launch(requiredPerms(type))
+                requestPerm.launch(requiredPerms(t))
             }
         }
         vb.stateSecondary.apply {
@@ -325,7 +289,7 @@ class ScanFragment : Fragment() {
         vb.stateMessage.text = getString(R.string.no_media_msg)
         vb.statePrimary.text = getString(R.string.retry)
         vb.statePrimary.setOnClickListener {
-            val t = currentType()
+            val t = selectedType
             if (hasPermission(t)) {
                 if (!started) { started = true }
                 start(t)
@@ -344,7 +308,7 @@ class ScanFragment : Fragment() {
         vb.stateMessage.text = getString(R.string.scan_error_msg)
         vb.statePrimary.text = getString(R.string.retry)
         vb.statePrimary.setOnClickListener {
-            val t = currentType()
+            val t = selectedType
             if (hasPermission(t)) {
                 if (!started) { started = true }
                 start(t)
