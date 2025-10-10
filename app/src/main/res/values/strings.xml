@@ -6,6 +6,12 @@
     <string name="filter_videos">Videos</string>
     <string name="filter_audio">Audio</string>
 
+    <!-- media type selector (0.10.0) -->
+    <string name="filter_type_label">File type</string>
+    <string name="type_photos">Photos</string>
+    <string name="type_videos">Videos</string>
+    <string name="type_audio">Audio</string>
+
     <!-- home screen -->
     <string name="home_title">Recover Deleted Photos</string>
     <string name="home_subtitle">Scan your device and preview recoverable media</string>
@@ -43,7 +49,7 @@
     <string name="open_settings">Open Settings</string>
 
     <string name="no_media_title">No media found</string>
-    <string name="no_media_msg">We couldn’t find any images on this device.</string>
+    <string name="no_media_msg">We couldn’t find any media for this selection.</string>
 
     <string name="retry">Retry</string>
     <string name="go_home">Home</string>
