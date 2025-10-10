@@ -1,6 +1,11 @@
 <resources>
     <string name="app_name">Recover Deleted Photos</string>
 
+    <!-- filters -->
+    <string name="filter_photos">Photos</string>
+    <string name="filter_videos">Videos</string>
+    <string name="filter_audio">Audio</string>
+
     <!-- media type selector -->
     <string name="filter_type_label">File type</string>
     <string name="type_photos">Photos</string>
