@@ -2,6 +2,10 @@
 
 ## Changelog
 
+### 0.10.2
+- removed media-type radios from the scan screen (now it lives only on Home)
+- show type-specific header (“Total photos/videos/audio on device”) during scanning
+
 ### 0.10.1
 - media-type selection moved to Home screen (Photos / Videos / Audio)
 - scan now uses a single type nav arg from Home; no in-scan toggles
