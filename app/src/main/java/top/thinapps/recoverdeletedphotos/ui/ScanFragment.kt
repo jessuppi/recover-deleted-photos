@@ -128,7 +128,12 @@ class ScanFragment : Fragment() {
         job = viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
             try {
                 // init UI
-                vb.totalLabel.text = getString(R.string.total_files_label)
+                vb.totalLabel.text = when (type) {
+                    TypeChoice.PHOTOS -> getString(R.string.total_photos_label)
+                    TypeChoice.VIDEOS -> getString(R.string.total_videos_label)
+                    TypeChoice.AUDIO  -> getString(R.string.total_audio_label)
+                }
+
                 vb.totalCount.text = getString(R.string.total_files_count, 0)
                 countAnimDone = CompletableDeferred()
 
