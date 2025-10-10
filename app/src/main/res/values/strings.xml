@@ -1,12 +1,7 @@
 <resources>
     <string name="app_name">Recover Deleted Photos</string>
 
-    <!-- filters -->
-    <string name="filter_photos">Photos</string>
-    <string name="filter_videos">Videos</string>
-    <string name="filter_audio">Audio</string>
-
-    <!-- media type selector (0.10.0) -->
+    <!-- media type selector -->
     <string name="filter_type_label">File type</string>
     <string name="type_photos">Photos</string>
     <string name="type_videos">Videos</string>
@@ -14,7 +9,7 @@
 
     <!-- home screen -->
     <string name="home_title">Recover Deleted Photos</string>
-    <string name="home_subtitle">Scan your device and preview recoverable media</string>
+    <string name="home_subtitle">Scan your device automatically for deleted and hidden media</string>
     <string name="start_scan">Start Scan</string>
 
     <!-- scan screen -->
@@ -23,23 +18,23 @@
     <string name="percent_format">%1$d%%</string>
     <string name="found_count_start">Found 0 files</string>
     <string name="found_count">Found %1$d files</string>
-    <string name="total_files_label">Total files on device</string>
-    <string name="total_photos_label">Total photos on device</string>
-    <string name="total_videos_label">Total videos on device</string>
-    <string name="total_audio_label">Total audio files on device</string>
+    <string name="total_files_label">Total files scanned</string>
+    <string name="total_photos_label">Total photos found</string>
+    <string name="total_videos_label">Total videos found</string>
+    <string name="total_audio_label">Total audio files found</string>
     <string name="total_files_count">%1$,d</string>
     <string name="cancel">Cancel</string>
-    <string name="perms_denied">Permissions are required to scan media</string>
+    <string name="perms_denied">Storage permission is required to scan your device</string>
 
     <!-- results screen -->
     <string name="results_title">Results</string>
-    <string name="empty_art">No results found</string>
+    <string name="empty_art">No recoverable media found</string>
     <string name="recover_selected">Recover Selected</string>
     <string name="recover_selected_count">Recover Selected (%1$d)</string>
 
     <!-- sorting options -->
-    <string name="sort_newest_first">Newest date first</string>
-    <string name="sort_oldest_first">Oldest date first</string>
+    <string name="sort_newest_first">Newest first</string>
+    <string name="sort_oldest_first">Oldest first</string>
     <string name="sort_largest_first">Largest first</string>
     <string name="sort_smallest_first">Smallest first</string>
     <string name="sort_name_az_full">Name A → Z</string>
@@ -47,16 +42,16 @@
 
     <!-- permission/empty/error states -->
     <string name="perm_required_title">Permission needed</string>
-    <string name="perm_required_msg">Allow media access to scan your device.</string>
+    <string name="perm_required_msg">Allow media access so we can scan all folders including hidden ones.</string>
     <string name="perm_grant">Grant</string>
     <string name="open_settings">Open Settings</string>
 
-    <string name="no_media_title">No media found</string>
-    <string name="no_media_msg">We couldn’t find any media for this selection.</string>
+    <string name="no_media_title">Nothing found</string>
+    <string name="no_media_msg">No deleted or hidden files were detected on this device.</string>
 
     <string name="retry">Retry</string>
     <string name="go_home">Home</string>
 
     <string name="scan_error_title">Scan error</string>
-    <string name="scan_error_msg">Something went wrong while scanning.</string>
+    <string name="scan_error_msg">Something went wrong while scanning your storage.</string>
 </resources>
