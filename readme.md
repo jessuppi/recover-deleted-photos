@@ -2,6 +2,11 @@
 
 ## Changelog
 
+### 0.10.1
+- media-type selection moved to Home screen (Photos / Videos / Audio)
+- scan now uses a single type nav arg from Home; no in-scan toggles
+- removed unused SCAN_VIDEO build flag and related code cleanup
+
 ### 0.10.0
 - added media-type picker on scan: Photos / Videos / Audio
 - scanner now queries Images, Video, and Audio files with accurate totals
