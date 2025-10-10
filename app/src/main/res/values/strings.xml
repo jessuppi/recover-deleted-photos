@@ -35,4 +35,18 @@
     <string name="sort_smallest_first">Smallest first</string>
     <string name="sort_name_az_full">Name A → Z</string>
     <string name="sort_name_za_full">Name Z → A</string>
+
+    <!-- permission/empty/error states for 0.8.4 -->
+    <string name="perm_required_title">Permission needed</string>
+    <string name="perm_required_msg">Allow media access to scan your device.</string>
+    <string name="perm_grant">Grant</string>
+
+    <string name="no_media_title">No media found</string>
+    <string name="no_media_msg">We couldn’t find any images on this device.</string>
+
+    <string name="retry">Retry</string>
+    <string name="go_home">Home</string>
+
+    <string name="scan_error_title">Scan error</string>
+    <string name="scan_error_msg">Something went wrong while scanning.</string>
 </resources>
