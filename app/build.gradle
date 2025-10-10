@@ -71,6 +71,9 @@ dependencies {
     // image loading
     implementation "io.coil-kt:coil:2.7.0"
 
+    // saf / documentfile for hidden/.nomedia crawl
+    implementation "androidx.documentfile:documentfile:1.0.1"
+
     // optional but helpful for future expansion / backward compatibility
     implementation "androidx.preference:preference-ktx:1.2.1"
     implementation "androidx.annotation:annotation:1.8.2"
