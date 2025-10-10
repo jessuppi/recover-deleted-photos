@@ -2,6 +2,14 @@
 
 ## Changelog
 
+### 0.11.0
+- added full-device scan combining MediaStore and SAF results with deduplication
+- SAF crawl is optional with one-time user grant and is non-blocking
+- includes trashed media on Android 11+ using QUERY_ARG_MATCH_TRASHED
+- includes hidden and .nomedia folders via DocumentFile (skips inaccessible /Android and external SD cards)
+- fixed MediaItem crash by removing context-based date formatting
+- refined scan strings UI text and improved cancel handling and pulse cleanup
+
 ### 0.10.2
 - removed media-type radios from the scan screen (now it lives only on Home)
 - show type-specific header (“Total photos/videos/audio on device”) during scanning
