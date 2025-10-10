@@ -2,6 +2,12 @@
 
 ## Changelog
 
+### 0.9.0
+- added Android 13+ media permissions with legacy fallback; scans start only after access is granted
+- added “permission needed,” “no media found,” and “scan error” screens with clear primary actions (grant, retry, home)
+- introduced a dedicated state container and toggle between state and scan views
+- during states, disabled scan/cancel; actions route back to scan or home via app nav path
+
 ### 0.8.3
 - cancel button now actually stops the scan mid-process rather than only closing the screen
 - cancel button now stops animations and returns home via the app nav path (not back actions)
