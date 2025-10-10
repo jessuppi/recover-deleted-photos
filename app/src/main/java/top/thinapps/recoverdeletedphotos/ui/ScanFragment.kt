@@ -4,7 +4,6 @@ import android.Manifest
 import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -107,7 +106,8 @@ class ScanFragment : Fragment() {
 
     private fun hasPermission(type: TypeChoice): Boolean =
         requiredPerms(type).all { p ->
-            ContextCompat.checkSelfPermission(requireContext(), p) == PackageManager.PERMISSION_GRANTED
+            ContextCompat.checkSelfPermission(requireContext(), p) ==
+                android.content.pm.PackageManager.PERMISSION_GRANTED
         }
 
     private fun permanentlyDenied(type: TypeChoice): Boolean {
