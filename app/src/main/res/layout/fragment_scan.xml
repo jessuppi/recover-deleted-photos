@@ -15,48 +15,6 @@
         android:orientation="vertical"
         android:gravity="center_horizontal">
 
-        <!-- media type picker (Photos / Videos / Audio) -->
-        <LinearLayout
-            android:id="@+id/typeRow"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingBottom="8dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/filter_type_label" />
-
-            <RadioGroup
-                android:id="@+id/typeRadioGroup"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <RadioButton
-                    android:id="@+id/typePhotos"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/type_photos"
-                    android:checked="true"/>
-
-                <RadioButton
-                    android:id="@+id/typeVideos"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="12dp"
-                    android:text="@string/type_videos"/>
-
-                <RadioButton
-                    android:id="@+id/typeAudio"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="12dp"
-                    android:text="@string/type_audio"/>
-            </RadioGroup>
-        </LinearLayout>
-
         <TextView
             android:id="@+id/totalLabel"
             android:layout_width="wrap_content"
