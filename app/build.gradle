@@ -10,8 +10,8 @@ android {
         applicationId "top.thinapps.recoverdeletedphotos"
         minSdk 21
         targetSdk 35
-        versionCode 27
-        versionName "0.9.1"
+        versionCode 28
+        versionName "0.10.0"
 
         // least-privilege flag: request video permission only when true
         buildConfigField "boolean", "SCAN_VIDEO", "false"
