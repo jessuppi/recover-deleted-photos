@@ -16,6 +16,13 @@
         android:id="@+id/scanFragment"
         android:name="top.thinapps.recoverdeletedphotos.ui.ScanFragment"
         android:label="@string/scan_title">
+
+        <!-- selected media type passed from Home (PHOTOS | VIDEOS | AUDIO) -->
+        <argument
+            android:name="type"
+            app:argType="string"
+            android:defaultValue="PHOTOS" />
+
         <action
             android:id="@+id/action_scan_to_results"
             app:destination="@id/resultsFragment" />
