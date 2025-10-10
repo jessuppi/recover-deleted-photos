@@ -1,14 +1,18 @@
 package top.thinapps.recoverdeletedphotos.ui
 
+import android.Manifest
 import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.LinearInterpolator
-import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.animation.doOnEnd
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
@@ -44,6 +48,16 @@ class ScanFragment : Fragment() {
     // gate so we don’t navigate until the animation + dwell completes
     private lateinit var countAnimDone: CompletableDeferred<Unit>
 
+    // permission launcher
+    private val requestPerm = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
+        val granted = needsVideo().let { needVideo ->
+            val img = result[permImages()] == true
+            val vid = !needVideo || result[permVideo()] == true
+            img && vid
+        }
+        if (granted) start() else showPermissionState()
+    }
+
     override fun onCreateView(inflater: LayoutInflater, c: ViewGroup?, s: Bundle?): View {
         _vb = FragmentScanBinding.inflate(inflater, c, false)
         return vb.root
@@ -51,10 +65,11 @@ class ScanFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         vb.cancelButton.setOnClickListener { cancel() }
-        start()
+        if (hasPermission()) start() else showPermissionState()
     }
 
     private fun start() {
+        showScanUI(true)
         // view-tied scope prevents leaks if user leaves mid-scan
         job = viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
             try {
@@ -80,6 +95,13 @@ class ScanFragment : Fragment() {
                     }
                 }
 
+                // no media found state
+                if (items.isEmpty()) {
+                    stopPulses()
+                    showNoMediaState()
+                    return@launch
+                }
+
                 // pass results to vm for next screen
                 vm.results = items
 
@@ -97,17 +119,8 @@ class ScanFragment : Fragment() {
             } catch (t: Throwable) {
                 // ignore user-initiated cancel
                 if (t is CancellationException) return@launch
-                if (isAdded) {
-                    Toast.makeText(requireContext(), "scan failed", Toast.LENGTH_SHORT).show()
-                    val nav = findNavController()
-                    if (!nav.popBackStack(R.id.homeFragment, false)) {
-                        nav.navigate(
-                            R.id.homeFragment,
-                            null,
-                            NavOptions.Builder().setPopUpTo(R.id.homeFragment, false).build()
-                        )
-                    }
-                }
+                stopPulses()
+                showErrorState()
             }
         }
     }
@@ -191,6 +204,81 @@ class ScanFragment : Fragment() {
                 null,
                 NavOptions.Builder().setPopUpTo(R.id.homeFragment, false).build()
             )
+        }
+    }
+
+    // permission helpers
+    private fun permImages() =
+        if (Build.VERSION.SDK_INT >= 33) Manifest.permission.READ_MEDIA_IMAGES
+        else Manifest.permission.READ_EXTERNAL_STORAGE
+
+    private fun permVideo() =
+        if (Build.VERSION.SDK_INT >= 33) Manifest.permission.READ_MEDIA_VIDEO
+        else Manifest.permission.READ_EXTERNAL_STORAGE
+
+    private fun needsVideo() = false // set true if you also scan videos
+
+    private fun hasPermission(): Boolean {
+        val img = ContextCompat.checkSelfPermission(requireContext(), permImages()) == PackageManager.PERMISSION_GRANTED
+        val vid = !needsVideo() || ContextCompat.checkSelfPermission(requireContext(), permVideo()) == PackageManager.PERMISSION_GRANTED
+        return img && vid
+    }
+
+    // ui state toggles
+    private fun showScanUI(show: Boolean) {
+        vb.scanContent.visibility = if (show) View.VISIBLE else View.GONE
+        vb.stateContainer.visibility = if (show) View.GONE else View.VISIBLE
+        vb.cancelButton.isEnabled = show
+    }
+
+    private fun showPermissionState() {
+        showScanUI(false)
+        vb.stateTitle.text = getString(R.string.perm_required_title)
+        vb.stateMessage.text = getString(R.string.perm_required_msg)
+        vb.statePrimary.text = getString(R.string.perm_grant)
+        vb.statePrimary.setOnClickListener {
+            val perms = if (Build.VERSION.SDK_INT >= 33) {
+                buildList {
+                    add(Manifest.permission.READ_MEDIA_IMAGES)
+                    if (needsVideo()) add(Manifest.permission.READ_MEDIA_VIDEO)
+                }.toTypedArray()
+            } else arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
+            requestPerm.launch(perms)
+        }
+        vb.stateSecondary.apply {
+            text = getString(R.string.go_home)
+            visibility = View.VISIBLE
+            setOnClickListener { findNavController().popBackStack(R.id.homeFragment, false) }
+        }
+    }
+
+    private fun showNoMediaState() {
+        showScanUI(false)
+        vb.stateTitle.text = getString(R.string.no_media_title)
+        vb.stateMessage.text = getString(R.string.no_media_msg)
+        vb.statePrimary.text = getString(R.string.retry)
+        vb.statePrimary.setOnClickListener {
+            if (hasPermission()) start() else showPermissionState()
+        }
+        vb.stateSecondary.apply {
+            text = getString(R.string.go_home)
+            visibility = View.VISIBLE
+            setOnClickListener { findNavController().popBackStack(R.id.homeFragment, false) }
+        }
+    }
+
+    private fun showErrorState() {
+        showScanUI(false)
+        vb.stateTitle.text = getString(R.string.scan_error_title)
+        vb.stateMessage.text = getString(R.string.scan_error_msg)
+        vb.statePrimary.text = getString(R.string.retry)
+        vb.statePrimary.setOnClickListener {
+            if (hasPermission()) start() else showPermissionState()
+        }
+        vb.stateSecondary.apply {
+            text = getString(R.string.go_home)
+            visibility = View.VISIBLE
+            setOnClickListener { findNavController().popBackStack(R.id.homeFragment, false) }
         }
     }
 
