@@ -7,49 +7,98 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/totalLabel"
-        android:layout_width="wrap_content"
+    <!-- scan ui content (toggled visible) -->
+    <LinearLayout
+        android:id="@+id/scanContent"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/total_files_label"
-        android:textAppearance="?attr/textAppearanceTitleMedium" />
-
-    <FrameLayout
-        android:id="@+id/pulseContainer"
-        android:layout_width="200dp"
-        android:layout_height="200dp"
-        android:layout_marginTop="12dp">
-
-        <View
-            android:id="@+id/pulse1"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:alpha="0.0"
-            android:background="@drawable/pulse_circle"/>
-
-        <View
-            android:id="@+id/pulse2"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:alpha="0.0"
-            android:background="@drawable/pulse_circle"/>
+        android:orientation="vertical"
+        android:gravity="center_horizontal">
 
         <TextView
-            android:id="@+id/totalCount"
+            android:id="@+id/totalLabel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="0"
-            android:textStyle="bold"
-            android:textSize="36sp"
-            android:fontFamily="monospace"/>
-    </FrameLayout>
+            android:text="@string/total_files_label"
+            android:textAppearance="?attr/textAppearanceTitleMedium" />
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/cancelButton"
-        style="@style/Widget.Material3.Button.OutlinedButton"
-        android:layout_marginTop="24dp"
-        android:text="@string/cancel"
+        <FrameLayout
+            android:id="@+id/pulseContainer"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:layout_marginTop="12dp">
+
+            <View
+                android:id="@+id/pulse1"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:alpha="0.0"
+                android:background="@drawable/pulse_circle"/>
+
+            <View
+                android:id="@+id/pulse2"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:alpha="0.0"
+                android:background="@drawable/pulse_circle"/>
+
+            <TextView
+                android:id="@+id/totalCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="0"
+                android:textStyle="bold"
+                android:textSize="36sp"
+                android:fontFamily="monospace"/>
+        </FrameLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/cancelButton"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_marginTop="24dp"
+            android:text="@string/cancel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+    </LinearLayout>
+
+    <!-- permission/empty/error state container (toggled visible) -->
+    <LinearLayout
+        android:id="@+id/stateContainer"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/stateTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?attr/textAppearanceHeadline6"/>
+
+        <TextView
+            android:id="@+id/stateMessage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingTop="8dp"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/statePrimary"
+            style="@style/Widget.Material3.Button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/stateSecondary"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:visibility="gone"/>
+    </LinearLayout>
+
 </LinearLayout>
