@@ -3,9 +3,12 @@ package top.thinapps.recoverdeletedphotos.ui
 import android.Manifest
 import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -26,6 +29,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import top.thinapps.recoverdeletedphotos.BuildConfig
 import top.thinapps.recoverdeletedphotos.R
 import top.thinapps.recoverdeletedphotos.databinding.FragmentScanBinding
 import top.thinapps.recoverdeletedphotos.scan.MediaScanner
@@ -48,6 +52,10 @@ class ScanFragment : Fragment() {
     // gate so we don’t navigate until the animation + dwell completes
     private lateinit var countAnimDone: CompletableDeferred<Unit>
 
+    // start/nav guards for 0.9.1
+    private var started = false
+    private var navigating = false
+
     // permission launcher
     private val requestPerm = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
         val granted = needsVideo().let { needVideo ->
@@ -55,7 +63,11 @@ class ScanFragment : Fragment() {
             val vid = !needVideo || result[permVideo()] == true
             img && vid
         }
-        if (granted) start() else showPermissionState()
+        if (granted) {
+            if (!started) { started = true; start() }
+        } else {
+            showPermissionState()
+        }
     }
 
     override fun onCreateView(inflater: LayoutInflater, c: ViewGroup?, s: Bundle?): View {
@@ -65,7 +77,11 @@ class ScanFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         vb.cancelButton.setOnClickListener { cancel() }
-        if (hasPermission()) start() else showPermissionState()
+        if (hasPermission()) {
+            if (!started) { started = true; start() }
+        } else {
+            showPermissionState()
+        }
     }
 
     private fun start() {
@@ -108,9 +124,11 @@ class ScanFragment : Fragment() {
                 // wait for count animation + dwell before navigating
                 countAnimDone.await()
 
-                // navigate if still on this fragment
+                // navigate if still on this fragment with guard
                 val current = findNavController().currentDestination?.id
-                if (isResumed && current == R.id.scanFragment) {
+                if (!navigating && isResumed && current == R.id.scanFragment) {
+                    navigating = true
+                    vb.cancelButton.isEnabled = false
                     val opts = NavOptions.Builder()
                         .setPopUpTo(R.id.scanFragment, true)
                         .build()
@@ -198,12 +216,16 @@ class ScanFragment : Fragment() {
         job?.cancel()
         stopPulses()
         val nav = findNavController()
-        if (!nav.popBackStack(R.id.homeFragment, false)) {
-            nav.navigate(
-                R.id.homeFragment,
-                null,
-                NavOptions.Builder().setPopUpTo(R.id.homeFragment, false).build()
-            )
+        if (!navigating) {
+            navigating = true
+            vb.cancelButton.isEnabled = false
+            if (!nav.popBackStack(R.id.homeFragment, false)) {
+                nav.navigate(
+                    R.id.homeFragment,
+                    null,
+                    NavOptions.Builder().setPopUpTo(R.id.homeFragment, false).build()
+                )
+            }
         }
     }
 
@@ -216,7 +238,8 @@ class ScanFragment : Fragment() {
         if (Build.VERSION.SDK_INT >= 33) Manifest.permission.READ_MEDIA_VIDEO
         else Manifest.permission.READ_EXTERNAL_STORAGE
 
-    private fun needsVideo() = false // set true if you also scan videos
+    // least-privilege: controlled by build flag
+    private fun needsVideo() = BuildConfig.SCAN_VIDEO
 
     private fun hasPermission(): Boolean {
         val img = ContextCompat.checkSelfPermission(requireContext(), permImages()) == PackageManager.PERMISSION_GRANTED
@@ -224,26 +247,40 @@ class ScanFragment : Fragment() {
         return img && vid
     }
 
+    private fun permanentlyDenied(): Boolean {
+        val needVid = needsVideo()
+        val showImg = shouldShowRequestPermissionRationale(permImages())
+        val showVid = !needVid || shouldShowRequestPermissionRationale(permVideo())
+        return !showImg && !showVid && !hasPermission()
+    }
+
     // ui state toggles
     private fun showScanUI(show: Boolean) {
         vb.scanContent.visibility = if (show) View.VISIBLE else View.GONE
         vb.stateContainer.visibility = if (show) View.GONE else View.VISIBLE
-        vb.cancelButton.isEnabled = show
+        vb.cancelButton.isEnabled = show && !navigating
     }
 
     private fun showPermissionState() {
         showScanUI(false)
         vb.stateTitle.text = getString(R.string.perm_required_title)
         vb.stateMessage.text = getString(R.string.perm_required_msg)
-        vb.statePrimary.text = getString(R.string.perm_grant)
+        vb.statePrimary.text = if (permanentlyDenied()) getString(R.string.open_settings) else getString(R.string.perm_grant)
         vb.statePrimary.setOnClickListener {
-            val perms = if (Build.VERSION.SDK_INT >= 33) {
-                buildList {
-                    add(Manifest.permission.READ_MEDIA_IMAGES)
-                    if (needsVideo()) add(Manifest.permission.READ_MEDIA_VIDEO)
-                }.toTypedArray()
-            } else arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
-            requestPerm.launch(perms)
+            if (permanentlyDenied()) {
+                val i = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                    data = Uri.fromParts("package", requireContext().packageName, null)
+                }
+                startActivity(i)
+            } else {
+                val perms = if (Build.VERSION.SDK_INT >= 33) {
+                    buildList {
+                        add(Manifest.permission.READ_MEDIA_IMAGES)
+                        if (needsVideo()) add(Manifest.permission.READ_MEDIA_VIDEO)
+                    }.toTypedArray()
+                } else arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
+                requestPerm.launch(perms)
+            }
         }
         vb.stateSecondary.apply {
             text = getString(R.string.go_home)
@@ -258,7 +295,10 @@ class ScanFragment : Fragment() {
         vb.stateMessage.text = getString(R.string.no_media_msg)
         vb.statePrimary.text = getString(R.string.retry)
         vb.statePrimary.setOnClickListener {
-            if (hasPermission()) start() else showPermissionState()
+            if (hasPermission()) {
+                if (!started) { started = true }
+                start()
+            } else showPermissionState()
         }
         vb.stateSecondary.apply {
             text = getString(R.string.go_home)
@@ -273,7 +313,10 @@ class ScanFragment : Fragment() {
         vb.stateMessage.text = getString(R.string.scan_error_msg)
         vb.statePrimary.text = getString(R.string.retry)
         vb.statePrimary.setOnClickListener {
-            if (hasPermission()) start() else showPermissionState()
+            if (hasPermission()) {
+                if (!started) { started = true }
+                start()
+            } else showPermissionState()
         }
         vb.stateSecondary.apply {
             text = getString(R.string.go_home)
