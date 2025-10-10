@@ -77,7 +77,7 @@
             android:id="@+id/stateTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="?attr/textAppearanceHeadline6"/>
+            android:textAppearance="?attr/textAppearanceTitleLarge"/>
 
         <TextView
             android:id="@+id/stateMessage"
