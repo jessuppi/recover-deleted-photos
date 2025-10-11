@@ -2,6 +2,11 @@
 
 ## Changelog
 
+### 0.12.0
+- removed SAF / hidden /.nomedia scanning; MediaStore-only scan (faster, simpler)
+- still includes trashed media via MediaStore; “Trash” badge retained
+- removed “Hidden” labeling and all SAF code/permissions
+
 ### 0.11.1
 - added small badges labeling trashed and hidden media in results
 - minor internal cleanup in ResultsFragment adapter binding and layout handling
