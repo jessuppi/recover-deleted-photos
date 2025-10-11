@@ -10,8 +10,8 @@ android {
         applicationId "top.thinapps.recoverdeletedphotos"
         minSdk 21
         targetSdk 35
-        versionCode 32
-        versionName "0.11.1"
+        versionCode 33
+        versionName "0.12.0"
     }
 
     signingConfigs {
@@ -70,9 +70,6 @@ dependencies {
 
     // image loading
     implementation "io.coil-kt:coil:2.7.0"
-
-    // saf / documentfile for hidden/.nomedia crawl
-    implementation "androidx.documentfile:documentfile:1.0.1"
 
     // optional but helpful for future expansion / backward compatibility
     implementation "androidx.preference:preference-ktx:1.2.1"
