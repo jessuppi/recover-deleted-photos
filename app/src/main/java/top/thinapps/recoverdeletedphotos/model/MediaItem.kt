@@ -13,8 +13,11 @@ data class MediaItem(
     val uri: Uri,
     val displayName: String?,
     val sizeBytes: Long,
-    val dateAddedSec: Long
+    val dateAddedSec: Long,
+    val origin: Origin = Origin.NORMAL
 ) : Parcelable {
+
+    enum class Origin { NORMAL, TRASHED, HIDDEN }
 
     val dateReadable: String
         get() = DateFormat.getDateInstance().format(Date(dateAddedSec * 1000))
@@ -26,7 +29,8 @@ data class MediaItem(
             uri = df.uri,
             displayName = df.name ?: "unknown",
             sizeBytes = df.length(),
-            dateAddedSec = df.lastModified() / 1000L
+            dateAddedSec = df.lastModified() / 1000L,
+            origin = Origin.HIDDEN
         )
     }
 }
