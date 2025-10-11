@@ -109,7 +109,7 @@ class ResultsFragment : Fragment() {
 
     private fun applySortAndShow(scrollToTop: Boolean = false) {
         val collator = Collator.getInstance(Locale.getDefault()).apply {
-            strength = Collator.PRIMARY
+            strength = Collator.PRIMARY // case/diacritics insensitive
         }
 
         fun nameKey(mi: MediaItem): String = mi.displayName ?: ""
@@ -197,23 +197,15 @@ class ResultsFragment : Fragment() {
             vb.name.text = item.displayName ?: "unknown"
             vb.meta.text = "${readableSize(item.sizeBytes)} • ${item.dateReadable}"
 
-            // badge (label only; no filters)
-            when (item.origin) {
-                MediaItem.Origin.TRASHED -> {
-                    vb.badge.text = itemView.context.getString(R.string.badge_trashed)
-                    vb.badge.background.setTint(
-                        ContextCompat.getColor(itemView.context, R.color.badge_trash)
-                    )
-                    vb.badge.visibility = View.VISIBLE
-                }
-                MediaItem.Origin.HIDDEN -> {
-                    vb.badge.text = itemView.context.getString(R.string.badge_hidden)
-                    vb.badge.background.setTint(
-                        ContextCompat.getColor(itemView.context, R.color.badge_hidden)
-                    )
-                    vb.badge.visibility = View.VISIBLE
-                }
-                else -> vb.badge.visibility = View.GONE
+            // badge (Trash only; Hidden removed in 0.12.0)
+            if (item.origin == MediaItem.Origin.TRASHED) {
+                vb.badge.text = itemView.context.getString(R.string.badge_trashed)
+                vb.badge.background.setTint(
+                    ContextCompat.getColor(itemView.context, R.color.badge_trash)
+                )
+                vb.badge.visibility = View.VISIBLE
+            } else {
+                vb.badge.visibility = View.GONE
             }
 
             // thumbnail
