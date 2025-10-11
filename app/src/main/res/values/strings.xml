@@ -37,6 +37,10 @@
     <string name="recover_selected">Recover Selected</string>
     <string name="recover_selected_count">Recover Selected (%1$d)</string>
 
+    <!-- result badges -->
+    <string name="badge_trashed">Trash</string>
+    <string name="badge_hidden">Hidden</string>
+
     <!-- sorting options -->
     <string name="sort_newest_first">Newest first</string>
     <string name="sort_oldest_first">Oldest first</string>
