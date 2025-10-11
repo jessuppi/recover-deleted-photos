@@ -77,11 +77,13 @@ class ScanFragment : Fragment() {
     // permission launcher for selected type
     private val requestPerm = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
         val wanted = requiredPerms(selectedType)
-        val granted = wanted.all { result[it] == true }
-        if (granted) {
-            if (!started) { started = true; start(selectedType) }
-        } else {
-            showPermissionState()
+        the@run {
+            val granted = wanted.all { result[it] == true }
+            if (granted) {
+                if (!started) { started = true; start(selectedType) }
+            } else {
+                showPermissionState()
+            }
         }
     }
 
@@ -236,15 +238,8 @@ class ScanFragment : Fragment() {
                     if (f.uri.toString().contains("/document/primary:Android/")) return@forEach
                     walk(f)
                 } else if (isMedia(f)) {
-                    out.add(
-                        MediaItem(
-                            id = f.uri.hashCode().toLong(),
-                            uri = f.uri,
-                            displayName = f.name ?: "unknown",
-                            sizeBytes = f.length(),
-                            dateAddedSec = (f.lastModified() / 1000L)
-                        )
-                    )
+                    // mark as HIDDEN via helper
+                    out.add(MediaItem.fromDocumentFile(f))
                 }
             }
         }
