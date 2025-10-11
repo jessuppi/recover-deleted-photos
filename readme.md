@@ -2,6 +2,9 @@
 
 ## Changelog
 
+### 0.13.0
+- recover button copies photos/videos to **Pictures/Recovered** and audio to **Music/Recovered** (no extra prompts)
+
 ### 0.12.0
 - removed SAF / hidden /.nomedia scanning; MediaStore-only scan (faster, simpler)
 - still includes trashed media via MediaStore; “Trash” badge retained
