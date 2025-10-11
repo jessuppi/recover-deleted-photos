@@ -4,7 +4,6 @@ import android.Manifest
 import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.content.Intent
-import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
@@ -17,7 +16,6 @@ import android.view.animation.LinearInterpolator
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.animation.doOnEnd
 import androidx.core.content.ContextCompat
-import androidx.documentfile.provider.DocumentFile
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
@@ -28,13 +26,11 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import top.thinapps.recoverdeletedphotos.R
 import top.thinapps.recoverdeletedphotos.databinding.FragmentScanBinding
-import top.thinapps.recoverdeletedphotos.model.MediaItem
 import top.thinapps.recoverdeletedphotos.scan.MediaScanner
 
 class ScanFragment : Fragment() {
@@ -60,11 +56,6 @@ class ScanFragment : Fragment() {
     private var started = false
     private var navigating = false
 
-    // storage for saf tree uri
-    private val prefs: SharedPreferences by lazy {
-        requireContext().getSharedPreferences("prefs", 0)
-    }
-
     // media type from Home (default PHOTOS)
     private val selectedType: TypeChoice by lazy {
         when (arguments?.getString("type")) {
@@ -77,23 +68,12 @@ class ScanFragment : Fragment() {
     // permission launcher for selected type
     private val requestPerm = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
         val wanted = requiredPerms(selectedType)
-        the@run {
-            val granted = wanted.all { result[it] == true }
-            if (granted) {
-                if (!started) { started = true; start(selectedType) }
-            } else {
-                showPermissionState()
-            }
+        val granted = wanted.all { result[it] == true }
+        if (granted) {
+            if (!started) { started = true; start(selectedType) }
+        } else {
+            showPermissionState()
         }
-    }
-
-    // pick a saf tree once to include hidden/.nomedia
-    private val safPicker = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { res ->
-        val uri = res.data?.data ?: return@registerForActivityResult
-        val flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
-        requireContext().contentResolver.takePersistableUriPermission(uri, flags)
-        prefs.edit().putString(KEY_SAF_TREE_URI, uri.toString()).apply()
-        // optional: user granted mid-scan; next scans will include hidden automatically
     }
 
     override fun onCreateView(inflater: LayoutInflater, c: ViewGroup?, s: Bundle?): View {
@@ -158,18 +138,7 @@ class ScanFragment : Fragment() {
                 countAnimDone = CompletableDeferred()
                 startPulses()
 
-                // start a saf crawl in parallel if we already have a persisted grant
-                val safUri = prefs.getString(KEY_SAF_TREE_URI, null)?.let { Uri.parse(it) }
-                val safDeferred = if (safUri != null) {
-                    val root = DocumentFile.fromTreeUri(requireContext(), safUri)
-                    async(Dispatchers.IO) { crawlHidden(root) }
-                } else {
-                    // first run: prompt once, but do not block the scan
-                    promptSafGrantNonBlocking()
-                    null
-                }
-
-                // run the mediascan (includes trashed, excludes pending)
+                // MediaStore-only scan (includes trashed on API 30+, excludes pending)
                 val items = withContext(Dispatchers.IO) {
                     var totalSeen = 0
                     MediaScanner(requireContext().applicationContext).scan(
@@ -184,17 +153,13 @@ class ScanFragment : Fragment() {
                     }
                 }
 
-                // if we had a saf grant, wait for crawl and merge
-                val hidden = safDeferred?.await() ?: emptyList()
-                val merged = mergeByUri(items, hidden)
-
-                if (merged.isEmpty()) {
+                if (items.isEmpty()) {
                     stopPulses()
                     showNoMediaState()
                     return@launch
                 }
 
-                vm.results = merged
+                vm.results = items
 
                 countAnimDone.await()
 
@@ -211,55 +176,6 @@ class ScanFragment : Fragment() {
                 showErrorState()
             }
         }
-    }
-
-    // ask once for a saf tree to include hidden/.nomedia; continue scanning regardless
-    private fun promptSafGrantNonBlocking() {
-        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
-            .putExtra("android.content.extra.SHOW_ADVANCED", true)
-            .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
-        safPicker.launch(intent)
-    }
-
-    // crawl hidden/.nomedia under the granted tree and return media items
-    private suspend fun crawlHidden(root: DocumentFile?): List<MediaItem> = withContext(Dispatchers.IO) {
-        if (root == null) return@withContext emptyList()
-        val out = ArrayList<MediaItem>(128)
-
-        fun isMedia(df: DocumentFile): Boolean {
-            val mime = df.type ?: return false
-            return mime.startsWith("image/") || mime.startsWith("video/") || mime.startsWith("audio/")
-        }
-
-        fun walk(dir: DocumentFile) {
-            dir.listFiles().forEach { f ->
-                if (f.isDirectory) {
-                    // skip restricted trees like /Android
-                    if (f.uri.toString().contains("/document/primary:Android/")) return@forEach
-                    walk(f)
-                } else if (isMedia(f)) {
-                    // mark as HIDDEN via helper
-                    out.add(MediaItem.fromDocumentFile(f))
-                }
-            }
-        }
-
-        walk(root)
-        out
-    }
-
-    // merge by uri, keeping first occurrence
-    private fun mergeByUri(a: List<MediaItem>, b: List<MediaItem>): List<MediaItem> {
-        if (b.isEmpty()) return a
-        val seen = HashSet<Uri>(a.size + b.size)
-        val out = ArrayList<MediaItem>(a.size + b.size)
-        a.forEach {
-            if (seen.add(it.uri)) out.add(it)
-        }
-        b.forEach {
-            if (seen.add(it.uri)) out.add(it)
-        }
-        return out
     }
 
     private suspend fun animateCountTo(target: Int) {
@@ -415,9 +331,5 @@ class ScanFragment : Fragment() {
         stopPulses()
         _vb = null
         super.onDestroyView()
-    }
-
-    companion object {
-        private const val KEY_SAF_TREE_URI = "saf_tree"
     }
 }
