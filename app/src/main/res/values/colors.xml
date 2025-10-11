@@ -6,13 +6,12 @@
     <color name="md_on_surface">#FF1C1B1F</color>
     <color name="md_outline">#FF79747E</color>
 
-    <!-- adaptive icon background (used by ic_launcher.xml) -->
+    <!-- adaptive icon background -->
     <color name="ic_launcher_background">#1976D2</color>
 
     <!-- selection highlight -->
     <color name="selection_highlight">#1A2196F3</color>
 
-    <!-- result badges -->
+    <!-- result badge -->
     <color name="badge_trash">#D93025</color>
-    <color name="badge_hidden">#5F6368</color>
 </resources>
