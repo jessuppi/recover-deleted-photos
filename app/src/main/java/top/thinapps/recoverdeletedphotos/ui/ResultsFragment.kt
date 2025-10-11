@@ -12,15 +12,18 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
+import kotlinx.coroutines.launch
 import top.thinapps.recoverdeletedphotos.R
 import top.thinapps.recoverdeletedphotos.databinding.FragmentResultsBinding
 import top.thinapps.recoverdeletedphotos.databinding.ItemMediaBinding
 import top.thinapps.recoverdeletedphotos.model.MediaItem
+import top.thinapps.recoverdeletedphotos.recover.Recovery
 import java.text.Collator
 import java.text.DecimalFormat
 import java.util.Locale
@@ -67,9 +70,19 @@ class ResultsFragment : Fragment() {
         // recover button stays disabled until something is selected
         updateRecoverButton()
 
+        // --- Recover Selected -> copy via MediaStore into Pictures/Recovered or Music/Recovered
         vb.recoverButton.setOnClickListener {
-            // placeholder for future recovery action
-            // iterate selectedIds for selected items
+            val chosen = adapter.currentList.filter { selectedIds.contains(it.id) }
+            if (chosen.isEmpty()) return@setOnClickListener
+
+            viewLifecycleOwner.lifecycleScope.launch {
+                val copied = Recovery.copyAll(requireContext(), chosen)
+                if (copied > 0) {
+                    selectedIds.clear()
+                    updateRecoverButton()
+                    // Optional: add a Snackbar/Toast if you want an explicit success message.
+                }
+            }
         }
     }
 
