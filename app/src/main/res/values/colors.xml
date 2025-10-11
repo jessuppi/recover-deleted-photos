@@ -11,4 +11,8 @@
 
     <!-- selection highlight -->
     <color name="selection_highlight">#1A2196F3</color>
+
+    <!-- result badges -->
+    <color name="badge_trash">#D93025</color>
+    <color name="badge_hidden">#5F6368</color>
 </resources>
