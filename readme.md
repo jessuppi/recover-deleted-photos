@@ -2,6 +2,10 @@
 
 ## Changelog
 
+### 0.11.1
+- added small badges labeling trashed and hidden media in results
+- minor internal cleanup in ResultsFragment adapter binding and layout handling
+
 ### 0.11.0
 - added full-device scan combining MediaStore and SAF results with deduplication
 - SAF crawl is optional with one-time user grant and is non-blocking
