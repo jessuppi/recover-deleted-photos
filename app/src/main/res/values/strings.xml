@@ -6,6 +6,12 @@
     <string name="filter_videos">Videos</string>
     <string name="filter_audio">Audio</string>
 
+    <!-- media type selector -->
+    <string name="filter_type_label">File type</string>
+    <string name="type_photos">Photos</string>
+    <string name="type_videos">Videos</string>
+    <string name="type_audio">Audio</string>
+
     <!-- home screen -->
     <string name="home_title">Recover Deleted Photos</string>
     <string name="home_subtitle">Scan your device automatically for deleted media</string>
@@ -17,6 +23,11 @@
     <string name="percent_format">%1$d%%</string>
     <string name="found_count_start">Found 0 files</string>
     <string name="found_count">Found %1$d files</string>
+    <string name="total_files_label">Total files scanned</string>
+    <string name="total_photos_label">Total photos found</string>
+    <string name="total_videos_label">Total videos found</string>
+    <string name="total_audio_label">Total audio files found</string>
+    <string name="total_files_count">%1$,d</string>
     <string name="cancel">Cancel</string>
     <string name="perms_denied">Storage permission is required to scan your device</string>
 
@@ -39,7 +50,7 @@
 
     <!-- permission/empty/error states -->
     <string name="perm_required_title">Permission needed</string>
-    <string name="perm_required_msg">Allow media access so we can scan all folders for deleted files.</string>
+    <string name="perm_required_msg">Allow media access so we can scan your device.</string>
     <string name="perm_grant">Grant</string>
     <string name="open_settings">Open Settings</string>
 
