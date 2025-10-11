@@ -2,7 +2,6 @@ package top.thinapps.recoverdeletedphotos.model
 
 import android.net.Uri
 import android.os.Parcelable
-import androidx.documentfile.provider.DocumentFile
 import kotlinx.parcelize.Parcelize
 import java.text.DateFormat
 import java.util.*
@@ -17,20 +16,9 @@ data class MediaItem(
     val origin: Origin = Origin.NORMAL
 ) : Parcelable {
 
-    enum class Origin { NORMAL, TRASHED, HIDDEN }
+    // only normal and trashed now
+    enum class Origin { NORMAL, TRASHED }
 
     val dateReadable: String
         get() = DateFormat.getDateInstance().format(Date(dateAddedSec * 1000))
-
-    companion object {
-        // build from a SAF DocumentFile so hidden/.nomedia files merge cleanly
-        fun fromDocumentFile(df: DocumentFile): MediaItem = MediaItem(
-            id = df.uri.hashCode().toLong(),
-            uri = df.uri,
-            displayName = df.name ?: "unknown",
-            sizeBytes = df.length(),
-            dateAddedSec = df.lastModified() / 1000L,
-            origin = Origin.HIDDEN
-        )
-    }
 }
