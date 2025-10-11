@@ -68,7 +68,11 @@ class MediaScanner(private val context: Context) {
 
         var found = 0
         for (q in queries) {
-            val projection = arrayOf(q.id, q.name, q.size, q.date)
+            // projection: add IS_TRASHED on API 30+ so we can tag origin
+            val projection = if (Build.VERSION.SDK_INT >= 30)
+                arrayOf(q.id, q.name, q.size, q.date, MediaStore.MediaColumns.IS_TRASHED)
+            else
+                arrayOf(q.id, q.name, q.size, q.date)
 
             context.contentResolver.query(
                 q.uri,
@@ -80,6 +84,8 @@ class MediaScanner(private val context: Context) {
                 val nameIdx = c.getColumnIndexOrThrow(q.name)
                 val sizeIdx = c.getColumnIndexOrThrow(q.size)
                 val dateIdx = c.getColumnIndexOrThrow(q.date)
+                val trashedIdx = if (Build.VERSION.SDK_INT >= 30)
+                    c.getColumnIndex(MediaStore.MediaColumns.IS_TRASHED) else -1
 
                 while (c.moveToNext()) {
                     if (!coroutineContext.isActive) break
@@ -89,13 +95,15 @@ class MediaScanner(private val context: Context) {
                     val name = c.getString(nameIdx)
                     val size = c.getLong(sizeIdx)
                     val dateAdded = c.getLong(dateIdx)
+                    val isTrashed = trashedIdx != -1 && c.getInt(trashedIdx) == 1
 
                     out += MediaItem(
                         id = id,
                         uri = uri,
                         displayName = name,
                         sizeBytes = size,
-                        dateAddedSec = dateAdded
+                        dateAddedSec = dateAdded,
+                        origin = if (isTrashed) MediaItem.Origin.TRASHED else MediaItem.Origin.NORMAL
                     )
 
                     found++
