@@ -8,6 +8,7 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.CompoundButton
 import android.widget.Spinner
+import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -108,7 +109,7 @@ class ResultsFragment : Fragment() {
 
     private fun applySortAndShow(scrollToTop: Boolean = false) {
         val collator = Collator.getInstance(Locale.getDefault()).apply {
-            strength = Collator.PRIMARY // case/diacritics insensitive
+            strength = Collator.PRIMARY
         }
 
         fun nameKey(mi: MediaItem): String = mi.displayName ?: ""
@@ -127,7 +128,6 @@ class ResultsFragment : Fragment() {
         vb.empty.isVisible = sorted.isEmpty()
         vb.list.isVisible = sorted.isNotEmpty()
 
-        // always jump to top after sorting (works regardless of layout timing)
         if (scrollToTop && sorted.isNotEmpty()) {
             (vb.list.layoutManager as? LinearLayoutManager)
                 ?.scrollToPositionWithOffset(0, 0)
@@ -153,7 +153,6 @@ class ResultsFragment : Fragment() {
     }
 
     override fun onDestroyView() {
-        // Clear results when leaving Results screen for privacy and to avoid stale re-entry.
         vm.results = emptyList()
         _vb = null
         super.onDestroyView()
@@ -198,6 +197,25 @@ class ResultsFragment : Fragment() {
             vb.name.text = item.displayName ?: "unknown"
             vb.meta.text = "${readableSize(item.sizeBytes)} • ${item.dateReadable}"
 
+            // badge (label only; no filters)
+            when (item.origin) {
+                MediaItem.Origin.TRASHED -> {
+                    vb.badge.text = itemView.context.getString(R.string.badge_trashed)
+                    vb.badge.background.setTint(
+                        ContextCompat.getColor(itemView.context, R.color.badge_trash)
+                    )
+                    vb.badge.visibility = View.VISIBLE
+                }
+                MediaItem.Origin.HIDDEN -> {
+                    vb.badge.text = itemView.context.getString(R.string.badge_hidden)
+                    vb.badge.background.setTint(
+                        ContextCompat.getColor(itemView.context, R.color.badge_hidden)
+                    )
+                    vb.badge.visibility = View.VISIBLE
+                }
+                else -> vb.badge.visibility = View.GONE
+            }
+
             // thumbnail
             vb.thumb.load(item.uri)
 
@@ -211,9 +229,7 @@ class ResultsFragment : Fragment() {
 
             // clicks toggle selection
             vb.root.setOnClickListener { onToggleSelect(item) }
-            vb.root.setOnLongClickListener {
-                onToggleSelect(item); true
-            }
+            vb.root.setOnLongClickListener { onToggleSelect(item); true }
 
             // optional checkbox support if present
             findOptionalCheckbox()?.let { check ->
