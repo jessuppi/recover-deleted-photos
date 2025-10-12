@@ -2,6 +2,10 @@
 
 ## Changelog
 
+### 0.13.2
+- removed unreliable “View Files” action after recovery to prevent file picker issues
+- added clear recovery confirmation message showing the destination folder name
+
 ### 0.13.1
 - added snackbar popup after successful recovery with “view files” button that opens recovered folder or first recovered file as fallback
 - recover button now disables during copy process to prevent duplicate operations
