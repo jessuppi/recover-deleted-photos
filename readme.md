@@ -2,6 +2,11 @@
 
 ## Changelog
 
+### 0.13.1
+- added snackbar popup after successful recovery with “view files” button that opens recovered folder or first recovered file as fallback
+- recover button now disables during copy process to prevent duplicate operations
+- clears selections and unhighlights items after recovery
+
 ### 0.13.0
 - recover button copies photos/videos to **Pictures/Recovered** and audio to **Music/Recovered** (no extra prompts)
 
