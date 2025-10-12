@@ -1,6 +1,9 @@
 package top.thinapps.recoverdeletedphotos.ui
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.provider.DocumentsContract
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -8,6 +11,7 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.CompoundButton
 import android.widget.Spinner
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -18,6 +22,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
 import top.thinapps.recoverdeletedphotos.R
 import top.thinapps.recoverdeletedphotos.databinding.FragmentResultsBinding
@@ -75,12 +80,31 @@ class ResultsFragment : Fragment() {
             val chosen = adapter.currentList.filter { selectedIds.contains(it.id) }
             if (chosen.isEmpty()) return@setOnClickListener
 
+            vb.recoverButton.isEnabled = false
+
             viewLifecycleOwner.lifecycleScope.launch {
-                val copied = Recovery.copyAll(requireContext(), chosen)
-                if (copied > 0) {
-                    selectedIds.clear()
-                    updateRecoverButton()
-                    // Optional: add a Snackbar/Toast if you want an explicit success message.
+                try {
+                    val copied = Recovery.copyAll(requireContext(), chosen)
+
+                    // Clear selection + unhighlight rows no matter what was copied
+                    clearSelectionAndRefresh()
+
+                    if (copied > 0) {
+                        // Decide which folder to open:
+                        val hasImageOrVideo = chosen.any {
+                            uriMimeStartsWith(it, "image/") || uriMimeStartsWith(it, "video/")
+                        }
+                        val relative = if (hasImageOrVideo) "Pictures/Recovered" else "Music/Recovered"
+
+                        // Fallback: any of the chosen URIs if folder open fails
+                        val anyUri = chosen.firstOrNull()?.uri
+
+                        showRecoveredSnack {
+                            openFolder(relativePath = relative, fallbackFile = anyUri)
+                        }
+                    }
+                } finally {
+                    vb.recoverButton.isEnabled = true
                 }
             }
         }
@@ -163,6 +187,61 @@ class ResultsFragment : Fragment() {
         } else {
             getString(R.string.recover_selected)
         }
+    }
+
+    // --- UI feedback helpers ---
+
+    private fun clearSelectionAndRefresh() {
+        if (selectedIds.isEmpty()) return
+        val toClear = selectedIds.toSet()
+        selectedIds.clear()
+        updateRecoverButton()
+        // Rebind just the rows that were selected to remove highlight/checkbox
+        adapter.currentList.forEachIndexed { index, item ->
+            if (item.id in toClear) adapter.notifyItemChanged(index)
+        }
+    }
+
+    private fun showRecoveredSnack(openFolder: () -> Unit) {
+        Snackbar.make(vb.root, "Recovered successfully", Snackbar.LENGTH_LONG)
+            .setAction("View files") { openFolder() }
+            .show()
+    }
+
+    private fun buildFolderUri(relativePath: String): Uri =
+        DocumentsContract.buildDocumentUri(
+            "com.android.externalstorage.documents",
+            "primary:$relativePath"
+        )
+
+    private fun openFolder(relativePath: String, fallbackFile: Uri?) {
+        val dirUri = buildFolderUri(relativePath)
+        val intent = Intent(Intent.ACTION_VIEW)
+            .setDataAndType(dirUri, DocumentsContract.Document.MIME_TYPE_DIR)
+            .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+
+        try {
+            startActivity(intent)
+        } catch (_: Exception) {
+            // Fallback: try to open any recovered file
+            if (fallbackFile != null) {
+                val view = Intent(Intent.ACTION_VIEW)
+                    .setData(fallbackFile)
+                    .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                try {
+                    startActivity(Intent.createChooser(view, "Open"))
+                } catch (_: Exception) {
+                    Toast.makeText(requireContext(), "No app to open file", Toast.LENGTH_SHORT).show()
+                }
+            } else {
+                Toast.makeText(requireContext(), "Couldn’t open folder", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun uriMimeStartsWith(item: MediaItem, prefix: String): Boolean {
+        val type = requireContext().contentResolver.getType(item.uri) ?: return false
+        return type.startsWith(prefix)
     }
 
     override fun onDestroyView() {
