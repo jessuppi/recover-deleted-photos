@@ -65,24 +65,16 @@ class ResultsFragment : Fragment() {
         vb.list.adapter = adapter
         vb.list.itemAnimator = DefaultItemAnimator()
 
-        // top-right menu toggle (list ⇄ grid)
         attachMenuToggle()
-
-        // optional sort dropdown if present in layout
         setupSortDropdownIfPresent()
 
-        // show first pass
         applySortAndShow()
-
-        // recover button stays disabled until something is selected
         updateRecoverButton()
 
-        // --- Recover Selected -> copy via MediaStore into Pictures/Recovered or Music/Recovered
         vb.recoverButton.setOnClickListener {
             val chosen = adapter.currentList.filter { selectedIds.contains(it.id) }
             if (chosen.isEmpty()) return@setOnClickListener
 
-            // In-progress feedback with a short dwell so users notice it
             vb.recoverButton.isEnabled = false
             vb.recoverButton.text = getString(R.string.recovering)
             val startMs = System.currentTimeMillis()
@@ -91,20 +83,14 @@ class ResultsFragment : Fragment() {
             viewLifecycleOwner.lifecycleScope.launch {
                 try {
                     val copied = Recovery.copyAll(requireContext(), chosen)
-
-                    // Clear selection + unhighlight rows regardless
                     clearSelectionAndRefresh()
-
                     if (copied > 0) {
-                        // Show destination-only message; no action button
                         val msg = buildDestMessage(chosen, copied)
                         Snackbar.make(vb.root, msg, Snackbar.LENGTH_LONG).show()
                     }
                 } finally {
-                    // ensure the "Recovering…" state is visible briefly
                     val elapsed = System.currentTimeMillis() - startMs
                     if (elapsed < MIN_DWELL_MS) delay(MIN_DWELL_MS - elapsed)
-
                     vb.recoverButton.isEnabled = true
                     updateRecoverButton()
                 }
@@ -126,10 +112,8 @@ class ResultsFragment : Fragment() {
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 if (menuItem.itemId == R.id.action_toggle_layout) {
                     useGrid = !useGrid
-                    (vb.list.layoutManager as? RecyclerView.LayoutManager)?.let {
-                        vb.list.layoutManager = buildLayoutManager()
-                    }
-                    adapter.notifyDataSetChanged() // simple, safe refresh
+                    vb.list.layoutManager = buildLayoutManager()
+                    adapter.notifyDataSetChanged()
                     requireActivity().invalidateOptionsMenu()
                     return true
                 }
@@ -140,7 +124,6 @@ class ResultsFragment : Fragment() {
 
     private fun buildLayoutManager(): RecyclerView.LayoutManager {
         return if (useGrid) {
-            // 3 columns phone, 4 on sw600dp if you want later via qualifiers
             GridLayoutManager(requireContext(), 3)
         } else {
             LinearLayoutManager(requireContext())
@@ -150,8 +133,8 @@ class ResultsFragment : Fragment() {
     private fun setupSortDropdownIfPresent() {
         val id = resources.getIdentifier("sortDropdown", "id", requireContext().packageName)
         if (id == 0) return
-
         val spinner = vb.root.findViewById<Spinner>(id) ?: return
+
         val labels = listOf(
             getString(R.string.sort_newest_first),
             getString(R.string.sort_oldest_first),
@@ -298,7 +281,7 @@ class ResultsFragment : Fragment() {
         }
     }
 
-    // ----- List item VH (existing layout) -----
+    // ----- List item VH -----
     class ListVH(
         private val vb: ItemMediaBinding,
         private val isSelected: (Long) -> Boolean,
@@ -309,7 +292,6 @@ class ResultsFragment : Fragment() {
             vb.name.text = item.displayName ?: "unknown"
             vb.meta.text = "${readableSize(item.sizeBytes)} • ${item.dateReadable}"
 
-            // badge (Trash only)
             if (item.origin == MediaItem.Origin.TRASHED) {
                 vb.badge.text = itemView.context.getString(R.string.badge_trashed)
                 vb.badge.background.setTint(
@@ -363,7 +345,7 @@ class ResultsFragment : Fragment() {
         }
     }
 
-    // ----- Grid item VH (new layout) -----
+    // ----- Grid item VH -----
     class GridVH(
         private val vb: ItemMediaGridBinding,
         private val isSelected: (Long) -> Boolean,
@@ -373,13 +355,11 @@ class ResultsFragment : Fragment() {
         fun bind(item: MediaItem) {
             vb.thumb.load(item.uri)
 
-            // badge (Trash only)
             if (item.origin == MediaItem.Origin.TRASHED) {
                 vb.badge.text = itemView.context.getString(R.string.badge_trashed)
                 vb.badge.visibility = View.VISIBLE
             } else vb.badge.visibility = View.GONE
 
-            // caption (filename, single line)
             vb.caption.text = item.displayName ?: "unknown"
 
             val selected = isSelected(item.id)
