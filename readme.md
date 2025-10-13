@@ -2,6 +2,9 @@
 
 ## Changelog
 
+### 0.13.4
+- snackbar message now anchors above the recover button for cleaner visual alignment
+
 ### 0.13.3
 - added temporary "Recovering..." state to button for clear progress feedback
 - recovery button reverts to normal after completion while keeping existing snackbar behavior
