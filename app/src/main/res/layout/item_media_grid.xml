@@ -2,34 +2,48 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:foreground="?attr/selectableItemBackgroundBorderless"
-    android:padding="4dp">
+    android:padding="4dp"
+    android:foreground="?attr/selectableItemBackgroundBorderless">
 
+    <!-- square thumbnail -->
     <ImageView
-        android:id="@+id/imageThumb"
+        android:id="@+id/thumb"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:scaleType="centerCrop"
-        app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintDimensionRatio="1:1"
+        tools:src="@drawable/ic_launcher_foreground"
+        tools:ignore="ContentDescription" />
 
-    <!-- selection check overlay (grid mode) -->
-    <ImageView
-        android:id="@+id/checkOverlay"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:layout_margin="6dp"
+    <!-- overlay view for selection highlight -->
+    <View
+        android:id="@+id/overlay"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="#66000000"
         android:visibility="gone"
-        android:contentDescription="@null"
-        android:src="@drawable/bg_check_circle"
-        app:layout_constraintTop_toTopOf="@id/imageThumb"
-        app:layout_constraintEnd_toEndOf="@id/imageThumb" />
+        app:layout_constraintTop_toTopOf="@id/thumb"
+        app:layout_constraintBottom_toBottomOf="@id/thumb"
+        app:layout_constraintStart_toStartOf="@id/thumb"
+        app:layout_constraintEnd_toEndOf="@id/thumb" />
 
-    <!-- optional badge (e.g., Trash) -->
+    <!-- check mark overlay -->
+    <com.google.android.material.checkbox.MaterialCheckBox
+        android:id="@+id/check"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="6dp"
+        app:useMaterialThemeColors="true"
+        app:layout_constraintTop_toTopOf="@id/thumb"
+        app:layout_constraintEnd_toEndOf="@id/thumb" />
+
+    <!-- trash badge -->
     <TextView
         android:id="@+id/badge"
         android:layout_width="wrap_content"
@@ -39,11 +53,26 @@
         android:paddingEnd="6dp"
         android:paddingTop="2dp"
         android:paddingBottom="2dp"
-        android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+        android:text="@string/badge_trashed"
+        android:textSize="12sp"
         android:textColor="@android:color/white"
         android:background="@drawable/bg_badge_round"
         android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="@id/imageThumb"
-        app:layout_constraintStart_toStartOf="@id/imageThumb" />
+        app:layout_constraintBottom_toBottomOf="@id/thumb"
+        app:layout_constraintStart_toStartOf="@id/thumb" />
+
+    <!-- filename caption -->
+    <TextView
+        android:id="@+id/caption"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textSize="12sp"
+        app:layout_constraintTop_toBottomOf="@id/thumb"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:text="IMG_20251014_123456.jpg" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
