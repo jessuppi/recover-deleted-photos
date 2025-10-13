@@ -2,6 +2,11 @@
 
 ## Changelog
 
+### 0.13.3
+- added temporary "Recovering..." state to button for clear progress feedback
+- recovery button reverts to normal after completion while keeping existing snackbar behavior
+- improved user experience during longer recovery operations
+
 ### 0.13.2
 - removed unreliable “View Files” action after recovery to prevent file picker issues
 - added clear recovery confirmation message showing the destination folder name
