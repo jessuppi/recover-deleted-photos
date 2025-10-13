@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 import top.thinapps.recoverdeletedphotos.R
 import top.thinapps.recoverdeletedphotos.databinding.FragmentResultsBinding
 import top.thinapps.recoverdeletedphotos.databinding.ItemMediaBinding
@@ -76,7 +77,12 @@ class ResultsFragment : Fragment() {
             val chosen = adapter.currentList.filter { selectedIds.contains(it.id) }
             if (chosen.isEmpty()) return@setOnClickListener
 
+            // In-progress feedback with a short dwell so users notice it
             vb.recoverButton.isEnabled = false
+            vb.recoverButton.text = getString(R.string.recovering)
+            val startMs = System.currentTimeMillis()
+            val MIN_DWELL_MS = 800L
+
             viewLifecycleOwner.lifecycleScope.launch {
                 try {
                     val copied = Recovery.copyAll(requireContext(), chosen)
@@ -90,7 +96,12 @@ class ResultsFragment : Fragment() {
                         Snackbar.make(vb.root, msg, Snackbar.LENGTH_LONG).show()
                     }
                 } finally {
+                    // ensure the "Recovering…" state is visible briefly
+                    val elapsed = System.currentTimeMillis() - startMs
+                    if (elapsed < MIN_DWELL_MS) delay(MIN_DWELL_MS - elapsed)
+
                     vb.recoverButton.isEnabled = true
+                    updateRecoverButton()
                 }
             }
         }
