@@ -36,6 +36,7 @@
     <string name="empty_art">No recoverable media found</string>
     <string name="recover_selected">Recover Selected</string>
     <string name="recover_selected_count">Recover Selected (%1$d)</string>
+    <string name="recovering">Recovering…</string>
 
     <!-- result badges -->
     <string name="badge_trashed">Trash</string>
