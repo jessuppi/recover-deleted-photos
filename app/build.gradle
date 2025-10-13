@@ -45,6 +45,7 @@ android {
 
     kotlinOptions {
         jvmTarget = "17"
+        // Kotlin 2.0.0 compatible; no extra flags needed
     }
 }
 
