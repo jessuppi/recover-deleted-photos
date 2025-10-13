@@ -12,11 +12,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # clone repository files
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # write gradle signing properties before gradle runs
       - name: Write Gradle signing properties
         run: |
           set -euo pipefail
@@ -28,7 +26,6 @@ jobs:
             echo "RELEASE_KEY_PASSWORD=${{ secrets.RELEASE_KEY_PASSWORD }}"
           } > "$HOME/.gradle/gradle.properties"
 
-      # install java 17 (temurin) for gradle builds
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
@@ -36,15 +33,12 @@ jobs:
           java-version: 17
           cache: gradle
 
-      # install android sdk and required tools
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
-      # remove broken gradle wrapper jar if it exists
       - name: Clean any leftover/broken wrapper
         run: rm -f gradle/wrapper/gradle-wrapper.jar
 
-      # download gradle 8.9 for consistent builds
       - name: Download Gradle 8.9
         run: |
           set -euo pipefail
@@ -52,30 +46,43 @@ jobs:
           unzip -q gradle.zip
           echo "$PWD/gradle-8.9/bin" >> "$GITHUB_PATH"
 
-      # generate gradle wrapper for version 8.9
       - name: Generate Gradle Wrapper (8.9)
         run: gradle wrapper --gradle-version 8.9
 
-      # make gradlew executable for ci
       - name: Make Gradle executable
         run: chmod +x gradlew
 
-      # decode and restore keystore from github secret
       - name: Restore keystore from secret
         run: |
           set -euo pipefail
           echo "${{ secrets.RELEASE_KEYSTORE }}" | base64 --decode > "$HOME/keystore/upload-key.jks"
 
-      # build signed release bundle with detailed logging
+      - name: Diagnose Kotlin compile (verbose)
+        run: |
+          ./gradlew --no-daemon --stacktrace --debug --info --warning-mode all \
+            --rerun-tasks :app:compileReleaseKotlin
+
       - name: Build signed Release bundle
         run: ./gradlew --no-daemon --stacktrace --info clean bundleRelease
 
-      # verify aab signature integrity
       - name: Verify AAB signature
         run: jarsigner -verify app/build/outputs/bundle/release/app-release.aab
 
-      # upload final aab artifact to github actions
+      - name: Upload build logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gradle-and-kotlin-logs
+          path: |
+            **/build/reports/**
+            **/build/tmp/kotlin-compile*/**
+            ~/.gradle/daemon/*/daemon-*.out.log
+            ~/.gradle/caches/**/kotlin/**
+            ./**/build/outputs/logs/**
+            ./**/build/*/reports/**
+
       - name: Upload AAB artifact
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: app-release
