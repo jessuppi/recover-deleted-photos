@@ -7,6 +7,7 @@
 - new grid layout with square thumbnails, overlaid checkboxes, and trash badges
 - preserved all existing sort and selection actions in the top-right menu
 - maintained current snackbar messages and recovery logic for consistent UX
+- aligned Kotlin and Gradle dependencies to version 2.0.0
 
 ### 0.13.4
 - snackbar message now anchors above the recover button for cleaner visual alignment
