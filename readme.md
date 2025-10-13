@@ -2,6 +2,12 @@
 
 ## Changelog
 
+### 0.14.0
+- added list / grid view toggle on results screen for flexible browsing
+- new grid layout with square thumbnails, overlaid checkboxes, and trash badges
+- preserved all existing sort and selection actions in the top-right menu
+- maintained current snackbar messages and recovery logic for consistent UX
+
 ### 0.13.4
 - snackbar message now anchors above the recover button for cleaner visual alignment
 
