@@ -2,54 +2,48 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:foreground="?attr/selectableItemBackgroundBorderless"
+    android:padding="4dp">
 
-    <!-- Square thumbnail that fills the cell -->
     <ImageView
-        android:id="@+id/thumb"
+        android:id="@+id/imageThumb"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:scaleType="centerCrop"
         app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        tools:src="@drawable/ic_launcher_foreground" />
+        app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Optional badge (e.g., Trash). Hidden by default. -->
-    <TextView
-        android:id="@+id/badge"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:paddingStart="8dp"
-        android:paddingEnd="8dp"
-        android:paddingTop="4dp"
-        android:paddingBottom="4dp"
-        android:background="@drawable/bg_badge_round"
-        android:textColor="@android:color/white"
-        android:textSize="12sp"
-        android:visibility="gone"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:text="Trash"
-        tools:visibility="visible" />
-
-    <!-- Optional top-right check indicator (if you add grid selection later) -->
+    <!-- selection check overlay (grid mode) -->
     <ImageView
         android:id="@+id/checkOverlay"
         android:layout_width="24dp"
         android:layout_height="24dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginTop="8dp"
-        android:background="@drawable/bg_check_circle"
+        android:layout_margin="6dp"
         android:visibility="gone"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:visibility="gone" />
+        android:contentDescription="@null"
+        android:src="@drawable/bg_check_circle"
+        app:layout_constraintTop_toTopOf="@id/imageThumb"
+        app:layout_constraintEnd_toEndOf="@id/imageThumb" />
+
+    <!-- optional badge (e.g., Trash) -->
+    <TextView
+        android:id="@+id/badge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="6dp"
+        android:paddingStart="6dp"
+        android:paddingEnd="6dp"
+        android:paddingTop="2dp"
+        android:paddingBottom="2dp"
+        android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+        android:textColor="@android:color/white"
+        android:background="@drawable/bg_badge_round"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@id/imageThumb"
+        app:layout_constraintStart_toStartOf="@id/imageThumb" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
