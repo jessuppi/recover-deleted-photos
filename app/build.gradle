@@ -45,11 +45,27 @@ android {
 
     kotlinOptions {
         jvmTarget = "17"
-        // Kotlin 2.0.0 compatible; no extra flags needed
+    }
+}
+
+/**
+ * Force all Kotlin artifacts (stdlib/jdk7/jdk8/parcelize/etc.) to one version
+ * to avoid mix of 1.8.x/1.9.x/2.0.x on the classpath.
+ */
+configurations.all {
+    resolutionStrategy.eachDependency { details ->
+        if (details.requested.group == "org.jetbrains.kotlin") {
+            details.useVersion "1.9.24"
+            details.because "Align all Kotlin dependencies to 1.9.24"
+        }
     }
 }
 
 dependencies {
+    // Kotlin BOM to align transitive Kotlin modules; stdlib pulls from the BOM
+    implementation platform("org.jetbrains.kotlin:kotlin-bom:1.9.24")
+    implementation "org.jetbrains.kotlin:kotlin-stdlib"
+
     // core + ui foundation
     implementation "androidx.core:core-ktx:1.15.0"
     implementation "androidx.appcompat:appcompat:1.7.0"
