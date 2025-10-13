@@ -93,7 +93,9 @@ class ResultsFragment : Fragment() {
                     if (copied > 0) {
                         // Show destination-only message; no action button
                         val msg = buildDestMessage(chosen, copied)
-                        Snackbar.make(vb.root, msg, Snackbar.LENGTH_LONG).show()
+                        Snackbar.make(vb.root, msg, Snackbar.LENGTH_LONG)
+                            .setAnchorView(vb.recoverButton)
+                            .show()
                     }
                 } finally {
                     // ensure the "Recovering…" state is visible briefly
