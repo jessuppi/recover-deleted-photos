@@ -67,4 +67,8 @@
     <!-- recovery confirmation -->
     <string name="recover_success_single">Recovered %1$d file(s) to %2$s</string>
     <string name="recover_success_multi">Recovered %1$d file(s) to %2$s and %3$s</string>
+
+    <!-- layout toggle -->
+    <string name="action_view_grid">Grid</string>
+    <string name="action_view_list">List</string>
 </resources>
