@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="0dp"
+    android:layout_margin="4dp"
+    android:foreground="?attr/selectableItemBackground"
+    android:layout_gravity="center">
+
+    <!-- Square cell: enforce by using a ratio via placeholder container -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_gravity="center">
+
+        <ImageView
+            android:id="@+id/thumb"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:scaleType="centerCrop"
+            android:contentDescription="@null"
+            app:layout_constraintDimensionRatio="1:1"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <!-- subtle overlay for selection -->
+        <View
+            android:id="@+id/overlay"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="#33000000"
+            android:visibility="gone"
+            app:layout_constraintTop_toTopOf="@id/thumb"
+            app:layout_constraintBottom_toBottomOf="@id/thumb"
+            app:layout_constraintStart_toStartOf="@id/thumb"
+            app:layout_constraintEnd_toEndOf="@id/thumb"/>
+
+        <!-- badge, small pill -->
+        <TextView
+            android:id="@+id/badge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:paddingTop="2dp"
+            android:paddingBottom="2dp"
+            android:textAppearance="?attr/textAppearanceLabelSmall"
+            android:textColor="@android:color/white"
+            android:background="@drawable/bg_badge_round"
+            android:visibility="gone"
+            app:layout_constraintTop_toTopOf="@id/thumb"
+            app:layout_constraintStart_toStartOf="@id/thumb"
+            android:layout_margin="6dp"/>
+
+        <!-- checkbox in top-right -->
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/check"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="@drawable/bg_check_circle"
+            android:buttonTint="@color/md_seed"
+            android:checked="false"
+            app:layout_constraintTop_toTopOf="@id/thumb"
+            app:layout_constraintEnd_toEndOf="@id/thumb"
+            android:layout_margin="6dp"/>
+
+        <!-- caption at bottom -->
+        <TextView
+            android:id="@+id/caption"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:padding="6dp"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:textAppearance="?attr/textAppearanceBodySmall"
+            android:textColor="@android:color/white"
+            android:background="#66000000"
+            app:layout_constraintStart_toStartOf="@id/thumb"
+            app:layout_constraintEnd_toEndOf="@id/thumb"
+            app:layout_constraintBottom_toBottomOf="@id/thumb"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</FrameLayout>
