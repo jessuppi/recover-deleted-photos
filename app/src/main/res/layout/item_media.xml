@@ -48,6 +48,20 @@
         app:layout_constraintEnd_toEndOf="parent"
         tools:text="3.4 MB • Oct 14, 2025" />
 
+    <!-- subtle selection overlay (toggled by ResultsFragment) -->
+    <View
+        android:id="@+id/overlay"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="#33000000"
+        android:visibility="gone"
+        android:clickable="false"
+        android:focusable="false"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
     <!-- trash badge (overlay, hidden by default; required as vb.badge) -->
     <TextView
         android:id="@+id/badge"
