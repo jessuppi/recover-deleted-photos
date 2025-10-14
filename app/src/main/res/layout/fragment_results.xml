@@ -5,13 +5,24 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- sort dropdown used by resultsfragment to sort by date, size, or name -->
-    <Spinner
-        android:id="@+id/sortDropdown"
+    <!-- sort/filter bar background -->
+    <LinearLayout
+        android:id="@+id/sortBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:prompt="@string/results_title" />
+        android:orientation="horizontal"
+        android:padding="8dp"
+        android:background="?attr/colorSurfaceVariant"
+        android:elevation="2dp"
+        android:layout_marginBottom="8dp">
+
+        <!-- sort dropdown used by resultsfragment to sort by date, size, or name -->
+        <Spinner
+            android:id="@+id/sortDropdown"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:prompt="@string/results_title" />
+    </LinearLayout>
 
     <FrameLayout
         android:layout_width="match_parent"
