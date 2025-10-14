@@ -247,7 +247,7 @@ class ResultsFragment : Fragment() {
                 // bind thumbnail/caption here if you already load them elsewhere
                 // selection overlay
                 val selected = isSelected(item.id)
-                b.overlay.isVisible = selected
+                b.root.findViewById<View>(R.id.overlay)?.isVisible = selected
                 b.check.setOnCheckedChangeListener(null)
                 b.check.isChecked = selected
                 b.check.setOnCheckedChangeListener { _, _ -> onToggleSelect(item) }
@@ -260,7 +260,7 @@ class ResultsFragment : Fragment() {
         private inner class GridVH(private val b: ItemMediaGridBinding) : RecyclerView.ViewHolder(b.root) {
             fun bind(item: MediaItem) {
                 val selected = isSelected(item.id)
-                b.overlay.isVisible = selected
+                b.root.findViewById<View>(R.id.overlay)?.isVisible = selected
                 b.check.setOnCheckedChangeListener(null)
                 b.check.isChecked = selected
                 b.check.setOnCheckedChangeListener { _, _ -> onToggleSelect(item) }
