@@ -2,6 +2,13 @@
 
 ## Changelog
 
+### 0.14.1
+- decoupled the list/grid toggle from sorting so each works independently
+- replaced the triple-dot overflow icon with standard list and grid icons
+- fixed the menu item to always show the toggle icon using the proper namespace
+- updated ResultsFragment to handle layout switching separately from sorting, including icon refresh and layout updates
+- cleaned up adapter and menu handling code for consistency
+
 ### 0.14.0
 - added list / grid view toggle on results screen for flexible browsing
 - new grid layout with square thumbnails, overlaid checkboxes, and trash badges
