@@ -34,7 +34,7 @@ class ResultsFragment : Fragment() {
 
     private val vm: ScanViewModel by activityViewModels()
 
-    private var useGrid = false
+    private var useGrid = true
     private val selectedIds = linkedSetOf<Long>()
     private lateinit var adapter: MediaAdapter
 
