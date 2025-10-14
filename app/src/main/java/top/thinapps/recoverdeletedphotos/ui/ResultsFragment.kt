@@ -1,12 +1,7 @@
 package top.thinapps.recoverdeletedphotos.ui
 
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.core.view.MenuHost
@@ -35,16 +30,10 @@ class ResultsFragment : Fragment() {
 
     private val vm: ScanViewModel by activityViewModels()
 
-    // layout toggle is session-only
     private var useGrid = false
-
-    // selection
     private val selectedIds = linkedSetOf<Long>()
-
-    // adapter
     private lateinit var adapter: MediaAdapter
 
-    // sort modes are internal here and do not affect the layout toggle
     private enum class Sort { DATE_DESC, DATE_ASC, SIZE_DESC, SIZE_ASC, NAME_ASC, NAME_DESC }
     private var currentSort: Sort = Sort.DATE_DESC
 
@@ -56,7 +45,6 @@ class ResultsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // adapter
         adapter = MediaAdapter(
             isGrid = { useGrid },
             onToggleSelect = { item -> toggleSelection(item) },
@@ -64,23 +52,16 @@ class ResultsFragment : Fragment() {
         )
         vb.list.adapter = adapter
         updateLayoutManager()
-
-        // set data
         applySortAndShow()
 
-        // empty indicator
         vb.empty.isVisible = adapter.itemCount == 0
-
-        // recover button
         updateRecoverButton()
+
         vb.recoverButton.setOnClickListener {
             val chosen = adapter.currentList.filter { selectedIds.contains(it.id) }
             if (chosen.isEmpty()) return@setOnClickListener
-
-            // fake work on io just to illustrate independence; real recovery stays as before
             vb.recoverButton.isEnabled = false
             CoroutineScope(Dispatchers.IO).launch {
-                // perform your recovery routine here
                 CoroutineScope(Dispatchers.Main).launch {
                     selectedIds.clear()
                     updateRecoverButton()
@@ -90,7 +71,6 @@ class ResultsFragment : Fragment() {
             }
         }
 
-        // sort dropdown controls only sorting
         val sortLabels = listOf(
             "date (newest first)",
             "date (oldest first)",
@@ -115,7 +95,6 @@ class ResultsFragment : Fragment() {
             override fun onNothingSelected(parent: AdapterView<*>?) = Unit
         }
 
-        // menu host for the layout toggle only; no sorting logic here
         val menuHost: MenuHost = requireActivity()
         menuHost.addMenuProvider(object : MenuProvider {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
@@ -123,6 +102,7 @@ class ResultsFragment : Fragment() {
                 menuInflater.inflate(R.menu.menu_results, menu)
                 refreshToggleMenuIcon(menu.findItem(R.id.action_toggle_layout))
             }
+
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 return when (menuItem.itemId) {
                     R.id.action_toggle_layout -> {
@@ -131,24 +111,6 @@ class ResultsFragment : Fragment() {
                         refreshToggleMenuIcon(menuItem)
                         true
                     }
-                    // the following are independent overflow actions if you keep them
-                    R.id.action_select_all -> {
-                        selectedIds.clear()
-                        adapter.currentList.forEach { selectedIds.add(it.id) }
-                        updateRecoverButton()
-                        adapter.notifyDataSetChanged()
-                        true
-                    }
-                    R.id.action_clear_selection -> {
-                        selectedIds.clear()
-                        updateRecoverButton()
-                        adapter.notifyDataSetChanged()
-                        true
-                    }
-                    // keep these as no-ops here because sort is controlled by the spinner bar
-                    R.id.action_sort_date,
-                    R.id.action_sort_size,
-                    R.id.action_sort_name -> true
                     else -> false
                 }
             }
@@ -168,7 +130,6 @@ class ResultsFragment : Fragment() {
 
     private fun updateLayoutManager() {
         vb.list.layoutManager = if (useGrid) {
-            // 3 columns looks sane; tweak if you had a specific value previously
             GridLayoutManager(requireContext(), 3)
         } else {
             LinearLayoutManager(requireContext())
@@ -179,10 +140,10 @@ class ResultsFragment : Fragment() {
         val base = vm.results
         val sorted = when (currentSort) {
             Sort.DATE_DESC -> base.sortedByDescending { it.dateAddedSec }
-            Sort.DATE_ASC  -> base.sortedBy { it.dateAddedSec }
+            Sort.DATE_ASC -> base.sortedBy { it.dateAddedSec }
             Sort.SIZE_DESC -> base.sortedByDescending { it.sizeBytes }
-            Sort.SIZE_ASC  -> base.sortedBy { it.sizeBytes }
-            Sort.NAME_ASC  -> base.sortedBy { it.displayName ?: "" }
+            Sort.SIZE_ASC -> base.sortedBy { it.sizeBytes }
+            Sort.NAME_ASC -> base.sortedBy { it.displayName ?: "" }
             Sort.NAME_DESC -> base.sortedByDescending { it.displayName ?: "" }
         }
         adapter.submitList(sorted)
@@ -211,7 +172,6 @@ class ResultsFragment : Fragment() {
         _vb = null
     }
 
-    // simple two-layout adapter; view type reflects current grid/list flag
     private inner class MediaAdapter(
         private val isGrid: () -> Boolean,
         private val onToggleSelect: (MediaItem) -> Unit,
@@ -244,14 +204,11 @@ class ResultsFragment : Fragment() {
 
         private inner class ListVH(private val b: ItemMediaBinding) : RecyclerView.ViewHolder(b.root) {
             fun bind(item: MediaItem) {
-                // bind thumbnail/caption here if you already load them elsewhere
-                // selection overlay
                 val selected = isSelected(item.id)
                 b.root.findViewById<View>(R.id.overlay)?.isVisible = selected
                 b.check.setOnCheckedChangeListener(null)
                 b.check.isChecked = selected
                 b.check.setOnCheckedChangeListener { _, _ -> onToggleSelect(item) }
-
                 b.root.setOnClickListener { onToggleSelect(item) }
                 b.root.setOnLongClickListener { onToggleSelect(item); true }
             }
@@ -264,7 +221,6 @@ class ResultsFragment : Fragment() {
                 b.check.setOnCheckedChangeListener(null)
                 b.check.isChecked = selected
                 b.check.setOnCheckedChangeListener { _, _ -> onToggleSelect(item) }
-
                 b.root.setOnClickListener { onToggleSelect(item) }
                 b.root.setOnLongClickListener { onToggleSelect(item); true }
             }
