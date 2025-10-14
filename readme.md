@@ -2,6 +2,13 @@
 
 ## Changelog
 
+### 0.14.2
+- fixed regression introduced in 0.14.1 where grid/list toggle disappeared and thumbnails failed to render  
+- removed redundant overflow menu and restored proper layout toggle behavior  
+- grid/list switch now uses dedicated top-right icon only (no dots or select/clear actions)  
+- retained separate sort dropdown bar with original functionality  
+- minor XML formatting cleanup for icon vectors
+
 ### 0.14.1
 - decoupled the list/grid toggle from sorting so each works independently
 - replaced the triple-dot overflow icon with standard list and grid icons
