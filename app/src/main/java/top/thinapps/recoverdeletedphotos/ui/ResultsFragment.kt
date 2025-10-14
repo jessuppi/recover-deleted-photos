@@ -106,7 +106,7 @@ class ResultsFragment : Fragment() {
                 menuInflater.inflate(R.menu.menu_results, menu)
                 val item = menu.findItem(R.id.action_toggle_layout)
                 refreshToggleMenuIcon(item)
-                tintMenuItemIcon(item, R.attr.colorControlNormal) // ensure visibility on light toolbar
+                tintMenuItemIcon(item, androidx.appcompat.R.attr.colorControlNormal) // ensure visibility on light toolbar
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
@@ -115,7 +115,7 @@ class ResultsFragment : Fragment() {
                         useGrid = !useGrid
                         updateLayoutManager()
                         refreshToggleMenuIcon(menuItem)
-                        tintMenuItemIcon(menuItem, R.attr.colorControlNormal)
+                        tintMenuItemIcon(menuItem, androidx.appcompat.R.attr.colorControlNormal)
                         true
                     }
                     else -> false
