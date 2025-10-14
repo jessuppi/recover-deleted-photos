@@ -2,6 +2,11 @@
 
 ## Changelog
 
+### 0.14.4
+- set grid view as the default layout on scan results
+- restored subtle selection overlay highlight in list mode for consistency
+- corrected List thumbnail sizing (smaller 72dp center-crop)
+
 ### 0.14.3
 - fixed invisible grid/list icon on light toolbar by applying runtime tint
 - restored thumbnail rendering by assigning the item binding in list/grid ViewHolders
