@@ -5,66 +5,98 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:minHeight="96dp"
-    android:padding="8dp">
+    android:minHeight="96dp">
 
-    <!-- thumbnail (left) -->
-    <ImageView
-        android:id="@+id/thumb"
-        android:layout_width="88dp"
-        android:layout_height="88dp"
-        android:scaleType="centerCrop"
+    <!-- Padded content container so overlay can cover full row (no white rim) -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/content"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:paddingStart="12dp"
+        android:paddingTop="8dp"
+        android:paddingEnd="12dp"
+        android:paddingBottom="8dp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        tools:src="@drawable/ic_launcher_foreground"
-        tools:ignore="ContentDescription" />
+        app:layout_constraintEnd_toEndOf="parent">
 
-    <!-- checkbox (floats on right) -->
-    <com.google.android.material.checkbox.MaterialCheckBox
-        android:id="@+id/check"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="2dp"
-        app:useMaterialThemeColors="true"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/thumb"
-        app:layout_constraintBottom_toBottomOf="@id/thumb" />
+        <!-- thumbnail (left) -->
+        <ImageView
+            android:id="@+id/thumb"
+            android:layout_width="104dp"
+            android:layout_height="104dp"
+            android:scaleType="centerCrop"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:src="@drawable/ic_launcher_foreground"
+            tools:ignore="ContentDescription" />
 
-    <!-- filename (to the right of the thumb, before checkbox) -->
-    <TextView
-        android:id="@+id/name"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
-        android:layout_marginEnd="12dp"
-        android:ellipsize="end"
-        android:maxLines="1"
-        android:textStyle="bold"
-        android:textSize="16sp"
-        app:layout_constraintTop_toTopOf="@id/thumb"
-        app:layout_constraintStart_toEndOf="@id/thumb"
-        app:layout_constraintEnd_toStartOf="@id/check"
-        tools:text="IMG_20251014_123456.jpg" />
+        <!-- checkbox (floats on right) -->
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/check"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="2dp"
+            app:useMaterialThemeColors="true"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/thumb"
+            app:layout_constraintBottom_toBottomOf="@id/thumb" />
 
-    <!-- meta line (size • date) under filename -->
-    <TextView
-        android:id="@+id/meta"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
-        android:layout_marginEnd="12dp"
-        android:ellipsize="end"
-        android:maxLines="1"
-        android:textSize="13sp"
-        android:textColor="?android:attr/textColorSecondary"
-        app:layout_constraintTop_toBottomOf="@id/name"
-        app:layout_constraintStart_toEndOf="@id/thumb"
-        app:layout_constraintEnd_toStartOf="@id/check"
-        tools:text="3.4 MB • Oct 14, 2025" />
+        <!-- filename (to the right of the thumb, before checkbox) -->
+        <TextView
+            android:id="@+id/name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="12dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textStyle="bold"
+            android:textSize="13sp"
+            app:layout_constraintTop_toTopOf="@id/thumb"
+            app:layout_constraintStart_toEndOf="@id/thumb"
+            app:layout_constraintEnd_toStartOf="@id/check"
+            tools:text="IMG_20251014_123456.jpg" />
 
-    <!-- subtle selection overlay (under checkbox/badge) -->
+        <!-- meta line (size • date) under filename -->
+        <TextView
+            android:id="@+id/meta"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="12dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textSize="13sp"
+            android:textColor="?android:attr/textColorSecondary"
+            app:layout_constraintTop_toBottomOf="@id/name"
+            app:layout_constraintStart_toEndOf="@id/thumb"
+            app:layout_constraintEnd_toStartOf="@id/check"
+            tools:text="3.4 MB • Oct 14, 2025" />
+
+        <!-- trash badge (top-left on the thumb) -->
+        <TextView
+            android:id="@+id/badge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingStart="6dp"
+            android:paddingEnd="6dp"
+            android:paddingTop="2dp"
+            android:paddingBottom="2dp"
+            android:text="@string/badge_trashed"
+            android:textSize="12sp"
+            android:textColor="@android:color/white"
+            android:background="@drawable/bg_badge"
+            android:visibility="gone"
+            android:layout_margin="6dp"
+            app:layout_constraintTop_toTopOf="@id/thumb"
+            app:layout_constraintStart_toStartOf="@id/thumb" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- selection overlay now covers full row including the gutter -->
     <View
         android:id="@+id/overlay"
         android:layout_width="0dp"
@@ -77,23 +109,5 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
-
-    <!-- trash badge (top-left on the thumb) -->
-    <TextView
-        android:id="@+id/badge"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:paddingStart="6dp"
-        android:paddingEnd="6dp"
-        android:paddingTop="2dp"
-        android:paddingBottom="2dp"
-        android:text="@string/badge_trashed"
-        android:textSize="12sp"
-        android:textColor="@android:color/white"
-        android:background="@drawable/bg_badge"
-        android:visibility="gone"
-        android:layout_margin="6dp"
-        app:layout_constraintTop_toTopOf="@id/thumb"
-        app:layout_constraintStart_toStartOf="@id/thumb" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
