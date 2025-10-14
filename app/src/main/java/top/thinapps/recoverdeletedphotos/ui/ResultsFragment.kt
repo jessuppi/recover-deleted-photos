@@ -17,10 +17,10 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import coil.load // <-- add Coil
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import top.thinapps.recoverdeletedphotos.BR
 import top.thinapps.recoverdeletedphotos.R
 import top.thinapps.recoverdeletedphotos.databinding.FragmentResultsBinding
 import top.thinapps.recoverdeletedphotos.databinding.ItemMediaBinding
@@ -106,7 +106,7 @@ class ResultsFragment : Fragment() {
                 menuInflater.inflate(R.menu.menu_results, menu)
                 val item = menu.findItem(R.id.action_toggle_layout)
                 refreshToggleMenuIcon(item)
-                tintMenuItemIcon(item, R.attr.colorControlNormal)
+                tintMenuItemIcon(item, R.attr.colorControlNormal) // ensure visibility on light toolbar
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
@@ -225,9 +225,13 @@ class ResultsFragment : Fragment() {
 
         private inner class ListVH(private val b: ItemMediaBinding) : RecyclerView.ViewHolder(b.root) {
             fun bind(item: MediaItem) {
-                // make data binding expressions (e.g., thumbnail loaders) run if layouts declare <variable name="item" .../>
-                runCatching { b.item = item }.getOrElse { runCatching { b.setVariable(BR.item, item) } }
-                b.executePendingBindings()
+                // Bind thumbnail + labels (list layout)
+                b.thumb.load(item.uri)
+                b.name?.text = item.displayName ?: ""
+                b.meta?.text = buildString {
+                    if (item.sizeBytes > 0) append(formatSize(item.sizeBytes)).also { if (item.dateReadable.isNotEmpty()) append(" • ") }
+                    append(item.dateReadable)
+                }
 
                 val selected = isSelected(item.id)
                 b.root.findViewById<View>(R.id.overlay)?.isVisible = selected
@@ -241,8 +245,9 @@ class ResultsFragment : Fragment() {
 
         private inner class GridVH(private val b: ItemMediaGridBinding) : RecyclerView.ViewHolder(b.root) {
             fun bind(item: MediaItem) {
-                runCatching { b.item = item }.getOrElse { runCatching { b.setVariable(BR.item, item) } }
-                b.executePendingBindings()
+                // Bind thumbnail + caption (grid layout)
+                b.thumb.load(item.uri)
+                b.caption?.text = item.displayName ?: ""
 
                 val selected = isSelected(item.id)
                 b.root.findViewById<View>(R.id.overlay)?.isVisible = selected
@@ -254,4 +259,13 @@ class ResultsFragment : Fragment() {
             }
         }
     }
+}
+
+/** simple size formatter for the meta line */
+private fun formatSize(bytes: Long): String {
+    if (bytes <= 0) return "0 B"
+    val units = arrayOf("B", "KB", "MB", "GB", "TB")
+    val group = (Math.log10(bytes.toDouble()) / Math.log10(1024.0)).toInt().coerceAtMost(units.lastIndex)
+    val scaled = bytes / Math.pow(1024.0, group.toDouble())
+    return String.format("%.1f %s", scaled, units[group])
 }
