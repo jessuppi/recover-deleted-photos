@@ -1,9 +1,12 @@
 package top.thinapps.recoverdeletedphotos.ui
 
+import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.*
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import androidx.annotation.AttrRes
+import androidx.core.graphics.drawable.DrawableCompat
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.core.view.isVisible
@@ -17,6 +20,7 @@ import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import top.thinapps.recoverdeletedphotos.BR
 import top.thinapps.recoverdeletedphotos.R
 import top.thinapps.recoverdeletedphotos.databinding.FragmentResultsBinding
 import top.thinapps.recoverdeletedphotos.databinding.ItemMediaBinding
@@ -100,7 +104,9 @@ class ResultsFragment : Fragment() {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
                 menu.clear()
                 menuInflater.inflate(R.menu.menu_results, menu)
-                refreshToggleMenuIcon(menu.findItem(R.id.action_toggle_layout))
+                val item = menu.findItem(R.id.action_toggle_layout)
+                refreshToggleMenuIcon(item)
+                tintMenuItemIcon(item, R.attr.colorControlNormal)
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
@@ -109,6 +115,7 @@ class ResultsFragment : Fragment() {
                         useGrid = !useGrid
                         updateLayoutManager()
                         refreshToggleMenuIcon(menuItem)
+                        tintMenuItemIcon(menuItem, R.attr.colorControlNormal)
                         true
                     }
                     else -> false
@@ -128,6 +135,20 @@ class ResultsFragment : Fragment() {
         }
     }
 
+    private fun tintMenuItemIcon(item: MenuItem?, @AttrRes attr: Int) {
+        if (item?.icon == null) return
+        val color = resolveAttrColor(attr)
+        val wrapped = DrawableCompat.wrap(item.icon!!)
+        DrawableCompat.setTint(wrapped, color)
+        item.icon = wrapped
+        item.iconTintList = ColorStateList.valueOf(color)
+    }
+
+    private fun resolveAttrColor(@AttrRes attr: Int): Int {
+        val ta = requireContext().theme.obtainStyledAttributes(intArrayOf(attr))
+        return try { ta.getColor(0, 0xFF000000.toInt()) } finally { ta.recycle() }
+    }
+
     private fun updateLayoutManager() {
         vb.list.layoutManager = if (useGrid) {
             GridLayoutManager(requireContext(), 3)
@@ -140,10 +161,10 @@ class ResultsFragment : Fragment() {
         val base = vm.results
         val sorted = when (currentSort) {
             Sort.DATE_DESC -> base.sortedByDescending { it.dateAddedSec }
-            Sort.DATE_ASC -> base.sortedBy { it.dateAddedSec }
+            Sort.DATE_ASC  -> base.sortedBy { it.dateAddedSec }
             Sort.SIZE_DESC -> base.sortedByDescending { it.sizeBytes }
-            Sort.SIZE_ASC -> base.sortedBy { it.sizeBytes }
-            Sort.NAME_ASC -> base.sortedBy { it.displayName ?: "" }
+            Sort.SIZE_ASC  -> base.sortedBy { it.sizeBytes }
+            Sort.NAME_ASC  -> base.sortedBy { it.displayName ?: "" }
             Sort.NAME_DESC -> base.sortedByDescending { it.displayName ?: "" }
         }
         adapter.submitList(sorted)
@@ -204,6 +225,10 @@ class ResultsFragment : Fragment() {
 
         private inner class ListVH(private val b: ItemMediaBinding) : RecyclerView.ViewHolder(b.root) {
             fun bind(item: MediaItem) {
+                // make data binding expressions (e.g., thumbnail loaders) run if layouts declare <variable name="item" .../>
+                runCatching { b.item = item }.getOrElse { runCatching { b.setVariable(BR.item, item) } }
+                b.executePendingBindings()
+
                 val selected = isSelected(item.id)
                 b.root.findViewById<View>(R.id.overlay)?.isVisible = selected
                 b.check.setOnCheckedChangeListener(null)
@@ -216,6 +241,9 @@ class ResultsFragment : Fragment() {
 
         private inner class GridVH(private val b: ItemMediaGridBinding) : RecyclerView.ViewHolder(b.root) {
             fun bind(item: MediaItem) {
+                runCatching { b.item = item }.getOrElse { runCatching { b.setVariable(BR.item, item) } }
+                b.executePendingBindings()
+
                 val selected = isSelected(item.id)
                 b.root.findViewById<View>(R.id.overlay)?.isVisible = selected
                 b.check.setOnCheckedChangeListener(null)
