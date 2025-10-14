@@ -2,6 +2,13 @@
 
 ## Changelog
 
+### 0.14.6
+- increased list view thumbnail size to 96×96 and reduced filename font size slightly
+- adjusted padding around each result item for even spacing on all sides
+- refined checkbox positioning and margins for cleaner alignment
+- lightened selection overlay tint for a softer pastel visual tone
+- restored visible trash badge styling with proper rounded red background
+
 ### 0.14.5
 - restored List view layout with bigger thumbs, metadata stacked to the right, and checkbox floats on the right
 - restored subtle selection overlay in List items for consistent feedback
