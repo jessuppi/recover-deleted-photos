@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <!-- optional: keep these if you also want sort in the overflow menu;
+         they do not interact with the top-right layout toggle -->
     <item
         android:id="@+id/action_sort_date"
         android:title="sort by date" />
@@ -21,10 +24,10 @@
         android:id="@+id/action_clear_selection"
         android:title="clear selection" />
 
-    <!-- new toggle for list ⇄ grid layout -->
+    <!-- list/grid toggle in the top-right; shown as an icon -->
     <item
         android:id="@+id/action_toggle_layout"
         android:title="@string/action_view_grid"
         android:icon="@drawable/ic_view_grid"
-        android:showAsAction="always" />
+        app:showAsAction="always" />
 </menu>
