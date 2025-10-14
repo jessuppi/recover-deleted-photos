@@ -2,6 +2,10 @@
 
 ## Changelog
 
+### 0.14.3
+- fixed invisible grid/list icon on light toolbar by applying runtime tint
+- restored thumbnail rendering by assigning the item binding in list/grid ViewHolders
+
 ### 0.14.2
 - fixed regression introduced in 0.14.1 where grid/list toggle disappeared and thumbnails failed to render  
 - removed redundant overflow menu and restored proper layout toggle behavior  
