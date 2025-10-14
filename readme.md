@@ -2,6 +2,11 @@
 
 ## Changelog
 
+### 0.14.5
+- restored List view layout with bigger thumbs, metadata stacked to the right, and checkbox floats on the right
+- restored subtle selection overlay in List items for consistent feedback
+- added a background color to the sort/filter bar for better visual separation
+
 ### 0.14.4
 - set grid view as the default layout on scan results
 - restored subtle selection overlay highlight in list mode for consistency
