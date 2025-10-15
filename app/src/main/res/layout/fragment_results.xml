@@ -1,19 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
-    android:padding="12dp"
+    android:padding="8dp"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- sort/filter bar background -->
+    <!-- sort/filter bar: compact 48dp min height, subtle surface variant -->
     <LinearLayout
         android:id="@+id/sortBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:minHeight="48dp"
         android:orientation="horizontal"
-        android:padding="8dp"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp"
         android:background="@color/md_surface_variant"
-        android:elevation="2dp"
+        android:elevation="1dp"
         android:layout_marginBottom="8dp">
 
         <!-- sort dropdown used by resultsfragment to sort by date, size, or name -->
