@@ -225,12 +225,14 @@ class ResultsFragment : Fragment() {
 
         private inner class ListVH(private val b: ItemMediaBinding) : RecyclerView.ViewHolder(b.root) {
             fun bind(item: MediaItem) {
-                // Bind thumbnail + labels (list layout)
+                // bind thumbnail and labels (list layout)
                 b.thumb.load(item.uri)
                 b.name?.text = item.displayName ?: ""
+
+                // show date on first line and file size on second
                 b.meta?.text = buildString {
-                    if (item.sizeBytes > 0) append(formatSize(item.sizeBytes)).also { if (item.dateReadable.isNotEmpty()) append(" • ") }
                     append(item.dateReadable)
+                    if (item.sizeBytes > 0) append("\n${formatSize(item.sizeBytes)}")
                 }
 
                 val selected = isSelected(item.id)
@@ -241,7 +243,6 @@ class ResultsFragment : Fragment() {
                 b.root.setOnClickListener { onToggleSelect(item) }
                 b.root.setOnLongClickListener { onToggleSelect(item); true }
             }
-        }
 
         private inner class GridVH(private val b: ItemMediaGridBinding) : RecyclerView.ViewHolder(b.root) {
             fun bind(item: MediaItem) {
