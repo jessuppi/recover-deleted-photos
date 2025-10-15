@@ -6,6 +6,9 @@
     <color name="md_on_surface">#FF1C1B1F</color>
     <color name="md_outline">#FF79747E</color>
 
+    <!-- surface variant for sorting bar -->
+    <color name="md_surface_variant">#F5F5F5</color>
+
     <!-- adaptive icon background -->
     <color name="ic_launcher_background">#1976D2</color>
 
