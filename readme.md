@@ -2,6 +2,11 @@
 
 ## Changelog
 
+### 0.14.8
+- replaced menu icon with Material view list icon and removed hardcoded fill colors
+- added md_surface_variant (#F5F5F5) in colors.xml for sort bar background
+- adjusted sort bar padding and height
+
 ### 0.14.7
 - updated list view to show date on the first line and file size below it
 - refined alignment and spacing of list rows for a cleaner look
