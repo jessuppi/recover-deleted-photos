@@ -243,6 +243,7 @@ class ResultsFragment : Fragment() {
                 b.root.setOnClickListener { onToggleSelect(item) }
                 b.root.setOnLongClickListener { onToggleSelect(item); true }
             }
+        }
 
         private inner class GridVH(private val b: ItemMediaGridBinding) : RecyclerView.ViewHolder(b.root) {
             fun bind(item: MediaItem) {
