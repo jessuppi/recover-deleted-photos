@@ -2,6 +2,10 @@
 
 ## Changelog
 
+### 0.14.7
+- updated list view to show date on the first line and file size below it
+- refined alignment and spacing of list rows for a cleaner look
+
 ### 0.14.6
 - increased list view thumbnail size to 96×96 and reduced filename font size slightly
 - adjusted padding around each result item for even spacing on all sides
