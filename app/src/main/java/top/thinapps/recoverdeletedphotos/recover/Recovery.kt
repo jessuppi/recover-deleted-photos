@@ -20,7 +20,7 @@ object Recovery {
 
         val resolver = context.contentResolver
         var ok = 0
-        for (item in items.distinctBy { it.id }) {
+        for (item in items.distinctBy { it.uri }) {
             kotlinx.coroutines.ensureActive()
             if (copyOne(resolver, item)) ok++
         }
@@ -29,8 +29,8 @@ object Recovery {
 
     // single item copy using mediastore insert + stream copy
     private fun copyOne(resolver: ContentResolver, item: MediaItem): Boolean {
-        // normalize filename
-        val name = (item.displayName ?: "").ifBlank { "recovered_${System.currentTimeMillis()}" }
+        // normalize filename (now always non-null)
+        val name = item.displayName.ifBlank { "recovered_${System.currentTimeMillis()}" }
 
         // resolve or guess mime
         val mime = resolver.getType(item.uri) ?: guessMime(name)
@@ -50,7 +50,7 @@ object Recovery {
 
         return try {
             resolver.openInputStream(item.uri).use { input ->
-                resolver.openOutputStream(dest, "w").use { output ->
+                resolver.openOutputStream(dest).use { output ->
                     if (input == null || output == null) throw IOException("stream error")
                     input.copyTo(output)
                 }
@@ -64,12 +64,13 @@ object Recovery {
 
     // maps mime to allowed collections only
     private fun targetForMime(mime: String): Pair<Uri, String>? {
+        val m = mime.lowercase(Locale.getDefault())
         return when {
-            mime.startsWith("image/") ->
+            m.startsWith("image/") ->
                 MediaStore.Images.Media.EXTERNAL_CONTENT_URI to "Pictures/Recovered"
-            mime.startsWith("video/") ->
+            m.startsWith("video/") ->
                 MediaStore.Video.Media.EXTERNAL_CONTENT_URI to "Pictures/Recovered"
-            mime.startsWith("audio/") ->
+            m.startsWith("audio/") ->
                 MediaStore.Audio.Media.EXTERNAL_CONTENT_URI to "Music/Recovered"
             else -> null
         }
@@ -77,14 +78,25 @@ object Recovery {
 
     // simple mime guess from filename
     private fun guessMime(name: String): String {
-        val n = name.lowercase(Locale.getDefault())
+        val n = name.lowercase(Locale.ROOT)
         return when {
             n.endsWith(".jpg") || n.endsWith(".jpeg") -> "image/jpeg"
             n.endsWith(".png") -> "image/png"
             n.endsWith(".gif") -> "image/gif"
+            n.endsWith(".webp") -> "image/webp"
+            n.endsWith(".heic") -> "image/heic"
+            n.endsWith(".bmp") -> "image/bmp"
+            n.endsWith(".tiff") || n.endsWith(".tif") -> "image/tiff"
+            n.endsWith(".avif") -> "image/avif"
             n.endsWith(".mp4") -> "video/mp4"
             n.endsWith(".mov") -> "video/quicktime"
+            n.endsWith(".3gp") -> "video/3gpp"
+            n.endsWith(".mkv") -> "video/x-matroska"
+            n.endsWith(".avi") -> "video/x-msvideo"
             n.endsWith(".mp3") -> "audio/mpeg"
+            n.endsWith(".m4a") -> "audio/mp4"
+            n.endsWith(".aac") -> "audio/aac"
+            n.endsWith(".ogg") -> "audio/ogg"
             n.endsWith(".wav") -> "audio/wav"
             else -> "application/octet-stream"
         }
