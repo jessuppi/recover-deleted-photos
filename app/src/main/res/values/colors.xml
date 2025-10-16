@@ -1,25 +1,48 @@
 <resources>
-    <!-- primary brand and surface palette -->
+
+    <!-- bright blue base used as the main seed color for material theme generation -->
     <color name="md_seed">#2962FF</color>
+
+    <!-- primary vivid blue used for key brand elements and call-to-action buttons -->
     <color name="md_primary">#2962FF</color>
+
+    <!-- secondary soft blue used for highlights and accent details -->
     <color name="md_secondary">#6C7BFF</color>
+
+    <!-- white surface background for screens and containers -->
     <color name="md_surface">#FFFFFF</color>
+
+    <!-- near-black text and icon color used on light surfaces -->
     <color name="md_on_surface">#1C1B1F</color>
+
+    <!-- medium gray line color for outlines and dividers -->
     <color name="md_outline">#79747E</color>
 
-    <!-- surface variant for sorting bar -->
+    <!-- very light gray surface variant used behind sorting bar and cards -->
     <color name="md_surface_variant">#F5F5F5</color>
 
-    <!-- toolbar and icon tint -->
+    <!-- white background for the top toolbar area -->
     <color name="md_toolbar_background">#FFFFFF</color>
+
+    <!-- near-black color for toolbar icons and text -->
     <color name="md_toolbar_tint">#1C1B1F</color>
 
-    <!-- adaptive icon background -->
+    <!-- medium blue background used for adaptive app icons -->
     <color name="ic_launcher_background">#1976D2</color>
 
-    <!-- selection highlight -->
+    <!-- translucent bright blue overlay to indicate selected tiles -->
     <color name="selection_highlight">#1A2196F3</color>
 
-    <!-- result badge -->
+    <!-- strong red used for trash or deleted item badges -->
     <color name="badge_trash">#D93025</color>
+
+    <!-- bright blue background for enabled recover button -->
+    <color name="recover_button_enabled_bg">#1976D2</color>
+
+    <!-- medium gray background for disabled recover button -->
+    <color name="recover_button_disabled_bg">#BDBDBD</color>
+
+    <!-- pure white text color for recover button labels -->
+    <color name="recover_button_text">#FFFFFF</color>
+
 </resources>
