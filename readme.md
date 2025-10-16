@@ -4,6 +4,7 @@
 
 ### 0.14.9
 - set `android:allowBackup` to `false` to disable unnecessary data backups
+- reused a single `DateFormat` instance for `dateReadable` to improve performance
 
 ### 0.14.8
 - replaced menu icon with Material view list icon and removed hardcoded fill colors
