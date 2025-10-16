@@ -164,8 +164,8 @@ class ResultsFragment : Fragment() {
             Sort.DATE_ASC  -> base.sortedBy { it.dateAddedSec }
             Sort.SIZE_DESC -> base.sortedByDescending { it.sizeBytes }
             Sort.SIZE_ASC  -> base.sortedBy { it.sizeBytes }
-            Sort.NAME_ASC  -> base.sortedBy { it.displayName ?: "" }
-            Sort.NAME_DESC -> base.sortedByDescending { it.displayName ?: "" }
+            Sort.NAME_ASC  -> base.sortedBy { it.displayName }
+            Sort.NAME_DESC -> base.sortedByDescending { it.displayName }
         }
         adapter.submitList(sorted)
         vb.empty.isVisible = sorted.isEmpty()
@@ -227,7 +227,7 @@ class ResultsFragment : Fragment() {
             fun bind(item: MediaItem) {
                 // bind thumbnail and labels (list layout)
                 b.thumb.load(item.uri)
-                b.name?.text = item.displayName ?: ""
+                b.name?.text = item.displayName
 
                 // show date on first line and file size on second
                 b.meta?.text = buildString {
@@ -249,7 +249,7 @@ class ResultsFragment : Fragment() {
             fun bind(item: MediaItem) {
                 // Bind thumbnail + caption (grid layout)
                 b.thumb.load(item.uri)
-                b.caption?.text = item.displayName ?: ""
+                b.caption?.text = item.displayName
 
                 val selected = isSelected(item.id)
                 b.root.findViewById<View>(R.id.overlay)?.isVisible = selected
