@@ -26,6 +26,7 @@ import top.thinapps.recoverdeletedphotos.databinding.FragmentResultsBinding
 import top.thinapps.recoverdeletedphotos.databinding.ItemMediaBinding
 import top.thinapps.recoverdeletedphotos.databinding.ItemMediaGridBinding
 import top.thinapps.recoverdeletedphotos.model.MediaItem
+import top.thinapps.recoverdeletedphotos.recover.Recovery
 
 class ResultsFragment : Fragment() {
 
@@ -65,7 +66,9 @@ class ResultsFragment : Fragment() {
             val chosen = adapter.currentList.filter { selectedIds.contains(it.id) }
             if (chosen.isEmpty()) return@setOnClickListener
             vb.recoverButton.isEnabled = false
+            vb.recoverButton.text = getString(R.string.recovering)
             CoroutineScope(Dispatchers.IO).launch {
+                Recovery.copyAll(requireContext(), chosen)
                 CoroutineScope(Dispatchers.Main).launch {
                     selectedIds.clear()
                     updateRecoverButton()
@@ -225,16 +228,12 @@ class ResultsFragment : Fragment() {
 
         private inner class ListVH(private val b: ItemMediaBinding) : RecyclerView.ViewHolder(b.root) {
             fun bind(item: MediaItem) {
-                // bind thumbnail and labels (list layout)
                 b.thumb.load(item.uri)
                 b.name?.text = item.displayName
-
-                // show date on first line and file size on second
                 b.meta?.text = buildString {
                     append(item.dateReadable)
                     if (item.sizeBytes > 0) append("\n${formatSize(item.sizeBytes)}")
                 }
-
                 val selected = isSelected(item.id)
                 b.root.findViewById<View>(R.id.overlay)?.isVisible = selected
                 b.check.setOnCheckedChangeListener(null)
@@ -247,10 +246,8 @@ class ResultsFragment : Fragment() {
 
         private inner class GridVH(private val b: ItemMediaGridBinding) : RecyclerView.ViewHolder(b.root) {
             fun bind(item: MediaItem) {
-                // Bind thumbnail + caption (grid layout)
                 b.thumb.load(item.uri)
                 b.caption?.text = item.displayName
-
                 val selected = isSelected(item.id)
                 b.root.findViewById<View>(R.id.overlay)?.isVisible = selected
                 b.check.setOnCheckedChangeListener(null)
@@ -263,7 +260,6 @@ class ResultsFragment : Fragment() {
     }
 }
 
-/** simple size formatter for the meta line */
 private fun formatSize(bytes: Long): String {
     if (bytes <= 0) return "0 B"
     val units = arrayOf("B", "KB", "MB", "GB", "TB")
