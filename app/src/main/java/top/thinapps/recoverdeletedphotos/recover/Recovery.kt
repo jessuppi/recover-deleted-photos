@@ -16,17 +16,19 @@ object Recovery {
 
     // copies all supported items; returns number of successes
     suspend fun copyAll(context: Context, items: List<MediaItem>): Int = withContext(Dispatchers.IO) {
-        val r = context.contentResolver
+        if (Build.VERSION.SDK_INT < 29) return@withContext 0
+
+        val resolver = context.contentResolver
         var ok = 0
-        for (item in items) if (copyOne(r, item)) ok++
+        for (item in items.distinctBy { it.id }) {
+            kotlinx.coroutines.ensureActive()
+            if (copyOne(resolver, item)) ok++
+        }
         ok
     }
 
     // single item copy using mediastore insert + stream copy
     private fun copyOne(resolver: ContentResolver, item: MediaItem): Boolean {
-        // scoped storage only
-        if (Build.VERSION.SDK_INT < 29) return false
-
         // normalize filename
         val name = (item.displayName ?: "").ifBlank { "recovered_${System.currentTimeMillis()}" }
 
