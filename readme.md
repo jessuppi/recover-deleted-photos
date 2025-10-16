@@ -2,6 +2,15 @@
 
 ## Changelog
 
+### 0.15.0
+- `Recovery.kt` now forces non-null filenames using `ifBlank` fallback
+- skips zero-byte files with `item.sizeBytes == 0L`
+- expands MIME detection to cover modern formats (HEIF, AVIF, Opus, FLAC, etc)
+- uses `Locale.ROOT` for consistent MIME and extension checks across locales
+- improves I/O safety with stronger null and exception handling for streams
+- `ResultsFragment.kt` simplifies null-safe bindings and sorting logic
+- recovery process now crash-proof against null filenames and empty media on Android 10+
+
 ### 0.14.9
 - set `android:allowBackup` to `false` to disable unnecessary data backups
 - reused a single `DateFormat` instance for `dateReadable` to improve performance
