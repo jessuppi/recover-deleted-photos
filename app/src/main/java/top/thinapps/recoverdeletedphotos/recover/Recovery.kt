@@ -14,7 +14,7 @@ import java.util.Locale
 
 object Recovery {
 
-    // copies all items; returns number of successes
+    // copies all supported items; returns number of successes
     suspend fun copyAll(context: Context, items: List<MediaItem>): Int = withContext(Dispatchers.IO) {
         val r = context.contentResolver
         var ok = 0
@@ -24,7 +24,7 @@ object Recovery {
 
     // single item copy using mediastore insert + stream copy
     private fun copyOne(resolver: ContentResolver, item: MediaItem): Boolean {
-        // only scoped storage; bail on pre-29 to avoid legacy write perms
+        // scoped storage only
         if (Build.VERSION.SDK_INT < 29) return false
 
         // normalize filename
@@ -33,10 +33,11 @@ object Recovery {
         // resolve or guess mime
         val mime = resolver.getType(item.uri) ?: guessMime(name)
 
-        // choose collection and relative path (pics+videos -> pictures/recovered)
-        val (collection, relativePath) = targetForMime(mime)
+        // pick collection and subfolder; skip unsupported types
+        val target = targetForMime(mime) ?: return false
+        val (collection, relativePath) = target
 
-        // prepare destination row (no is_pending to keep things simple)
+        // prepare destination row
         val values = ContentValues().apply {
             put(MediaStore.MediaColumns.DISPLAY_NAME, name)
             put(MediaStore.MediaColumns.MIME_TYPE, mime)
@@ -59,8 +60,8 @@ object Recovery {
         }
     }
 
-    // maps mime family to collection and subfolder
-    private fun targetForMime(mime: String): Pair<Uri, String> {
+    // maps mime to allowed collections only
+    private fun targetForMime(mime: String): Pair<Uri, String>? {
         return when {
             mime.startsWith("image/") ->
                 MediaStore.Images.Media.EXTERNAL_CONTENT_URI to "Pictures/Recovered"
@@ -68,12 +69,11 @@ object Recovery {
                 MediaStore.Video.Media.EXTERNAL_CONTENT_URI to "Pictures/Recovered"
             mime.startsWith("audio/") ->
                 MediaStore.Audio.Media.EXTERNAL_CONTENT_URI to "Music/Recovered"
-            else ->
-                MediaStore.Downloads.EXTERNAL_CONTENT_URI to "Download/Recovered"
+            else -> null
         }
     }
 
-    // basic mime guess from filename
+    // simple mime guess from filename
     private fun guessMime(name: String): String {
         val n = name.lowercase(Locale.getDefault())
         return when {
