@@ -2,6 +2,9 @@
 
 ## Changelog
 
+### 0.14.9
+- set `android:allowBackup` to `false` to disable unnecessary data backups
+
 ### 0.14.8
 - replaced menu icon with Material view list icon and removed hardcoded fill colors
 - added md_surface_variant (#F5F5F5) in colors.xml for sort bar background
