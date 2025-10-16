@@ -96,7 +96,7 @@ class MediaScanner(private val context: Context) {
 
                     val id = c.getLong(idIdx)
                     val uri = ContentUris.withAppendedId(q.uri, id)
-                    val name = c.getString(nameIdx)
+                    val name = c.getString(nameIdx)?.takeIf { it.isNotBlank() } ?: "recovered_$id"
                     val size = c.getLong(sizeIdx)
                     val dateAdded = c.getLong(dateIdx)
                     val isTrashed = trashedIdx != -1 && c.getInt(trashedIdx) == 1
