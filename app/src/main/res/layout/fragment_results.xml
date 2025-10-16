@@ -8,7 +8,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- sort/filter bar: compact 48dp min height, subtle surface variant -->
+    <!-- top sorting/filtering section containing dropdown for sorting results -->
     <LinearLayout
         android:id="@+id/sortBar"
         android:layout_width="match_parent"
@@ -23,7 +23,7 @@
         android:elevation="1dp"
         android:layout_marginBottom="8dp">
 
-        <!-- sort dropdown used by resultsfragment to sort by date, size, or name -->
+        <!-- spinner control that allows user to sort results by date, size, or name -->
         <Spinner
             android:id="@+id/sortDropdown"
             android:layout_width="match_parent"
@@ -31,11 +31,13 @@
             android:prompt="@string/results_title" />
     </LinearLayout>
 
+    <!-- main content area showing recycler view list of recovered images or empty state -->
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1">
 
+        <!-- grid or list of media results displayed dynamically -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/list"
             android:layout_width="match_parent"
@@ -43,6 +45,7 @@
             android:clipToPadding="false"
             android:paddingBottom="72dp" />
 
+        <!-- message shown when there are no results to display -->
         <TextView
             android:id="@+id/empty"
             android:layout_width="wrap_content"
@@ -52,6 +55,7 @@
             android:visibility="gone" />
     </FrameLayout>
 
+    <!-- bottom recover button used to restore selected files -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/recoverButton"
         style="?attr/materialButtonTonalStyle"
@@ -59,5 +63,7 @@
         android:layout_height="wrap_content"
         android:minHeight="48dp"
         android:text="@string/recover_selected"
+        android:textColor="@color/recover_button_text"
+        android:backgroundTint="@color/recover_button_disabled_bg"
         android:enabled="false" />
 </LinearLayout>
