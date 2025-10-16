@@ -8,7 +8,8 @@ import android.os.Build
 import android.provider.MediaStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.isActive
+import kotlin.coroutines.coroutineContext
 import top.thinapps.recoverdeletedphotos.model.MediaItem
 import java.io.IOException
 import java.util.Locale
@@ -22,7 +23,7 @@ object Recovery {
         val resolver = context.contentResolver
         var ok = 0
         for (item in items.distinctBy { it.uri }) {
-            kotlinx.coroutines.ensureActive()
+            if (!coroutineContext.isActive) return@withContext ok
             if (item.sizeBytes == 0L) continue
             if (copyOne(resolver, item)) ok++
         }
