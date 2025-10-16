@@ -2,6 +2,11 @@
 
 ## Changelog
 
+### 0.15.1
+- aligned sort bar and results grid with consistent 16dp horizontal padding
+- restored "Recovering..." feedback text and button disable during recovery
+- added hardcoded recover button colors (blue active, gray disabled, white text)
+
 ### 0.15.0
 - `Recovery.kt` now forces non-null filenames using `ifBlank` fallback
 - skips zero-byte files with `item.sizeBytes == 0L`
