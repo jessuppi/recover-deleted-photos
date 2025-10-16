@@ -5,6 +5,9 @@
 ### 0.14.9
 - set `android:allowBackup` to `false` to disable unnecessary data backups
 - reused a single `DateFormat` instance for `dateReadable` to improve performance
+- added `md_toolbar_background` and `md_toolbar_tint` to `colors.xml`
+- updated `activity_main.xml` to use toolbar color references instead of hardcoded values
+- updated `menu_results.xml` to tint toggle icon using `@color/md_toolbar_tint`
 
 ### 0.14.8
 - replaced menu icon with Material view list icon and removed hardcoded fill colors
