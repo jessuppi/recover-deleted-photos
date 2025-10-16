@@ -22,6 +22,7 @@ object Recovery {
         var ok = 0
         for (item in items.distinctBy { it.uri }) {
             kotlinx.coroutines.ensureActive()
+            if (item.sizeBytes == 0L) continue
             if (copyOne(resolver, item)) ok++
         }
         ok
@@ -64,7 +65,7 @@ object Recovery {
 
     // maps mime to allowed collections only
     private fun targetForMime(mime: String): Pair<Uri, String>? {
-        val m = mime.lowercase(Locale.getDefault())
+        val m = mime.lowercase(Locale.ROOT)
         return when {
             m.startsWith("image/") ->
                 MediaStore.Images.Media.EXTERNAL_CONTENT_URI to "Pictures/Recovered"
@@ -84,7 +85,7 @@ object Recovery {
             n.endsWith(".png") -> "image/png"
             n.endsWith(".gif") -> "image/gif"
             n.endsWith(".webp") -> "image/webp"
-            n.endsWith(".heic") -> "image/heic"
+            n.endsWith(".heic") || n.endsWith(".heif") -> "image/heif"
             n.endsWith(".bmp") -> "image/bmp"
             n.endsWith(".tiff") || n.endsWith(".tif") -> "image/tiff"
             n.endsWith(".avif") -> "image/avif"
@@ -97,6 +98,8 @@ object Recovery {
             n.endsWith(".m4a") -> "audio/mp4"
             n.endsWith(".aac") -> "audio/aac"
             n.endsWith(".ogg") -> "audio/ogg"
+            n.endsWith(".opus") -> "audio/opus"
+            n.endsWith(".flac") -> "audio/flac"
             n.endsWith(".wav") -> "audio/wav"
             else -> "application/octet-stream"
         }
