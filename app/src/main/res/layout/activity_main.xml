@@ -4,7 +4,7 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorSurface">
+    android:background="@color/md_surface">
 
     <!-- top app bar (material toolbar) -->
     <com.google.android.material.appbar.MaterialToolbar
@@ -12,9 +12,10 @@
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:title="@string/app_name"
-        android:background="?attr/colorSurface"
-        android:titleTextColor="?attr/colorOnSurface"
-        app:navigationIconTint="?attr/colorOnSurface" />
+        android:background="@color/md_toolbar_background"
+        app:titleTextColor="@color/md_toolbar_tint"
+        app:subtitleTextColor="@color/md_toolbar_tint"
+        app:navigationIconTint="@color/md_toolbar_tint" />
 
     <!-- main navigation host for fragments -->
     <androidx.fragment.app.FragmentContainerView
