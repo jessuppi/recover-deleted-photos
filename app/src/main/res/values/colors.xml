@@ -1,13 +1,18 @@
 <resources>
     <!-- primary brand and surface palette -->
     <color name="md_seed">#2962FF</color>
+    <color name="md_primary">#2962FF</color>
     <color name="md_secondary">#6C7BFF</color>
-    <color name="md_surface">#FFFFFFFF</color>
-    <color name="md_on_surface">#FF1C1B1F</color>
-    <color name="md_outline">#FF79747E</color>
+    <color name="md_surface">#FFFFFF</color>
+    <color name="md_on_surface">#1C1B1F</color>
+    <color name="md_outline">#79747E</color>
 
     <!-- surface variant for sorting bar -->
     <color name="md_surface_variant">#F5F5F5</color>
+
+    <!-- toolbar and icon tint -->
+    <color name="md_toolbar_background">#FFFFFF</color>
+    <color name="md_toolbar_tint">#1C1B1F</color>
 
     <!-- adaptive icon background -->
     <color name="ic_launcher_background">#1976D2</color>
