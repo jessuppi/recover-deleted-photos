@@ -8,6 +8,7 @@ import android.os.Build
 import android.provider.MediaStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.ensureActive
 import top.thinapps.recoverdeletedphotos.model.MediaItem
 import java.io.IOException
 import java.util.Locale
