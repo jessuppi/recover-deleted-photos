@@ -2,6 +2,10 @@
 
 ## Changelog
 
+### 0.15.4
+- build.gradle: removed the kotlin dependency alignment block and now rely on kotlin bom only
+- MediaItem.kt: replaced `DateFormat` with `SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.US)`
+
 ### 0.15.3
 - fixed API < 26 crash with legacy query signature and unified `resolverQuery` helper
 - improved performance with paging, throttled progress, `yield()`, and cancellation support
