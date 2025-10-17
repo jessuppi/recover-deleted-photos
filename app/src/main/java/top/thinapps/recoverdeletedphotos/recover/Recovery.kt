@@ -7,16 +7,17 @@ import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.withContext
 import kotlin.coroutines.coroutineContext
 import top.thinapps.recoverdeletedphotos.model.MediaItem
 import java.io.IOException
 import java.util.Locale
+import java.util.UUID
 
 object Recovery {
 
-    // copies all supported items; returns number of successes
+    // copies all supported items and returns the number of successes
     suspend fun copyAll(context: Context, items: List<MediaItem>): Int = withContext(Dispatchers.IO) {
         if (Build.VERSION.SDK_INT < 29) return@withContext 0
 
@@ -30,33 +31,37 @@ object Recovery {
         ok
     }
 
-    // single item copy using mediastore insert + stream copy
+    // single item copy using mediastore insert and stream copy
     private fun copyOne(resolver: ContentResolver, item: MediaItem): Boolean {
-        // normalize filename (now always non-null)
-        val name = item.displayName.ifBlank { "recovered_${System.currentTimeMillis()}" }
-
-        // resolve or guess mime
+        val name = item.displayName.ifBlank { "recovered_${UUID.randomUUID()}" }
         val mime = resolver.getType(item.uri) ?: guessMime(name)
 
-        // pick collection and subfolder; skip unsupported types
         val target = targetForMime(mime) ?: return false
         val (collection, relativePath) = target
 
-        // prepare destination row
         val values = ContentValues().apply {
             put(MediaStore.MediaColumns.DISPLAY_NAME, name)
             put(MediaStore.MediaColumns.MIME_TYPE, mime)
             put(MediaStore.MediaColumns.RELATIVE_PATH, relativePath)
+            if (Build.VERSION.SDK_INT >= 29) {
+                put(MediaStore.MediaColumns.IS_PENDING, 1) // keep hidden until fully written
+            }
         }
 
         val dest: Uri = resolver.insert(collection, values) ?: return false
 
         return try {
-            resolver.openInputStream(item.uri).use { input ->
-                resolver.openOutputStream(dest).use { output ->
-                    if (input == null || output == null) throw IOException("stream error")
+            resolver.openInputStream(item.uri)?.use { input ->
+                resolver.openOutputStream(dest)?.use { output ->
                     input.copyTo(output)
                 }
+            } ?: throw IOException("null stream")
+
+            if (Build.VERSION.SDK_INT >= 29) {
+                val done = ContentValues().apply {
+                    put(MediaStore.MediaColumns.IS_PENDING, 0) // make visible after success
+                }
+                resolver.update(dest, done, null, null)
             }
             true
         } catch (_: Exception) {
