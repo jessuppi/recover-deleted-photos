@@ -2,6 +2,10 @@
 
 ## Changelog
 
+### 0.15.6
+- MainActivity.kt: simplified navigation setup using `findNavController` and `AppBarConfiguration` for cleaner up button behavior
+- MainActivity.kt: replaced persistent view binding property with a local variable for reduced boilerplate
+
 ### 0.15.5
 - Recovery.kt: added `DATE_TAKEN` field for image/video recovery to preserve original timestamp
 - Recovery.kt: specified `"w"` mode in `openOutputStream` for explicit write intent
