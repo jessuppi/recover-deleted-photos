@@ -10,8 +10,8 @@ android {
         applicationId "top.thinapps.recoverdeletedphotos"
         minSdk 21
         targetSdk 35
-        versionCode 52
-        versionName "0.15.3"
+        versionCode 53
+        versionName "0.15.4"
     }
 
     signingConfigs {
@@ -29,13 +29,13 @@ android {
             // keep default no-minify for now; add proguard later if needed
         }
         debug {
-            // defaults
+            // use defaults for debug builds
         }
     }
 
     buildFeatures {
         viewBinding true
-        // buildConfig not needed now that SCAN_VIDEO is removed
+        // buildconfig not needed now that scan_video is removed
     }
 
     compileOptions {
@@ -48,25 +48,12 @@ android {
     }
 }
 
-/**
- * Force all Kotlin artifacts (stdlib/jdk7/jdk8/parcelize/etc.) to one version
- * to avoid mix of 1.8.x/1.9.x/2.0.x on the classpath.
- */
-configurations.all {
-    resolutionStrategy.eachDependency { details ->
-        if (details.requested.group == "org.jetbrains.kotlin") {
-            details.useVersion "1.9.24"
-            details.because "Align all Kotlin dependencies to 1.9.24"
-        }
-    }
-}
-
 dependencies {
-    // Kotlin BOM to align transitive Kotlin modules; stdlib pulls from the BOM
+    // kotlin bom aligns transitive kotlin modules
     implementation platform("org.jetbrains.kotlin:kotlin-bom:1.9.24")
     implementation "org.jetbrains.kotlin:kotlin-stdlib"
 
-    // core + ui foundation
+    // core and ui foundation
     implementation "androidx.core:core-ktx:1.15.0"
     implementation "androidx.appcompat:appcompat:1.7.0"
     implementation "com.google.android.material:material:1.13.0"
@@ -75,20 +62,20 @@ dependencies {
     implementation "androidx.recyclerview:recyclerview:1.3.2"
     implementation "androidx.constraintlayout:constraintlayout:2.2.0"
 
-    // lifecycle + fragments + activity ktx
+    // lifecycle fragments and activity ktx
     implementation "androidx.activity:activity-ktx:1.9.3"
     implementation "androidx.fragment:fragment-ktx:1.8.4"
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.8.6"
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.6"
 
-    // navigation
+    // navigation components
     implementation "androidx.navigation:navigation-fragment-ktx:2.8.3"
     implementation "androidx.navigation:navigation-ui-ktx:2.8.3"
 
     // image loading
     implementation "io.coil-kt:coil:2.7.0"
 
-    // optional but helpful for future expansion / backward compatibility
+    // optional helpers for future features or backward compat
     implementation "androidx.preference:preference-ktx:1.2.1"
     implementation "androidx.annotation:annotation:1.8.2"
 }
