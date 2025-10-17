@@ -23,45 +23,50 @@ class HomeFragment : Fragment() {
 
     private enum class TypeChoice { PHOTOS, VIDEOS, AUDIO }
 
-    // Permission launcher (requests are built from the selected type)
+    // permission launcher for selected type
     private val requestPerms = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { granted ->
+        // stop if view is gone or fragment detached
+        val root = _vb?.root ?: return@registerForActivityResult
+        if (!isAdded) return@registerForActivityResult
+
+        // check granted permissions
         val type = currentType()
         val wanted = requiredPerms(type)
         val ok = wanted.all { granted[it] == true }
-        if (ok) {
-            navigateToScan(type)
-        } else {
-            Snackbar.make(vb.root, R.string.perms_denied, Snackbar.LENGTH_LONG).show()
-        }
+
+        // go to scan if ok or show snackbar
+        if (ok) navigateToScan(type)
+        else Snackbar.make(root, R.string.perms_denied, Snackbar.LENGTH_LONG).show()
     }
 
     override fun onCreateView(inflater: LayoutInflater, c: ViewGroup?, s: Bundle?): View {
+        // inflate layout
         _vb = FragmentHomeBinding.inflate(inflater, c, false)
         return vb.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        // default Photos is checked in XML
+        // ensure subtitle visible
         vb.subtitle.isVisible = true
 
+        // start button logic
         vb.startButton.setOnClickListener {
             val type = currentType()
-            if (hasPermission(type)) {
-                navigateToScan(type)
-            } else {
-                requestPerms.launch(requiredPerms(type))
-            }
+            if (hasPermission(type)) navigateToScan(type)
+            else requestPerms.launch(requiredPerms(type))
         }
     }
 
+    // determine which type is selected
     private fun currentType(): TypeChoice = when {
         vb.homeTypeVideos?.isChecked == true -> TypeChoice.VIDEOS
         vb.homeTypeAudio?.isChecked == true  -> TypeChoice.AUDIO
         else                                 -> TypeChoice.PHOTOS
     }
 
+    // return needed permissions per type
     private fun requiredPerms(type: TypeChoice): Array<String> {
         return if (Build.VERSION.SDK_INT < 33) {
             arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
@@ -74,6 +79,7 @@ class HomeFragment : Fragment() {
         }
     }
 
+    // check if required permissions granted
     private fun hasPermission(type: TypeChoice): Boolean {
         val perms = requiredPerms(type)
         return perms.all { p ->
@@ -81,6 +87,7 @@ class HomeFragment : Fragment() {
         }
     }
 
+    // navigate to scan fragment with type arg
     private fun navigateToScan(type: TypeChoice) {
         val typeArg = when (type) {
             TypeChoice.PHOTOS -> "PHOTOS"
@@ -94,6 +101,7 @@ class HomeFragment : Fragment() {
     }
 
     override fun onDestroyView() {
+        // clear binding reference
         _vb = null
         super.onDestroyView()
     }
