@@ -2,6 +2,12 @@
 
 ## Changelog
 
+### 0.15.3
+- fixed API < 26 crash with legacy query signature and unified `resolverQuery` helper
+- improved performance with paging, throttled progress, `yield()`, and cancellation support
+- filtered zero-size and MIME-less rows, excluded pending, included trashed on API 30+
+- added try/catch for query errors and kept `scan()` behavior fully compatible
+
 ### 0.15.2
 - fixed trash badge visibility in grid and list (shows for trashed files)
 - set sort dropdown horizontal padding to 0dp for pixel-perfect alignment with tiles
