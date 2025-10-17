@@ -2,6 +2,11 @@
 
 ## Changelog
 
+### 0.15.7
+- HomeFragment.kt: simplified permission handling using a single launcher and `pendingType` for smoother flow
+- HomeFragment.kt: added settings action in Snackbar for users with denied permissions
+- HomeFragment.kt: added null-safety and lifecycle guards to prevent crashes if view is destroyed
+
 ### 0.15.6
 - MainActivity.kt: simplified navigation setup using `findNavController` and `AppBarConfiguration` for cleaner up button behavior
 - MainActivity.kt: replaced persistent view binding property with a local variable for reduced boilerplate
