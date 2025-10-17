@@ -17,91 +17,115 @@ import com.google.android.material.snackbar.Snackbar
 import top.thinapps.recoverdeletedphotos.R
 import top.thinapps.recoverdeletedphotos.databinding.FragmentHomeBinding
 
+private const val ARG_TYPE = "type"
+
 class HomeFragment : Fragment() {
+
     private var _vb: FragmentHomeBinding? = null
     private val vb get() = _vb!!
 
     private enum class TypeChoice { PHOTOS, VIDEOS, AUDIO }
 
-    // permission launcher for selected type
-    private val requestPerms = registerForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions()
+    // stores selected type across permission request flow
+    private var pendingType: TypeChoice? = null
+
+    // handles runtime permission for a single media type
+    private val requestPerm = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
     ) { granted ->
-        // stop if view is gone or fragment detached
+        // safely exit if view is already destroyed
         val root = _vb?.root ?: return@registerForActivityResult
         if (!isAdded) return@registerForActivityResult
 
-        // check granted permissions
-        val type = currentType()
-        val wanted = requiredPerms(type)
-        val ok = wanted.all { granted[it] == true }
+        // read stored type and clear state
+        val type = pendingType
+        pendingType = null
 
-        // go to scan if ok or show snackbar
-        if (ok) navigateToScan(type)
-        else Snackbar.make(root, R.string.perms_denied, Snackbar.LENGTH_LONG).show()
+        // open scan screen or show denied message
+        if (granted && type != null) {
+            navigateToScan(type)
+        } else {
+            Snackbar.make(root, R.string.perms_denied, Snackbar.LENGTH_LONG)
+                .setAction(R.string.action_settings) {
+                    // open system settings for manual permission grant
+                    val intent = android.content.Intent(
+                        android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                        android.net.Uri.fromParts("package", requireContext().packageName, null)
+                    )
+                    startActivity(intent)
+                }
+                .show()
+        }
+
+        // re-enable button regardless of outcome
+        vb.startButton.isEnabled = true
     }
 
     override fun onCreateView(inflater: LayoutInflater, c: ViewGroup?, s: Bundle?): View {
-        // inflate layout
+        // inflate layout for this fragment
         _vb = FragmentHomeBinding.inflate(inflater, c, false)
         return vb.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        // ensure subtitle visible
+        // show subtitle text on home screen
         vb.subtitle.isVisible = true
 
-        // start button logic
+        // main action button for starting scan
         vb.startButton.setOnClickListener {
+            vb.startButton.isEnabled = false
             val type = currentType()
-            if (hasPermission(type)) navigateToScan(type)
-            else requestPerms.launch(requiredPerms(type))
-        }
-    }
+            val perm = requiredPerm(type)
 
-    // determine which type is selected
-    private fun currentType(): TypeChoice = when {
-        vb.homeTypeVideos?.isChecked == true -> TypeChoice.VIDEOS
-        vb.homeTypeAudio?.isChecked == true  -> TypeChoice.AUDIO
-        else                                 -> TypeChoice.PHOTOS
-    }
-
-    // return needed permissions per type
-    private fun requiredPerms(type: TypeChoice): Array<String> {
-        return if (Build.VERSION.SDK_INT < 33) {
-            arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
-        } else {
-            when (type) {
-                TypeChoice.PHOTOS -> arrayOf(Manifest.permission.READ_MEDIA_IMAGES)
-                TypeChoice.VIDEOS -> arrayOf(Manifest.permission.READ_MEDIA_VIDEO)
-                TypeChoice.AUDIO  -> arrayOf(Manifest.permission.READ_MEDIA_AUDIO)
+            // skip permission if already granted
+            if (hasPermission(perm)) {
+                navigateToScan(type)
+                vb.startButton.isEnabled = true
+            } else {
+                // remember chosen type for callback
+                pendingType = type
+                requestPerm.launch(perm)
             }
         }
     }
 
-    // check if required permissions granted
-    private fun hasPermission(type: TypeChoice): Boolean {
-        val perms = requiredPerms(type)
-        return perms.all { p ->
-            ContextCompat.checkSelfPermission(requireContext(), p) == PackageManager.PERMISSION_GRANTED
+    // returns user-selected media type
+    private fun currentType(): TypeChoice = when {
+        vb.homeTypeVideos?.isChecked == true -> TypeChoice.VIDEOS
+        vb.homeTypeAudio?.isChecked == true -> TypeChoice.AUDIO
+        else -> TypeChoice.PHOTOS
+    }
+
+    // returns permission required for given media type
+    private fun requiredPerm(type: TypeChoice): String {
+        return if (Build.VERSION.SDK_INT < 33) {
+            Manifest.permission.READ_EXTERNAL_STORAGE
+        } else {
+            when (type) {
+                TypeChoice.PHOTOS -> Manifest.permission.READ_MEDIA_IMAGES
+                TypeChoice.VIDEOS -> Manifest.permission.READ_MEDIA_VIDEO
+                TypeChoice.AUDIO -> Manifest.permission.READ_MEDIA_AUDIO
+            }
         }
     }
 
-    // navigate to scan fragment with type arg
+    // checks whether a permission is already granted
+    private fun hasPermission(perm: String): Boolean {
+        return ContextCompat.checkSelfPermission(requireContext(), perm) ==
+            PackageManager.PERMISSION_GRANTED
+    }
+
+    // opens scan fragment with selected type argument
     private fun navigateToScan(type: TypeChoice) {
-        val typeArg = when (type) {
-            TypeChoice.PHOTOS -> "PHOTOS"
-            TypeChoice.VIDEOS -> "VIDEOS"
-            TypeChoice.AUDIO  -> "AUDIO"
-        }
         findNavController().navigate(
             R.id.action_home_to_scan,
-            bundleOf("type" to typeArg)
+            bundleOf(ARG_TYPE to type.name)
         )
     }
 
     override fun onDestroyView() {
-        // clear binding reference
+        // clear references and pending state to avoid leaks
+        pendingType = null
         _vb = null
         super.onDestroyView()
     }
