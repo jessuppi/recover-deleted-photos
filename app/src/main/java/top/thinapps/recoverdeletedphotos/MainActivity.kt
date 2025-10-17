@@ -6,6 +6,7 @@ import androidx.core.view.WindowCompat
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
+import androidx.navigation.ui.navigateUp
 import top.thinapps.recoverdeletedphotos.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
