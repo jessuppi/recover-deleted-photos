@@ -10,8 +10,8 @@ android {
         applicationId "top.thinapps.recoverdeletedphotos"
         minSdk 21
         targetSdk 35
-        versionCode 54
-        versionName "0.15.5"
+        versionCode 55
+        versionName "0.15.6"
     }
 
     signingConfigs {
