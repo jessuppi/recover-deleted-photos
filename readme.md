@@ -2,6 +2,10 @@
 
 ## Changelog
 
+### 0.15.2
+- fixed trash badge visibility in grid and list (shows for trashed files)
+- set sort dropdown horizontal padding to 0dp for pixel-perfect alignment with tiles
+
 ### 0.15.1
 - aligned sort bar and results grid with consistent 16dp horizontal padding
 - restored "Recovering..." feedback text and button disable during recovery
