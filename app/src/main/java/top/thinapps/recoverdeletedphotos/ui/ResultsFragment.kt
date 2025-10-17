@@ -17,7 +17,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import coil.load // <-- add Coil
+import coil.load
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -30,26 +30,33 @@ import top.thinapps.recoverdeletedphotos.recover.Recovery
 
 class ResultsFragment : Fragment() {
 
+    // view binding reference
     private var _vb: FragmentResultsBinding? = null
     private val vb get() = _vb!!
 
+    // viewmodel from activity scope
     private val vm: ScanViewModel by activityViewModels()
 
+    // layout state
     private var useGrid = true
     private val selectedIds = linkedSetOf<Long>()
     private lateinit var adapter: MediaAdapter
 
+    // sorting options
     private enum class Sort { DATE_DESC, DATE_ASC, SIZE_DESC, SIZE_ASC, NAME_ASC, NAME_DESC }
     private var currentSort: Sort = Sort.DATE_DESC
 
+    // inflate layout
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _vb = FragmentResultsBinding.inflate(inflater, container, false)
         return vb.root
     }
 
+    // initialize ui and logic
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // setup adapter
         adapter = MediaAdapter(
             isGrid = { useGrid },
             onToggleSelect = { item -> toggleSelection(item) },
@@ -59,9 +66,11 @@ class ResultsFragment : Fragment() {
         updateLayoutManager()
         applySortAndShow()
 
+        // empty view visibility
         vb.empty.isVisible = adapter.itemCount == 0
         updateRecoverButton()
 
+        // handle recover button click
         vb.recoverButton.setOnClickListener {
             val chosen = adapter.currentList.filter { selectedIds.contains(it.id) }
             if (chosen.isEmpty()) return@setOnClickListener
@@ -78,6 +87,7 @@ class ResultsFragment : Fragment() {
             }
         }
 
+        // setup sorting dropdown
         val sortLabels = listOf(
             "date (newest first)",
             "date (oldest first)",
@@ -102,6 +112,7 @@ class ResultsFragment : Fragment() {
             override fun onNothingSelected(parent: AdapterView<*>?) = Unit
         }
 
+        // setup menu actions
         val menuHost: MenuHost = requireActivity()
         menuHost.addMenuProvider(object : MenuProvider {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
@@ -109,7 +120,7 @@ class ResultsFragment : Fragment() {
                 menuInflater.inflate(R.menu.menu_results, menu)
                 val item = menu.findItem(R.id.action_toggle_layout)
                 refreshToggleMenuIcon(item)
-                tintMenuItemIcon(item, androidx.appcompat.R.attr.colorControlNormal) // ensure visibility on light toolbar
+                tintMenuItemIcon(item, androidx.appcompat.R.attr.colorControlNormal)
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
@@ -127,6 +138,7 @@ class ResultsFragment : Fragment() {
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 
+    // switch menu icon between grid and list
     private fun refreshToggleMenuIcon(item: MenuItem?) {
         if (item == null) return
         if (useGrid) {
@@ -138,6 +150,7 @@ class ResultsFragment : Fragment() {
         }
     }
 
+    // tint menu icons based on theme
     private fun tintMenuItemIcon(item: MenuItem?, @AttrRes attr: Int) {
         if (item?.icon == null) return
         val color = resolveAttrColor(attr)
@@ -147,11 +160,13 @@ class ResultsFragment : Fragment() {
         item.iconTintList = ColorStateList.valueOf(color)
     }
 
+    // resolve theme color
     private fun resolveAttrColor(@AttrRes attr: Int): Int {
         val ta = requireContext().theme.obtainStyledAttributes(intArrayOf(attr))
         return try { ta.getColor(0, 0xFF000000.toInt()) } finally { ta.recycle() }
     }
 
+    // switch between grid and list layout
     private fun updateLayoutManager() {
         vb.list.layoutManager = if (useGrid) {
             GridLayoutManager(requireContext(), 3)
@@ -160,6 +175,7 @@ class ResultsFragment : Fragment() {
         }
     }
 
+    // apply sorting and show list
     private fun applySortAndShow() {
         val base = vm.results
         val sorted = when (currentSort) {
@@ -174,6 +190,7 @@ class ResultsFragment : Fragment() {
         vb.empty.isVisible = sorted.isEmpty()
     }
 
+    // handle media selection toggles
     private fun toggleSelection(item: MediaItem) {
         if (!selectedIds.remove(item.id)) selectedIds.add(item.id)
         updateRecoverButton()
@@ -181,6 +198,7 @@ class ResultsFragment : Fragment() {
         if (idx != -1) adapter.notifyItemChanged(idx)
     }
 
+    // update button state and label
     private fun updateRecoverButton() {
         val count = selectedIds.size
         vb.recoverButton.isEnabled = count > 0
@@ -191,11 +209,13 @@ class ResultsFragment : Fragment() {
         }
     }
 
+    // cleanup binding
     override fun onDestroyView() {
         super.onDestroyView()
         _vb = null
     }
 
+    // adapter for grid/list view
     private inner class MediaAdapter(
         private val isGrid: () -> Boolean,
         private val onToggleSelect: (MediaItem) -> Unit,
@@ -226,6 +246,7 @@ class ResultsFragment : Fragment() {
             }
         }
 
+        // list item view holder
         private inner class ListVH(private val b: ItemMediaBinding) : RecyclerView.ViewHolder(b.root) {
             fun bind(item: MediaItem) {
                 b.thumb.load(item.uri)
@@ -239,11 +260,15 @@ class ResultsFragment : Fragment() {
                 b.check.setOnCheckedChangeListener(null)
                 b.check.isChecked = selected
                 b.check.setOnCheckedChangeListener { _, _ -> onToggleSelect(item) }
+                // show badge if file is from trash
+                val trashed = (item.origin == MediaItem.Origin.TRASHED)
+                b.badge?.isVisible = trashed
                 b.root.setOnClickListener { onToggleSelect(item) }
                 b.root.setOnLongClickListener { onToggleSelect(item); true }
             }
         }
 
+        // grid item view holder
         private inner class GridVH(private val b: ItemMediaGridBinding) : RecyclerView.ViewHolder(b.root) {
             fun bind(item: MediaItem) {
                 b.thumb.load(item.uri)
@@ -253,6 +278,9 @@ class ResultsFragment : Fragment() {
                 b.check.setOnCheckedChangeListener(null)
                 b.check.isChecked = selected
                 b.check.setOnCheckedChangeListener { _, _ -> onToggleSelect(item) }
+                // show badge if file is from trash
+                val trashed = (item.origin == MediaItem.Origin.TRASHED)
+                b.badge?.isVisible = trashed
                 b.root.setOnClickListener { onToggleSelect(item) }
                 b.root.setOnLongClickListener { onToggleSelect(item); true }
             }
@@ -260,6 +288,7 @@ class ResultsFragment : Fragment() {
     }
 }
 
+// helper to format file sizes
 private fun formatSize(bytes: Long): String {
     if (bytes <= 0) return "0 B"
     val units = arrayOf("B", "KB", "MB", "GB", "TB")
