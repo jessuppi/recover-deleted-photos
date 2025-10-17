@@ -3,9 +3,9 @@
 ## Changelog
 
 ### 0.15.5
-Recovery.kt: added `DATE_TAKEN` field for image/video recovery to preserve original timestamp
-Recovery.kt: specified `"w"` mode in `openOutputStream` for explicit write intent
-Recovery.kt: no logic or behavior changes elsewhere, maintains scoped storage compliance
+- Recovery.kt: added `DATE_TAKEN` field for image/video recovery to preserve original timestamp
+- Recovery.kt: specified `"w"` mode in `openOutputStream` for explicit write intent
+- Recovery.kt: no logic or behavior changes elsewhere, maintains scoped storage compliance
 
 ### 0.15.4
 - build.gradle: removed the kotlin dependency alignment block and now rely on kotlin bom only
