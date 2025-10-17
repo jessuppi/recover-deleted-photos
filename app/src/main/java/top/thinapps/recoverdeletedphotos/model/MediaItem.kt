@@ -3,7 +3,7 @@ package top.thinapps.recoverdeletedphotos.model
 import android.net.Uri
 import kotlinx.parcelize.Parcelize
 import android.os.Parcelable
-import java.text.DateFormat
+import java.text.SimpleDateFormat
 import java.util.*
 
 @Parcelize
@@ -24,9 +24,9 @@ data class MediaItem(
         get() = sharedFormatter.format(Date(dateAddedSec * 1000))
 
     companion object {
-        // shared date formatter
-        private val sharedFormatter: DateFormat by lazy {
-            DateFormat.getDateInstance(DateFormat.MEDIUM, Locale.getDefault())
+        // shared date formatter (consistent across locales)
+        private val sharedFormatter by lazy {
+            SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.US)
         }
     }
 }
