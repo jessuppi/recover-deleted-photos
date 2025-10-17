@@ -45,6 +45,9 @@ object Recovery {
             put(MediaStore.MediaColumns.RELATIVE_PATH, relativePath)
             if (Build.VERSION.SDK_INT >= 29) {
                 put(MediaStore.MediaColumns.IS_PENDING, 1) // keep hidden until fully written
+                if (mime.startsWith("image/") || mime.startsWith("video/")) {
+                    put(MediaStore.MediaColumns.DATE_TAKEN, item.dateAddedSec * 1000) // preserve taken time
+                }
             }
         }
 
@@ -52,7 +55,7 @@ object Recovery {
 
         return try {
             resolver.openInputStream(item.uri)?.use { input ->
-                resolver.openOutputStream(dest)?.use { output ->
+                resolver.openOutputStream(dest, "w")?.use { output ->
                     input.copyTo(output)
                 }
             } ?: throw IOException("null stream")
