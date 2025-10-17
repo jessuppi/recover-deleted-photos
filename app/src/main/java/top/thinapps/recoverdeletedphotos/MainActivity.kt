@@ -3,7 +3,7 @@ package top.thinapps.recoverdeletedphotos
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
-import androidx.navigation.findNavController
+import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.navigateUp
@@ -27,15 +27,21 @@ class MainActivity : AppCompatActivity() {
         // set toolbar as action bar
         setSupportActionBar(vb.toolbar)
 
+        // robust navController lookup via NavHostFragment
+        val navHost =
+            supportFragmentManager.findFragmentById(R.id.nav_host) as NavHostFragment
+        val navController = navHost.navController
+
         // wire navigation to action bar
-        val navController = findNavController(R.id.nav_host)
         appBarConfig = AppBarConfiguration(navController.graph)
         setupActionBarWithNavController(navController, appBarConfig)
     }
 
     // support the up button
     override fun onSupportNavigateUp(): Boolean {
-        val navController = findNavController(R.id.nav_host)
+        val navHost =
+            supportFragmentManager.findFragmentById(R.id.nav_host) as NavHostFragment
+        val navController = navHost.navController
         return navController.navigateUp(appBarConfig) || super.onSupportNavigateUp()
     }
 }
