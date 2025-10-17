@@ -83,11 +83,11 @@ class MediaScanner(private val context: Context) {
             // page on api 30+ to keep CursorWindow small
             if (Build.VERSION.SDK_INT >= 30) {
                 var offset = 0
-                while (true) {
-                    if (!coroutineContext.isActive) break
+                var done = false
+                while (!done && coroutineContext.isActive) {
                     val cancel = CancellationSignal()
                     val (sel, selArgs) = selectionFor(q)
-                    resolverQuery(
+                    val consumed = resolverQuery(
                         uri = q.uri,
                         projection = projection,
                         sortCol = q.sortCol(),
@@ -97,15 +97,18 @@ class MediaScanner(private val context: Context) {
                         offset = offset,
                         signal = cancel
                     )?.use { c ->
-                        val consumed = consumeCursor(c, q, projection, out) { inc ->
+                        consumeCursor(c, q, projection, out) { inc ->
                             found += inc
                             maybeEmitProgress(onProgress, found, total, ::nanoNow, lastEmit).also {
                                 lastEmit = it
                             }
                         }
-                        if (consumed < PAGE_SIZE) break
+                    } ?: 0
+                    if (consumed < PAGE_SIZE) {
+                        done = true
+                    } else {
                         offset += PAGE_SIZE
-                    } ?: break
+                    }
                 }
             } else {
                 val cancel = CancellationSignal()
@@ -292,11 +295,7 @@ class MediaScanner(private val context: Context) {
                 displayName = name,
                 sizeBytes = size,
                 dateAddedSec = dateAdded,
-                origin = if (isTrashed) MediaItem.Origin.TRASHED else MediaItem.Origin.NORMAL,
-                // if your MediaItem has these fields add them; otherwise this is ignored by Kotlin named args
-                mimeType = mime,
-                relativePath = relPath,
-                dateTakenMs = if (dateTaken > 0) dateTaken else null
+                origin = if (isTrashed) MediaItem.Origin.TRASHED else MediaItem.Origin.NORMAL
             )
 
             consumed++
