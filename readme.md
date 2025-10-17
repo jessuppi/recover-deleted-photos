@@ -3,6 +3,7 @@
 ## Changelog
 
 ### 0.15.7
+- MainActivity.kt: replaced `findNavController` lookup with robust `NavHostFragment` method to prevent startup crashes
 - HomeFragment.kt: simplified permission handling using a single launcher and `pendingType` for smoother flow
 - HomeFragment.kt: added settings action in Snackbar for users with denied permissions
 - HomeFragment.kt: added null-safety and lifecycle guards to prevent crashes if view is destroyed
