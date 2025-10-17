@@ -28,6 +28,10 @@
             android:id="@+id/sortDropdown"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:paddingStart="0dp"
+            android:paddingEnd="0dp"
+            android:paddingLeft="0dp"
+            android:paddingRight="0dp"
             android:prompt="@string/results_title" />
     </LinearLayout>
 
