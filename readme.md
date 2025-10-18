@@ -3,9 +3,12 @@
 ## Changelog
 
 ### 0.16.0
-- Android 13+ only: disabled automatic scan on Android 12 and below; added a “Not supported” state for older devices
-- ScanFragment.kt: simplified and modernized permission logic using single launcher and granular media permissions
-- ScanFragment.kt: cleaned constant declarations, reorganized helper methods, and improved structure
+- Android 13+ only: disabled automatic scan on Android 12 and below
+- added “Not supported” UI state with proper localized strings
+- ScanFragment.kt: replaced magic API number with Build.VERSION_CODES.TIRAMISU
+- ScanFragment.kt: simplified permission logic into a single launcher using scoped READ_MEDIA_* permissions
+- ScanFragment.kt: added safe binding helper to prevent async crashes
+- ScanFragment.kt: cleaned constants and reorganized helper methods for readability
 
 ### 0.15.8
 - MainActivity.kt: cached `NavController` instance to avoid repeated lookups and reduce risk of null pointer errors
