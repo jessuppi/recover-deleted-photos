@@ -61,7 +61,11 @@ class HomeFragment : Fragment() {
         vb.startButton.isEnabled = true
     }
 
-    override fun onCreateView(inflater: LayoutInflater, c: ViewGroup?, s: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        c: ViewGroup?,
+        s: Bundle?
+    ): View {
         // inflate layout for this fragment
         _vb = FragmentHomeBinding.inflate(inflater, c, false)
         return vb.root
