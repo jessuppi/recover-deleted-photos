@@ -33,38 +33,44 @@ class MediaScanner(private val context: Context) {
         val out = mutableListOf<MediaItem>()
 
         val queries = buildList {
-            if (includeImages) add(
-                QuerySpec(
-                    uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                    id = MediaStore.Images.Media._ID,
-                    name = MediaStore.Images.Media.DISPLAY_NAME,
-                    size = MediaStore.Images.Media.SIZE,
-                    datePrimary = MediaStore.Images.Media.DATE_ADDED,
-                    // optional columns
-                    dateTaken = MediaStore.Images.Media.DATE_TAKEN
+            if (includeImages) {
+                add(
+                    QuerySpec(
+                        uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                        id = MediaStore.Images.Media._ID,
+                        name = MediaStore.Images.Media.DISPLAY_NAME,
+                        size = MediaStore.Images.Media.SIZE,
+                        datePrimary = MediaStore.Images.Media.DATE_ADDED,
+                        dateTaken = MediaStore.Images.Media.DATE_TAKEN
+                    )
                 )
-            )
-            if (includeVideos) add(
-                QuerySpec(
-                    uri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
-                    id = MediaStore.Video.Media._ID,
-                    name = MediaStore.Video.Media.DISPLAY_NAME,
-                    size = MediaStore.Video.Media.SIZE,
-                    datePrimary = MediaStore.Video.Media.DATE_ADDED,
-                    dateTaken = MediaStore.Video.Media.DATE_TAKEN
+            }
+            if (includeVideos) {
+                add(
+                    QuerySpec(
+                        uri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
+                        id = MediaStore.Video.Media._ID,
+                        name = MediaStore.Video.Media.DISPLAY_NAME,
+                        size = MediaStore.Video.Media.SIZE,
+                        datePrimary = MediaStore.Video.Media.DATE_ADDED,
+                        dateTaken = MediaStore.Video.Media.DATE_TAKEN
+                    )
                 )
-            )
-            if (includeAudio) add(
-                QuerySpec(
-                    uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                    id = MediaStore.Audio.Media._ID,
-                    name = MediaStore.Audio.Media.DISPLAY_NAME,
-                    size = MediaStore.Audio.Media.SIZE,
-                    datePrimary = MediaStore.Audio.Media.DATE_ADDED,
-                    dateTaken = null
+            }
+            if (includeAudio) {
+                add(
+                    QuerySpec(
+                        uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                        id = MediaStore.Audio.Media._ID,
+                        name = MediaStore.Audio.Media.DISPLAY_NAME,
+                        size = MediaStore.Audio.Media.SIZE,
+                        datePrimary = MediaStore.Audio.Media.DATE_ADDED,
+                        dateTaken = null
+                    )
                 )
-            )
+            }
         }
+
         if (queries.isEmpty()) return@withContext emptyList<MediaItem>()
 
         // total count (single pass per table)
@@ -137,7 +143,6 @@ class MediaScanner(private val context: Context) {
         out
     }
 
-    // count helper wrapped in try/catch
     private fun safeQueryCount(q: QuerySpec, selection: String?, args: Array<String>?): Int {
         return try {
             resolverQuery(
@@ -157,13 +162,10 @@ class MediaScanner(private val context: Context) {
         }
     }
 
-    // selection including is_pending on api 29
     private fun selectionFor(q: QuerySpec): Pair<String?, Array<String>?> {
-        // base
         var sel = SEL_BASE
         val args = SEL_ARGS_BASE.toMutableList()
 
-        // api 29 pending rows should be excluded explicitly in legacy selection path
         if (Build.VERSION.SDK_INT == 29) {
             sel += " AND ${MediaStore.MediaColumns.IS_PENDING} = 0"
         }
@@ -171,7 +173,6 @@ class MediaScanner(private val context: Context) {
         return sel to args.toTypedArray()
     }
 
-    // projection with optional columns
     private fun buildProjection(q: QuerySpec): Array<String> {
         val base = mutableListOf(q.id, q.name, q.size, q.datePrimary)
         if (q.dateTaken != null) base += q.dateTaken
@@ -181,7 +182,6 @@ class MediaScanner(private val context: Context) {
         return base.toTypedArray()
     }
 
-    // unified query path across apis
     private fun resolverQuery(
         uri: Uri,
         projection: Array<String>,
@@ -199,24 +199,11 @@ class MediaScanner(private val context: Context) {
             limit = limit,
             offset = offset
         )
-        context.contentResolver.query(
-            uri,
-            projection,
-            extras,
-            signal
-        )
+        context.contentResolver.query(uri, projection, extras, signal)
     } else {
-        // legacy sort order branch
-        context.contentResolver.query(
-            uri,
-            projection,
-            selection,
-            selectionArgs,
-            "$sortCol DESC"
-        )
+        context.contentResolver.query(uri, projection, selection, selectionArgs, "$sortCol DESC")
     }
 
-    // query args for api 26+; trashed only on api 30+
     private fun buildQueryExtras(
         sortCol: String,
         selection: String?,
@@ -250,12 +237,10 @@ class MediaScanner(private val context: Context) {
             }
             if (Build.VERSION.SDK_INT >= 30) {
                 putInt(MediaStore.QUERY_ARG_MATCH_TRASHED, MediaStore.MATCH_INCLUDE)
-                // pending stays excluded by default; no explicit include
             }
         }
     }
 
-    // consume a cursor and append media items
     private suspend fun consumeCursor(
         c: android.database.Cursor,
         q: QuerySpec,
@@ -316,7 +301,7 @@ class MediaScanner(private val context: Context) {
         lastEmit: Long
     ): Long {
         val n = now()
-        if (found == total || n - lastEmit > 100_000_000L /* ~100ms */ || (found and 127) == 0) {
+        if (found == total || n - lastEmit > 100_000_000L || (found and 127) == 0) {
             onProgress(found, total)
             return n
         }
