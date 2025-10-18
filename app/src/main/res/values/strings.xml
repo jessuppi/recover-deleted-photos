@@ -56,6 +56,13 @@
     <string name="open_settings">Open Settings</string>
     <string name="action_settings">Settings</string>
 
+    <!-- added for ScanFragment -->
+    <string name="perm_open_settings">Open app settings</string>
+    <string name="perm_request_images">Grant Photos permission</string>
+    <string name="perm_request_videos">Grant Videos permission</string>
+    <string name="perm_request_audio">Grant Audio permission</string>
+    <string name="try_again">Try again</string>
+
     <string name="no_media_title">Nothing found</string>
     <string name="no_media_msg">No deleted files were detected on this device.</string>
 
