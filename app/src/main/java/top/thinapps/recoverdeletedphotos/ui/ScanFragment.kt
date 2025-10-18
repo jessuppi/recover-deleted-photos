@@ -9,11 +9,13 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.LinearInterpolator
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.core.animation.doOnEnd
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -52,6 +54,7 @@ class ScanFragment : Fragment() {
         private const val COUNT_ANIM_MS = 3_800L
         private const val POST_ANIM_DWELL_MS = 1_200L
         private const val PULSE_CYCLE_MS = 2_800L
+        private const val TAG = "ScanFragment"
     }
 
     // gates
@@ -68,7 +71,12 @@ class ScanFragment : Fragment() {
         }
     }
 
-    // single-permission launcher (Android 13+ only)
+    // helper to avoid vb!! from late callbacks
+    private inline fun withVb(block: FragmentScanBinding.() -> Unit) {
+        _vb?.let(block)
+    }
+
+    // single-permission launcher (android 13+ only)
     private val requestPerm =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
             if (granted) {
@@ -89,7 +97,20 @@ class ScanFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         vb.cancelButton.setOnClickListener { cancel() }
 
-        // Only support Android 13+ where granular media permissions exist.
+        // if user returned here and results already exist, skip re-scan
+        if (vm.results.isNotEmpty()) {
+            if (!navigating) {
+                navigating = true
+                vb.cancelButton.isEnabled = false
+                viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+                    val opts = NavOptions.Builder().setPopUpTo(R.id.scanFragment, true).build()
+                    findNavController().navigate(R.id.action_scan_to_results, null, opts)
+                }
+            }
+            return
+        }
+
+        // only support android 13+ where granular media permissions exist
         if (!isAndroid13Plus()) {
             showNotSupportedState()
             return
@@ -107,12 +128,13 @@ class ScanFragment : Fragment() {
         }
     }
 
-    // ---------- permissions (Android 13+) ----------
+    // ---------- permissions (android 13+) ----------
 
     private fun isAndroid13Plus(): Boolean = Build.VERSION.SDK_INT >= 33
 
+    @RequiresApi(33)
     private fun requiredPerm(type: TypeChoice): String {
-        // Called only on Android 13+ in this file
+        // called only on android 13+ in this file
         return when (type) {
             TypeChoice.PHOTOS -> Manifest.permission.READ_MEDIA_IMAGES
             TypeChoice.VIDEOS -> Manifest.permission.READ_MEDIA_VIDEO
@@ -126,7 +148,7 @@ class ScanFragment : Fragment() {
     }
 
     private fun permanentlyDenied(perm: String): Boolean {
-        // If we should NOT show rationale and we don't have the permission, it's likely "Don't ask again".
+        // if we should not show rationale and we don't have the permission, it's likely "don't ask again"
         val shouldShow = shouldShowRequestPermissionRationale(perm)
         return !shouldShow && !hasPermission(perm)
     }
@@ -135,9 +157,12 @@ class ScanFragment : Fragment() {
 
     private fun start(type: TypeChoice) {
         showScanUI(true)
-        job = viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
+
+        // main dispatcher is default; no need to specify
+        job = viewLifecycleOwner.lifecycleScope.launch {
+            // always stop pulses when this job ends for any reason
             try {
-                // init UI
+                // init ui
                 vb.totalLabel.text = when (type) {
                     TypeChoice.PHOTOS -> getString(R.string.total_photos_label)
                     TypeChoice.VIDEOS -> getString(R.string.total_videos_label)
@@ -148,7 +173,7 @@ class ScanFragment : Fragment() {
                 countAnimDone = CompletableDeferred()
                 startPulses()
 
-                // MediaStore scan (includes trashed on API 30+, excludes pending)
+                // mediastore scan (includes trashed on api 30+, excludes pending)
                 val items = withContext(Dispatchers.IO) {
                     var totalSeen = 0
                     MediaScanner(requireContext().applicationContext).scan(
@@ -158,13 +183,15 @@ class ScanFragment : Fragment() {
                     ) { _, total ->
                         if (totalSeen == 0 && total > 0) {
                             totalSeen = total
-                            viewLifecycleOwner.lifecycleScope.launch { animateCountTo(totalSeen) }
+                            // update count animation on main safely
+                            viewLifecycleOwner.lifecycleScope.launch {
+                                animateCountTo(totalSeen)
+                            }
                         }
                     }
                 }
 
                 if (items.isEmpty()) {
-                    stopPulses()
                     showNoMediaState()
                     return@launch
                 }
@@ -174,19 +201,28 @@ class ScanFragment : Fragment() {
                 // wait for the count animation to finish (short dwell)
                 countAnimDone.await()
 
-                val current = findNavController().currentDestination?.id
-                if (!navigating && isResumed && current == R.id.scanFragment) {
+                // navigate once we are resumed to avoid state exceptions
+                if (!navigating) {
                     navigating = true
                     vb.cancelButton.isEnabled = false
-                    val opts = NavOptions.Builder()
-                        .setPopUpTo(R.id.scanFragment, true)
-                        .build()
-                    findNavController().navigate(R.id.action_scan_to_results, null, opts)
+                    viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+                        val current = findNavController().currentDestination?.id
+                        if (current == R.id.scanFragment) {
+                            val opts = NavOptions.Builder()
+                                .setPopUpTo(R.id.scanFragment, true)
+                                .build()
+                            findNavController().navigate(R.id.action_scan_to_results, null, opts)
+                        }
+                    }
                 }
             } catch (t: Throwable) {
                 if (t is CancellationException) return@launch
-                stopPulses()
+                // light logging for future debugging
+                Log.w(TAG, "scan failed", t)
                 showErrorState()
+            } finally {
+                // ensure animations are stopped on any path
+                stopPulses()
             }
         }
     }
@@ -198,9 +234,13 @@ class ScanFragment : Fragment() {
             interpolator = FastOutSlowInInterpolator()
             addUpdateListener { a ->
                 val v = a.animatedValue as Int
-                vb.totalCount.text = getString(R.string.total_files_count, v)
+                // guard against view being destroyed while animator is still posting frames
+                withVb {
+                    totalCount.text = getString(R.string.total_files_count, v)
+                }
             }
             doOnEnd {
+                // delay a short dwell then complete gate
                 viewLifecycleOwner.lifecycleScope.launch {
                     delay(POST_ANIM_DWELL_MS)
                     if (!countAnimDone.isCompleted) countAnimDone.complete(Unit)
@@ -246,13 +286,16 @@ class ScanFragment : Fragment() {
         countAnimator?.cancel()
         countAnimator = null
 
-        vb.pulse1.alpha = 0f
-        vb.pulse1.scaleX = 1f
-        vb.pulse1.scaleY = 1f
+        // reset visuals safely
+        withVb {
+            pulse1.alpha = 0f
+            pulse1.scaleX = 1f
+            pulse1.scaleY = 1f
 
-        vb.pulse2.alpha = 0f
-        vb.pulse2.scaleX = 1f
-        vb.pulse2.scaleY = 1f
+            pulse2.alpha = 0f
+            pulse2.scaleX = 1f
+            pulse2.scaleY = 1f
+        }
     }
 
     private fun cancel() {
@@ -273,7 +316,7 @@ class ScanFragment : Fragment() {
         }
     }
 
-    // ---------- UI states ----------
+    // ---------- ui states ----------
 
     private fun showScanUI(show: Boolean) {
         vb.scanContent.visibility = if (show) View.VISIBLE else View.GONE
@@ -284,6 +327,7 @@ class ScanFragment : Fragment() {
     private fun showNotSupportedState() {
         showScanUI(false)
         vb.stateTitle.text = getString(R.string.scan_error_title)
+        // todo: consider a dedicated "android 13+ required" message
         vb.stateMessage.text = getString(R.string.perm_required_msg)
         vb.statePrimary.text = getString(R.string.go_home)
         vb.statePrimary.setOnClickListener {
