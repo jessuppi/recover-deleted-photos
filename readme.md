@@ -5,8 +5,8 @@
 ### 0.16.0
 - Android 13+ only: disabled automatic scan on Android 12 and below
 - added “Not supported” UI state with proper localized strings
-- ScanFragment.kt: replaced magic API number with Build.VERSION_CODES.TIRAMISU
-- ScanFragment.kt: simplified permission logic into a single launcher using scoped READ_MEDIA_* permissions
+- ScanFragment.kt: replaced magic API number with `Build.VERSION_CODES.TIRAMISU`
+- ScanFragment.kt: simplified permission logic into a single launcher using scoped `READ_MEDIA_*` permissions
 - ScanFragment.kt: added safe binding helper to prevent async crashes
 - ScanFragment.kt: cleaned constants and reorganized helper methods for readability
 
