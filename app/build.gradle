@@ -10,8 +10,8 @@ android {
         applicationId "top.thinapps.recoverdeletedphotos"
         minSdk 21
         targetSdk 35
-        versionCode 58
-        versionName "0.16.0"
+        versionCode 59
+        versionName "0.16.1"
     }
 
     signingConfigs {
@@ -74,6 +74,9 @@ dependencies {
 
     // image loading
     implementation "io.coil-kt:coil:2.7.0"
+
+    // interpolators for ScanFragment animations
+    implementation "androidx.interpolator:interpolator:1.0.0"
 
     // optional helpers for future features or backward compat
     implementation "androidx.preference:preference-ktx:1.2.1"
