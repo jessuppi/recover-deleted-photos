@@ -9,7 +9,6 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -54,7 +53,6 @@ class ScanFragment : Fragment() {
         private const val COUNT_ANIM_MS = 3_800L
         private const val POST_ANIM_DWELL_MS = 1_200L
         private const val PULSE_CYCLE_MS = 2_800L
-        private const val TAG = "ScanFragment"
     }
 
     // gates
@@ -97,7 +95,7 @@ class ScanFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         vb.cancelButton.setOnClickListener { cancel() }
 
-        // if user returned here and results already exist, skip re-scan
+        // skip re-scan if results already exist
         if (vm.results.isNotEmpty()) {
             if (!navigating) {
                 navigating = true
@@ -117,7 +115,7 @@ class ScanFragment : Fragment() {
         }
 
         val t = selectedType
-        val perm = requiredPerm(t) // always one of READ_MEDIA_* on 33+
+        val perm = requiredPerm(t)
         if (hasPermission(perm)) {
             if (!started) {
                 started = true
@@ -128,13 +126,10 @@ class ScanFragment : Fragment() {
         }
     }
 
-    // ---------- permissions (android 13+) ----------
-
     private fun isAndroid13Plus(): Boolean = Build.VERSION.SDK_INT >= 33
 
     @RequiresApi(33)
     private fun requiredPerm(type: TypeChoice): String {
-        // called only on android 13+ in this file
         return when (type) {
             TypeChoice.PHOTOS -> Manifest.permission.READ_MEDIA_IMAGES
             TypeChoice.VIDEOS -> Manifest.permission.READ_MEDIA_VIDEO
@@ -148,21 +143,15 @@ class ScanFragment : Fragment() {
     }
 
     private fun permanentlyDenied(perm: String): Boolean {
-        // if we should not show rationale and we don't have the permission, it's likely "don't ask again"
         val shouldShow = shouldShowRequestPermissionRationale(perm)
         return !shouldShow && !hasPermission(perm)
     }
 
-    // ---------- flow ----------
-
     private fun start(type: TypeChoice) {
         showScanUI(true)
 
-        // main dispatcher is default; no need to specify
         job = viewLifecycleOwner.lifecycleScope.launch {
-            // always stop pulses when this job ends for any reason
             try {
-                // init ui
                 vb.totalLabel.text = when (type) {
                     TypeChoice.PHOTOS -> getString(R.string.total_photos_label)
                     TypeChoice.VIDEOS -> getString(R.string.total_videos_label)
@@ -173,7 +162,6 @@ class ScanFragment : Fragment() {
                 countAnimDone = CompletableDeferred()
                 startPulses()
 
-                // mediastore scan (includes trashed on api 30+, excludes pending)
                 val items = withContext(Dispatchers.IO) {
                     var totalSeen = 0
                     MediaScanner(requireContext().applicationContext).scan(
@@ -183,7 +171,6 @@ class ScanFragment : Fragment() {
                     ) { _, total ->
                         if (totalSeen == 0 && total > 0) {
                             totalSeen = total
-                            // update count animation on main safely
                             viewLifecycleOwner.lifecycleScope.launch {
                                 animateCountTo(totalSeen)
                             }
@@ -197,11 +184,8 @@ class ScanFragment : Fragment() {
                 }
 
                 vm.results = items
-
-                // wait for the count animation to finish (short dwell)
                 countAnimDone.await()
 
-                // navigate once we are resumed to avoid state exceptions
                 if (!navigating) {
                     navigating = true
                     vb.cancelButton.isEnabled = false
@@ -217,11 +201,8 @@ class ScanFragment : Fragment() {
                 }
             } catch (t: Throwable) {
                 if (t is CancellationException) return@launch
-                // light logging for future debugging
-                Log.w(TAG, "scan failed", t)
                 showErrorState()
             } finally {
-                // ensure animations are stopped on any path
                 stopPulses()
             }
         }
@@ -234,13 +215,11 @@ class ScanFragment : Fragment() {
             interpolator = FastOutSlowInInterpolator()
             addUpdateListener { a ->
                 val v = a.animatedValue as Int
-                // guard against view being destroyed while animator is still posting frames
                 withVb {
                     totalCount.text = getString(R.string.total_files_count, v)
                 }
             }
             doOnEnd {
-                // delay a short dwell then complete gate
                 viewLifecycleOwner.lifecycleScope.launch {
                     delay(POST_ANIM_DWELL_MS)
                     if (!countAnimDone.isCompleted) countAnimDone.complete(Unit)
@@ -286,7 +265,6 @@ class ScanFragment : Fragment() {
         countAnimator?.cancel()
         countAnimator = null
 
-        // reset visuals safely
         withVb {
             pulse1.alpha = 0f
             pulse1.scaleX = 1f
@@ -316,8 +294,6 @@ class ScanFragment : Fragment() {
         }
     }
 
-    // ---------- ui states ----------
-
     private fun showScanUI(show: Boolean) {
         vb.scanContent.visibility = if (show) View.VISIBLE else View.GONE
         vb.stateContainer.visibility = if (show) View.GONE else View.VISIBLE
@@ -327,7 +303,6 @@ class ScanFragment : Fragment() {
     private fun showNotSupportedState() {
         showScanUI(false)
         vb.stateTitle.text = getString(R.string.scan_error_title)
-        // todo: consider a dedicated "android 13+ required" message
         vb.stateMessage.text = getString(R.string.perm_required_msg)
         vb.statePrimary.text = getString(R.string.go_home)
         vb.statePrimary.setOnClickListener {
@@ -344,7 +319,7 @@ class ScanFragment : Fragment() {
         vb.stateTitle.text = getString(R.string.perm_required_title)
         vb.stateMessage.text = getString(R.string.perm_required_msg)
 
-        val perm = requiredPerm(selectedType) // only called on 33+
+        val perm = requiredPerm(selectedType)
         vb.statePrimary.text =
             if (permanentlyDenied(perm)) getString(R.string.open_settings)
             else getString(R.string.perm_grant)
