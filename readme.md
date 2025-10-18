@@ -2,6 +2,10 @@
 
 ## Changelog
 
+### 0.15.8
+- MainActivity.kt: cached `NavController` instance to avoid repeated lookups and reduce risk of null pointer errors
+- MainActivity.kt: added null-safe `NavHostFragment` lookup with early return to prevent potential crashes if layout id changes
+
 ### 0.15.7
 - MainActivity.kt: replaced `findNavController` lookup with robust `NavHostFragment` method to prevent startup crashes
 - HomeFragment.kt: simplified permission handling using a single launcher and `pendingType` for smoother flow
