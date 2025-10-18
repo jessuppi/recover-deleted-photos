@@ -1,8 +1,8 @@
 package top.thinapps.recoverdeletedphotos.model
 
 import android.net.Uri
-import kotlinx.parcelize.Parcelize
 import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 import java.text.SimpleDateFormat
 import java.util.*
 
