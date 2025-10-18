@@ -5,6 +5,8 @@
 ### 0.15.8
 - MainActivity.kt: cached `NavController` instance to avoid repeated lookups and reduce risk of null pointer errors
 - MainActivity.kt: added null-safe `NavHostFragment` lookup with early return to prevent potential crashes if layout id changes
+- ResultsFragment.kt: switched to explicit `android.view` imports (no wildcard) for clearer tooling and style consistency
+- ResultsFragment.kt: replaced `java.lang.Math` with `kotlin.math` (`log10`, `pow`) in `formatSize()` for idiomatic Kotlin
 - reformatted some files to standard Android Studio style and added concise inline comments
 
 ### 0.15.7
