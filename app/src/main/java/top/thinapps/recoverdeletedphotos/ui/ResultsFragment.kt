@@ -2,7 +2,12 @@ package top.thinapps.recoverdeletedphotos.ui
 
 import android.content.res.ColorStateList
 import android.os.Bundle
-import android.view.*
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.annotation.AttrRes
@@ -28,6 +33,8 @@ import top.thinapps.recoverdeletedphotos.databinding.ItemMediaBinding
 import top.thinapps.recoverdeletedphotos.databinding.ItemMediaGridBinding
 import top.thinapps.recoverdeletedphotos.model.MediaItem
 import top.thinapps.recoverdeletedphotos.recover.Recovery
+import kotlin.math.log10
+import kotlin.math.pow
 
 class ResultsFragment : Fragment() {
 
@@ -317,8 +324,8 @@ class ResultsFragment : Fragment() {
 private fun formatSize(bytes: Long): String {
     if (bytes <= 0) return "0 B"
     val units = arrayOf("B", "KB", "MB", "GB", "TB")
-    val group = (Math.log10(bytes.toDouble()) / Math.log10(1024.0)).toInt()
+    val group = (log10(bytes.toDouble()) / log10(1024.0)).toInt()
         .coerceAtMost(units.lastIndex)
-    val scaled = bytes / Math.pow(1024.0, group.toDouble())
+    val scaled = bytes / 1024.0.pow(group)
     return String.format("%.1f %s", scaled, units[group])
 }
