@@ -2,6 +2,9 @@
 
 ## Changelog
 
+### 0.16.1
+- fixed crash by adding `androidx.interpolator` dependency for animation compatibility
+
 ### 0.16.0
 - Android 13+ only: disabled automatic scan on Android 12 and below  
 - added “Not supported” UI state with proper localized strings  
