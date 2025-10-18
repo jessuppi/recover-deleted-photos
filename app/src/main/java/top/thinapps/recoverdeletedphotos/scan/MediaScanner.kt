@@ -16,7 +16,7 @@ import top.thinapps.recoverdeletedphotos.model.MediaItem
 
 class MediaScanner(private val context: Context) {
 
-    // basic row hygiene
+    // constants for selection and paging
     private companion object {
         private const val SEL_BASE =
             "${MediaStore.MediaColumns.SIZE} > ? AND ${MediaStore.MediaColumns.MIME_TYPE} IS NOT NULL"
@@ -24,6 +24,7 @@ class MediaScanner(private val context: Context) {
         private const val PAGE_SIZE = 500
     }
 
+    // main scan routine across image/video/audio tables
     suspend fun scan(
         includeImages: Boolean,
         includeVideos: Boolean,
@@ -32,6 +33,7 @@ class MediaScanner(private val context: Context) {
     ): List<MediaItem> = withContext(Dispatchers.IO) {
         val out = mutableListOf<MediaItem>()
 
+        // build query list based on user selections
         val queries = buildList {
             if (includeImages) {
                 add(
@@ -71,9 +73,10 @@ class MediaScanner(private val context: Context) {
             }
         }
 
+        // return early if nothing selected
         if (queries.isEmpty()) return@withContext emptyList<MediaItem>()
 
-        // total count (single pass per table)
+        // calculate total count (helps progress tracking)
         val total = queries.sumOf { q ->
             safeQueryCount(q, selectionFor(q).first, selectionFor(q).second)
         }.coerceAtLeast(1)
@@ -81,12 +84,13 @@ class MediaScanner(private val context: Context) {
         var found = 0
         var lastEmit = 0L
 
+        // process each query sequentially
         for (q in queries) {
             if (!coroutineContext.isActive) break
 
             val projection = buildProjection(q)
 
-            // page on api 30+ to keep CursorWindow small
+            // page results on api 30+ to reduce cursor memory
             if (Build.VERSION.SDK_INT >= 30) {
                 var offset = 0
                 var done = false
@@ -117,6 +121,7 @@ class MediaScanner(private val context: Context) {
                     }
                 }
             } else {
+                // legacy non-paged path
                 val cancel = CancellationSignal()
                 val (sel, selArgs) = selectionFor(q)
                 resolverQuery(
@@ -139,10 +144,12 @@ class MediaScanner(private val context: Context) {
             }
         }
 
+        // final progress update
         onProgress(found, total)
         out
     }
 
+    // count rows safely with fallback to 0
     private fun safeQueryCount(q: QuerySpec, selection: String?, args: Array<String>?): Int {
         return try {
             resolverQuery(
@@ -162,6 +169,7 @@ class MediaScanner(private val context: Context) {
         }
     }
 
+    // selection helper adds IS_PENDING exclusion on api 29
     private fun selectionFor(q: QuerySpec): Pair<String?, Array<String>?> {
         var sel = SEL_BASE
         val args = SEL_ARGS_BASE.toMutableList()
@@ -173,6 +181,7 @@ class MediaScanner(private val context: Context) {
         return sel to args.toTypedArray()
     }
 
+    // build projection dynamically per query type
     private fun buildProjection(q: QuerySpec): Array<String> {
         val base = mutableListOf(q.id, q.name, q.size, q.datePrimary)
         if (q.dateTaken != null) base += q.dateTaken
@@ -182,6 +191,7 @@ class MediaScanner(private val context: Context) {
         return base.toTypedArray()
     }
 
+    // unified resolver query for both modern and legacy apis
     private fun resolverQuery(
         uri: Uri,
         projection: Array<String>,
@@ -204,6 +214,7 @@ class MediaScanner(private val context: Context) {
         context.contentResolver.query(uri, projection, selection, selectionArgs, "$sortCol DESC")
     }
 
+    // extras bundle for api 26+ query options
     private fun buildQueryExtras(
         sortCol: String,
         selection: String?,
@@ -212,10 +223,7 @@ class MediaScanner(private val context: Context) {
         offset: Int?
     ): Bundle {
         return Bundle().apply {
-            putStringArray(
-                android.content.ContentResolver.QUERY_ARG_SORT_COLUMNS,
-                arrayOf(sortCol)
-            )
+            putStringArray(android.content.ContentResolver.QUERY_ARG_SORT_COLUMNS, arrayOf(sortCol))
             putInt(
                 android.content.ContentResolver.QUERY_ARG_SORT_DIRECTION,
                 android.content.ContentResolver.QUERY_SORT_DIRECTION_DESCENDING
@@ -229,18 +237,15 @@ class MediaScanner(private val context: Context) {
                     )
                 }
             }
-            if (limit != null) {
-                putInt(android.content.ContentResolver.QUERY_ARG_LIMIT, limit)
-            }
-            if (offset != null) {
-                putInt(android.content.ContentResolver.QUERY_ARG_OFFSET, offset)
-            }
+            if (limit != null) putInt(android.content.ContentResolver.QUERY_ARG_LIMIT, limit)
+            if (offset != null) putInt(android.content.ContentResolver.QUERY_ARG_OFFSET, offset)
             if (Build.VERSION.SDK_INT >= 30) {
                 putInt(MediaStore.QUERY_ARG_MATCH_TRASHED, MediaStore.MATCH_INCLUDE)
             }
         }
     }
 
+    // iterate cursor and build media items
     private suspend fun consumeCursor(
         c: android.database.Cursor,
         q: QuerySpec,
@@ -269,9 +274,6 @@ class MediaScanner(private val context: Context) {
             val name = c.getString(nameIdx)?.takeIf { it.isNotBlank() } ?: "recovered_$id"
             val size = c.getLong(sizeIdx)
             val dateAdded = c.getLong(dateIdx)
-            val dateTaken = if (dateTakenIdx != -1) c.getLong(dateTakenIdx) else 0L
-            val mime = if (mimeIdx != -1) c.getString(mimeIdx) else null
-            val relPath = if (relPathIdx != -1) c.getString(relPathIdx) else null
             val isTrashed = trashedIdx != -1 && c.getInt(trashedIdx) == 1
 
             out += MediaItem(
@@ -286,13 +288,13 @@ class MediaScanner(private val context: Context) {
             consumed++
             onItems(1)
 
-            if ((consumed and 127) == 0) {
-                yield()
-            }
+            // yield occasionally to stay responsive
+            if ((consumed and 127) == 0) yield()
         }
         return consumed
     }
 
+    // rate-limit progress updates to ~100ms
     private fun maybeEmitProgress(
         onProgress: (Int, Int) -> Unit,
         found: Int,
@@ -308,8 +310,10 @@ class MediaScanner(private val context: Context) {
         return lastEmit
     }
 
+    // monotonic timer for throttling
     private fun nanoNow(): Long = System.nanoTime()
 
+    // spec definition for per-table query
     private data class QuerySpec(
         val uri: Uri,
         val id: String,
