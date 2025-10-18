@@ -2,6 +2,10 @@
 
 ## Changelog
 
+### 0.16.2
+- fixed “Scan error” issue by validating permissions before launching scan
+- added safe handling around MediaScanner to prevent false scan failures
+
 ### 0.16.1
 - fixed crash by adding `androidx.interpolator` dependency for animation compatibility
 
