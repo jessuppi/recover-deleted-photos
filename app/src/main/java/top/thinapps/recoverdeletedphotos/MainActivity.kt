@@ -14,6 +14,7 @@ class MainActivity : AppCompatActivity() {
 
     // nav appbar config for proper up behavior
     private lateinit var appBarConfig: AppBarConfiguration
+
     // keep a reference so we don't refetch on every up press
     private lateinit var navController: NavController
 
@@ -33,7 +34,7 @@ class MainActivity : AppCompatActivity() {
         // robust navController lookup via NavHostFragment (null-safe)
         val navHost = supportFragmentManager
             .findFragmentById(R.id.nav_host) as? NavHostFragment
-            ?: return  // if layout id changes, fail safe without crashing
+            ?: return // if layout id changes, fail safe without crashing
 
         navController = navHost.navController
 
@@ -45,7 +46,9 @@ class MainActivity : AppCompatActivity() {
     // support the up button
     override fun onSupportNavigateUp(): Boolean {
         // use the cached controller; fallback to super if not initialized
-        if (!::navController.isInitialized) return super.onSupportNavigateUp()
+        if (!::navController.isInitialized) {
+            return super.onSupportNavigateUp()
+        }
         return navController.navigateUp(appBarConfig) || super.onSupportNavigateUp()
     }
 }
