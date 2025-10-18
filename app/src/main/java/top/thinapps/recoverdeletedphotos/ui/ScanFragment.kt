@@ -140,6 +140,12 @@ class ScanFragment : Fragment() {
         }
     }
 
+    private fun hasPermission(type: TypeChoice): Boolean {
+        if (!isAndroid13Plus()) return false
+        val p = requiredPerm(type)
+        return ContextCompat.checkSelfPermission(requireContext(), p) == PackageManager.PERMISSION_GRANTED
+    }
+
     // ---------- scanning ----------
 
     private var countAnimDone = CompletableDeferred<Unit>()
@@ -149,6 +155,13 @@ class ScanFragment : Fragment() {
 
         job = viewLifecycleOwner.lifecycleScope.launch {
             try {
+                // verify permission again right before scanning (prevents SecurityException)
+                if (!hasPermission(type)) {
+                    showPermissionState()
+                    stopPulses()
+                    return@launch
+                }
+
                 // init UI
                 vb.totalLabel.text = when (type) {
                     TypeChoice.PHOTOS -> getString(R.string.total_photos_label)
@@ -161,18 +174,28 @@ class ScanFragment : Fragment() {
                 startPulses()
 
                 // MediaStore scan (includes trashed on API 30+, excludes pending)
-                val items = withContext(Dispatchers.IO) {
-                    var lastTotal = 0
-                    MediaScanner(requireContext().applicationContext).scan(
-                        includeImages = type == TypeChoice.PHOTOS,
-                        includeVideos = type == TypeChoice.VIDEOS,
-                        includeAudio = type == TypeChoice.AUDIO
-                    ) { _, total ->
-                        if (!countAnimDone.isCompleted && total > 0 && total != lastTotal) {
-                            lastTotal = total
-                            animateCountTo(total)
+                val items = runCatching {
+                    withContext(Dispatchers.IO) {
+                        var lastTotal = 0
+                        MediaScanner(requireContext().applicationContext).scan(
+                            includeImages = type == TypeChoice.PHOTOS,
+                            includeVideos = type == TypeChoice.VIDEOS,
+                            includeAudio = type == TypeChoice.AUDIO
+                        ) { _, total ->
+                            if (!countAnimDone.isCompleted && total > 0 && total != lastTotal) {
+                                lastTotal = total
+                                animateCountTo(total)
+                            }
                         }
                     }
+                }.getOrElse {
+                    if (it is SecurityException) {
+                        showPermissionState()
+                    } else {
+                        showErrorState()
+                    }
+                    stopPulses()
+                    return@launch
                 }
 
                 // lock the count animation to the final total
