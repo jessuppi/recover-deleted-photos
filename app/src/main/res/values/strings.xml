@@ -54,6 +54,7 @@
     <string name="perm_required_msg">Allow media access so we can scan your device.</string>
     <string name="perm_grant">Grant</string>
     <string name="open_settings">Open Settings</string>
+    <string name="action_settings">Settings</string>
 
     <string name="no_media_title">Nothing found</string>
     <string name="no_media_msg">No deleted files were detected on this device.</string>
