@@ -39,6 +39,7 @@ class ScanFragment : Fragment() {
 
     private var _vb: FragmentScanBinding? = null
     private val vb get() = _vb!!
+
     private var job: Job? = null
     private val vm: ScanViewModel by activityViewModels()
 
@@ -46,10 +47,12 @@ class ScanFragment : Fragment() {
     private val runningAnims = mutableListOf<ObjectAnimator>()
     private var countAnimator: ValueAnimator? = null
 
-    // timing
-    private val COUNT_ANIM_MS = 3800L
-    private val POST_ANIM_DWELL_MS = 1200L
-    private val PULSE_CYCLE_MS = 2800L
+    // timing (ms)
+    private companion object {
+        private const val COUNT_ANIM_MS = 3_800L
+        private const val POST_ANIM_DWELL_MS = 1_200L
+        private const val PULSE_CYCLE_MS = 2_800L
+    }
 
     // gates
     private lateinit var countAnimDone: CompletableDeferred<Unit>
@@ -60,21 +63,23 @@ class ScanFragment : Fragment() {
     private val selectedType: TypeChoice by lazy {
         when (arguments?.getString("type")) {
             "VIDEOS" -> TypeChoice.VIDEOS
-            "AUDIO"  -> TypeChoice.AUDIO
-            else     -> TypeChoice.PHOTOS
+            "AUDIO" -> TypeChoice.AUDIO
+            else -> TypeChoice.PHOTOS
         }
     }
 
-    // permission launcher for selected type
-    private val requestPerm = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
-        val wanted = requiredPerms(selectedType)
-        val granted = wanted.all { result[it] == true }
-        if (granted) {
-            if (!started) { started = true; start(selectedType) }
-        } else {
-            showPermissionState()
+    // single-permission launcher (Android 13+ only)
+    private val requestPerm =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+            if (granted) {
+                if (!started) {
+                    started = true
+                    start(selectedType)
+                }
+            } else {
+                showPermissionState()
+            }
         }
-    }
 
     override fun onCreateView(inflater: LayoutInflater, c: ViewGroup?, s: Bundle?): View {
         _vb = FragmentScanBinding.inflate(inflater, c, false)
@@ -84,41 +89,46 @@ class ScanFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         vb.cancelButton.setOnClickListener { cancel() }
 
+        // Only support Android 13+ where granular media permissions exist.
+        if (!isAndroid13Plus()) {
+            showNotSupportedState()
+            return
+        }
+
         val t = selectedType
-        if (hasPermission(t)) {
-            if (!started) { started = true; start(t) }
+        val perm = requiredPerm(t) // always one of READ_MEDIA_* on 33+
+        if (hasPermission(perm)) {
+            if (!started) {
+                started = true
+                start(t)
+            }
         } else {
             showPermissionState()
         }
     }
 
-    // ---------- permissions ----------
+    // ---------- permissions (Android 13+) ----------
 
-    private fun requiredPerms(type: TypeChoice): Array<String> =
-        if (Build.VERSION.SDK_INT < 33) {
-            arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
-        } else {
-            when (type) {
-                TypeChoice.PHOTOS -> arrayOf(Manifest.permission.READ_MEDIA_IMAGES)
-                TypeChoice.VIDEOS -> arrayOf(Manifest.permission.READ_MEDIA_VIDEO)
-                TypeChoice.AUDIO  -> arrayOf(Manifest.permission.READ_MEDIA_AUDIO)
-            }
-        }
+    private fun isAndroid13Plus(): Boolean = Build.VERSION.SDK_INT >= 33
 
-    private fun hasPermission(type: TypeChoice): Boolean =
-        requiredPerms(type).all { p ->
-            ContextCompat.checkSelfPermission(requireContext(), p) ==
-                PackageManager.PERMISSION_GRANTED
+    private fun requiredPerm(type: TypeChoice): String {
+        // Called only on Android 13+ in this file
+        return when (type) {
+            TypeChoice.PHOTOS -> Manifest.permission.READ_MEDIA_IMAGES
+            TypeChoice.VIDEOS -> Manifest.permission.READ_MEDIA_VIDEO
+            TypeChoice.AUDIO -> Manifest.permission.READ_MEDIA_AUDIO
         }
+    }
 
-    private fun permanentlyDenied(type: TypeChoice): Boolean {
-        if (Build.VERSION.SDK_INT < 33) {
-            val show = shouldShowRequestPermissionRationale(Manifest.permission.READ_EXTERNAL_STORAGE)
-            return !show && !hasPermission(type)
-        }
-        val perms = requiredPerms(type)
-        val anyShow = perms.any { shouldShowRequestPermissionRationale(it) }
-        return !anyShow && !hasPermission(type)
+    private fun hasPermission(perm: String): Boolean {
+        return ContextCompat.checkSelfPermission(requireContext(), perm) ==
+            PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun permanentlyDenied(perm: String): Boolean {
+        // If we should NOT show rationale and we don't have the permission, it's likely "Don't ask again".
+        val shouldShow = shouldShowRequestPermissionRationale(perm)
+        return !shouldShow && !hasPermission(perm)
     }
 
     // ---------- flow ----------
@@ -131,20 +141,20 @@ class ScanFragment : Fragment() {
                 vb.totalLabel.text = when (type) {
                     TypeChoice.PHOTOS -> getString(R.string.total_photos_label)
                     TypeChoice.VIDEOS -> getString(R.string.total_videos_label)
-                    TypeChoice.AUDIO  -> getString(R.string.total_audio_label)
+                    TypeChoice.AUDIO -> getString(R.string.total_audio_label)
                 }
-
                 vb.totalCount.text = getString(R.string.total_files_count, 0)
+
                 countAnimDone = CompletableDeferred()
                 startPulses()
 
-                // MediaStore-only scan (includes trashed on API 30+, excludes pending)
+                // MediaStore scan (includes trashed on API 30+, excludes pending)
                 val items = withContext(Dispatchers.IO) {
                     var totalSeen = 0
                     MediaScanner(requireContext().applicationContext).scan(
                         includeImages = type == TypeChoice.PHOTOS,
                         includeVideos = type == TypeChoice.VIDEOS,
-                        includeAudio  = type == TypeChoice.AUDIO
+                        includeAudio = type == TypeChoice.AUDIO
                     ) { _, total ->
                         if (totalSeen == 0 && total > 0) {
                             totalSeen = total
@@ -161,13 +171,16 @@ class ScanFragment : Fragment() {
 
                 vm.results = items
 
+                // wait for the count animation to finish (short dwell)
                 countAnimDone.await()
 
                 val current = findNavController().currentDestination?.id
                 if (!navigating && isResumed && current == R.id.scanFragment) {
                     navigating = true
                     vb.cancelButton.isEnabled = false
-                    val opts = NavOptions.Builder().setPopUpTo(R.id.scanFragment, true).build()
+                    val opts = NavOptions.Builder()
+                        .setPopUpTo(R.id.scanFragment, true)
+                        .build()
                     findNavController().navigate(R.id.action_scan_to_results, null, opts)
                 }
             } catch (t: Throwable) {
@@ -232,9 +245,11 @@ class ScanFragment : Fragment() {
         runningAnims.clear()
         countAnimator?.cancel()
         countAnimator = null
+
         vb.pulse1.alpha = 0f
         vb.pulse1.scaleX = 1f
         vb.pulse1.scaleY = 1f
+
         vb.pulse2.alpha = 0f
         vb.pulse2.scaleX = 1f
         vb.pulse2.scaleY = 1f
@@ -243,6 +258,7 @@ class ScanFragment : Fragment() {
     private fun cancel() {
         job?.cancel()
         stopPulses()
+
         val nav = findNavController()
         if (!navigating) {
             navigating = true
@@ -257,7 +273,7 @@ class ScanFragment : Fragment() {
         }
     }
 
-    // ---------- UI state toggles ----------
+    // ---------- UI states ----------
 
     private fun showScanUI(show: Boolean) {
         vb.scanContent.visibility = if (show) View.VISIBLE else View.GONE
@@ -265,22 +281,41 @@ class ScanFragment : Fragment() {
         vb.cancelButton.isEnabled = show && !navigating
     }
 
+    private fun showNotSupportedState() {
+        showScanUI(false)
+        vb.stateTitle.text = getString(R.string.scan_error_title)
+        vb.stateMessage.text = getString(R.string.perm_required_msg)
+        vb.statePrimary.text = getString(R.string.go_home)
+        vb.statePrimary.setOnClickListener {
+            findNavController().popBackStack(R.id.homeFragment, false)
+        }
+        vb.stateSecondary.apply {
+            visibility = View.GONE
+            setOnClickListener(null)
+        }
+    }
+
     private fun showPermissionState() {
         showScanUI(false)
         vb.stateTitle.text = getString(R.string.perm_required_title)
         vb.stateMessage.text = getString(R.string.perm_required_msg)
-        val t = selectedType
-        vb.statePrimary.text = if (permanentlyDenied(t)) getString(R.string.open_settings) else getString(R.string.perm_grant)
+
+        val perm = requiredPerm(selectedType) // only called on 33+
+        vb.statePrimary.text =
+            if (permanentlyDenied(perm)) getString(R.string.open_settings)
+            else getString(R.string.perm_grant)
+
         vb.statePrimary.setOnClickListener {
-            if (permanentlyDenied(t)) {
+            if (permanentlyDenied(perm)) {
                 val i = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
                     data = Uri.fromParts("package", requireContext().packageName, null)
                 }
                 startActivity(i)
             } else {
-                requestPerm.launch(requiredPerms(t))
+                requestPerm.launch(perm)
             }
         }
+
         vb.stateSecondary.apply {
             text = getString(R.string.go_home)
             visibility = View.VISIBLE
@@ -294,11 +329,18 @@ class ScanFragment : Fragment() {
         vb.stateMessage.text = getString(R.string.no_media_msg)
         vb.statePrimary.text = getString(R.string.retry)
         vb.statePrimary.setOnClickListener {
+            if (!isAndroid13Plus()) {
+                showNotSupportedState()
+                return@setOnClickListener
+            }
             val t = selectedType
-            if (hasPermission(t)) {
-                if (!started) { started = true }
+            val perm = requiredPerm(t)
+            if (hasPermission(perm)) {
+                if (!started) started = true
                 start(t)
-            } else showPermissionState()
+            } else {
+                showPermissionState()
+            }
         }
         vb.stateSecondary.apply {
             text = getString(R.string.go_home)
@@ -313,11 +355,18 @@ class ScanFragment : Fragment() {
         vb.stateMessage.text = getString(R.string.scan_error_msg)
         vb.statePrimary.text = getString(R.string.retry)
         vb.statePrimary.setOnClickListener {
+            if (!isAndroid13Plus()) {
+                showNotSupportedState()
+                return@setOnClickListener
+            }
             val t = selectedType
-            if (hasPermission(t)) {
-                if (!started) { started = true }
+            val perm = requiredPerm(t)
+            if (hasPermission(perm)) {
+                if (!started) started = true
                 start(t)
-            } else showPermissionState()
+            } else {
+                showPermissionState()
+            }
         }
         vb.stateSecondary.apply {
             text = getString(R.string.go_home)
