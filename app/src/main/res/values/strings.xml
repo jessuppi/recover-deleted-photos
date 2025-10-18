@@ -72,4 +72,8 @@
     <!-- layout toggle -->
     <string name="action_view_grid">Grid</string>
     <string name="action_view_list">List</string>
+
+    <!-- android version requirement -->
+    <string name="android_13_required_title">Not supported</string>
+    <string name="android_13_required_msg">This feature requires Android 13 or later.</string>
 </resources>
