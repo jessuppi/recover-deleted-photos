@@ -5,6 +5,7 @@
 ### 0.15.8
 - MainActivity.kt: cached `NavController` instance to avoid repeated lookups and reduce risk of null pointer errors
 - MainActivity.kt: added null-safe `NavHostFragment` lookup with early return to prevent potential crashes if layout id changes
+- reformatted some files to standard Android Studio style and added concise inline comments
 
 ### 0.15.7
 - MainActivity.kt: replaced `findNavController` lookup with robust `NavHostFragment` method to prevent startup crashes
