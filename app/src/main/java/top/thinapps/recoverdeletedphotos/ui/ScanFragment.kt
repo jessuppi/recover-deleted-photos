@@ -162,15 +162,15 @@ class ScanFragment : Fragment() {
 
                 // MediaStore scan (includes trashed on API 30+, excludes pending)
                 val items = withContext(Dispatchers.IO) {
-                    var totalSeen = 0
+                    var lastTotal = 0
                     MediaScanner(requireContext().applicationContext).scan(
                         includeImages = type == TypeChoice.PHOTOS,
                         includeVideos = type == TypeChoice.VIDEOS,
                         includeAudio = type == TypeChoice.AUDIO
-                    ) { step ->
-                        if (!countAnimDone.isCompleted && step.total > 0) {
-                            totalSeen = step.total
-                            animateCountTo(totalSeen)
+                    ) { _, total ->
+                        if (!countAnimDone.isCompleted && total > 0 && total != lastTotal) {
+                            lastTotal = total
+                            animateCountTo(total)
                         }
                     }
                 }
