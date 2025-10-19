@@ -48,4 +48,10 @@
     <!-- vivid neon green used for the final found file count -->
     <color name="md_green_A400">#76FF03</color>
 
+    <!-- pale blue used for outer pulse gradient -->
+    <color name="md_blue_50">#E8F0FE</color>
+
+    <!-- soft blue midtone used for inner pulse gradient -->
+    <color name="md_blue_200">#90CAF9</color>
+
 </resources>
