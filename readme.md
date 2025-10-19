@@ -2,6 +2,9 @@
 
 ## Changelog
 
+### 0.16.3
+- ScanFragment.kt: made MediaScanner calls safer to avoid scan errors or crashes
+
 ### 0.16.2
 - fixed “Scan error” issue by validating permissions before launching scan
 - added safe handling around MediaScanner to prevent false scan failures
