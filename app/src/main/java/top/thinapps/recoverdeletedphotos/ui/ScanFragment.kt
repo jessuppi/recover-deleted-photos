@@ -223,6 +223,17 @@ class ScanFragment : Fragment() {
                 }
                 countAnimDone.await()
 
+                // >>> NEW: if no results, show empty state instead of navigating
+                if (items.isEmpty()) {
+                    stopPulses()
+                    showNoMediaState()
+                    return@launch
+                }
+
+                // >>> NEW: publish results so ResultsFragment can display them
+                vm.results.clear()
+                vm.results.addAll(items)
+
                 // navigate to results once done
                 if (!navigating) {
                     navigating = true
