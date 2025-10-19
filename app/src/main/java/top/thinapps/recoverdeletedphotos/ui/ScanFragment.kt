@@ -231,8 +231,7 @@ class ScanFragment : Fragment() {
                 }
 
                 // >>> NEW: publish results so ResultsFragment can display them
-                vm.results.clear()
-                vm.results.addAll(items)
+                vm.results = items
 
                 // navigate to results once done
                 if (!navigating) {
