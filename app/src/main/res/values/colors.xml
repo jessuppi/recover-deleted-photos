@@ -48,6 +48,9 @@
     <!-- vivid neon green used for the final found file count -->
     <color name="md_green_A400">#76FF03</color>
 
+    <!-- bright neon green midtone for scan success glow -->
+    <color name="md_green_A200">#B2FF59</color>
+
     <!-- pale blue used for outer pulse gradient -->
     <color name="md_blue_50">#E8F0FE</color>
 
