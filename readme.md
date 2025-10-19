@@ -2,6 +2,10 @@
 
 ## Changelog
 
+## 0.16.5
+- ScanFragment.kt: restored slow in-progress counter via lightweight ticker (no animator churn)
+- ScanFragment.kt: single smooth final animation to total + neon-green highlight
+
 ## 0.16.4
 - ScanFragment.kt: stabilized progress updates (throttled text updates during scan to avoid animator churn/crashes)
 - ScanFragment.kt: single smooth final count animation after scan completes
