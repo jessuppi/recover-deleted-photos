@@ -7,7 +7,7 @@
     <string name="filter_audio">Audio</string>
 
     <!-- media type selector -->
-    <string name="filter_type_label">File type</string>
+    <string name="filter_type_label">File type to scan:</string>
     <string name="type_photos">Photos</string>
     <string name="type_videos">Videos</string>
     <string name="type_audio">Audio</string>
