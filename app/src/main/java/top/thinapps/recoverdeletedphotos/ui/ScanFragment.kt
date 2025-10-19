@@ -271,7 +271,7 @@ class ScanFragment : Fragment() {
         tickerJob = null
     }
 
-    // animates counter to final total and turns green briefly
+    // animates counter to final total and turns green briefly (with soft glow during dwell)
     private fun animateCountTo(target: Int) = withVb {
         countAnimator?.cancel()
         val startValue = vb.totalCount.text.toString().replace(Regex("[^0-9]"), "").toIntOrNull() ?: 0
@@ -283,8 +283,11 @@ class ScanFragment : Fragment() {
             }
             doOnEnd {
                 vb.totalCount.setTextColor(ContextCompat.getColor(requireContext(), R.color.md_green_A400))
+                // green glow dwell
+                vb.totalCount.setShadowLayer(8f, 0f, 0f, ContextCompat.getColor(requireContext(), R.color.md_green_A200))
                 lifecycleScope.launch {
                     delay(POST_ANIM_DWELL_MS)
+                    vb.totalCount.setShadowLayer(0f, 0f, 0f, 0)
                     if (!countAnimDone.isCompleted) countAnimDone.complete(Unit)
                 }
             }
@@ -292,7 +295,7 @@ class ScanFragment : Fragment() {
         }
     }
 
-    // starts pulsing ring effect
+    // starts pulsing ring effect (now with gradient background)
     private fun startPulses() {
         fun pulse(view: View, delayMs: Long) {
             val scaleX = ObjectAnimator.ofFloat(view, View.SCALE_X, 1f, 1.6f).apply {
@@ -309,7 +312,9 @@ class ScanFragment : Fragment() {
                 repeatMode = ObjectAnimator.RESTART
                 startDelay = delayMs
             }
-            val alpha = ObjectAnimator.ofFloat(view, View.ALPHA, 0.22f, 0f).apply {
+            // gradient ring background + softer alpha pulse
+            view.background = ContextCompat.getDrawable(requireContext(), R.drawable.pulse_gradient)
+            val alpha = ObjectAnimator.ofFloat(view, View.ALPHA, 0.25f, 0f).apply {
                 duration = PULSE_CYCLE_MS
                 interpolator = LinearInterpolator()
                 repeatCount = ObjectAnimator.INFINITE
@@ -352,11 +357,22 @@ class ScanFragment : Fragment() {
         }
     }
 
-    // toggles between scan ui and state screen
+    // toggles between scan ui and state screen (+ breathing cancel button when scanning)
     private fun showScanUI(show: Boolean) {
         vb.scanContent.visibility = if (show) View.VISIBLE else View.GONE
         vb.stateContainer.visibility = if (show) View.GONE else View.VISIBLE
         vb.cancelButton.isEnabled = show && !navigating
+
+        if (show) {
+            ObjectAnimator.ofFloat(vb.cancelButton, View.ALPHA, 0.8f, 1f).apply {
+                duration = 1200L
+                repeatCount = ObjectAnimator.INFINITE
+                repeatMode = ObjectAnimator.REVERSE
+                start()
+            }
+        } else {
+            vb.cancelButton.alpha = 1f
+        }
     }
 
     // state: android version too low
