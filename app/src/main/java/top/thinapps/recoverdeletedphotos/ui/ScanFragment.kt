@@ -333,15 +333,22 @@ class ScanFragment : Fragment() {
         }
     }
 
-    // cancels scan and returns to home
+    // cancels scan and returns to home (no minimize/fall-through)
     private fun cancel() {
         job?.cancel()
         stopCountTicker()
         stopPulses()
         vm.results = emptyList()
+
         val nav = findNavController()
-        if (nav.currentDestination?.id == R.id.scanFragment) {
-            nav.popBackStack(R.id.homeFragment, false)
+        // try to pop back to home if it's on the stack
+        val popped = nav.popBackStack(R.id.homeFragment, false)
+        if (!popped) {
+            // fallback: navigate to home explicitly and clear anything above the start destination
+            val opts = NavOptions.Builder()
+                .setPopUpTo(nav.graph.startDestinationId, /* inclusive = */ true)
+                .build()
+            nav.navigate(R.id.homeFragment, null, opts)
         }
     }
 
