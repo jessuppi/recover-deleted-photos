@@ -21,9 +21,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import kotlinx.coroutines.CancellationException
@@ -102,22 +100,10 @@ class ScanFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        vb.cancelButton.setOnClickListener { cancel() }
+        // always start from a clean slate — no caching between runs
+        vm.results = emptyList()
 
-        // skip if already have results
-        if (vm.results.isNotEmpty()) {
-            if (!navigating) {
-                navigating = true
-                vb.cancelButton.isEnabled = false
-                viewLifecycleOwner.lifecycleScope.launch {
-                    viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
-                        val opts = NavOptions.Builder().setPopUpTo(R.id.scanFragment, true).build()
-                        findNavController().navigate(R.id.action_scan_to_results, null, opts)
-                    }
-                }
-            }
-            return
-        }
+        vb.cancelButton.setOnClickListener { cancel() }
 
         // feature only for android 13+
         if (!isAndroid13Plus()) {
@@ -223,14 +209,14 @@ class ScanFragment : Fragment() {
                 }
                 countAnimDone.await()
 
-                // >>> NEW: if no results, show empty state instead of navigating
+                // if no results, show empty state instead of navigating
                 if (items.isEmpty()) {
                     stopPulses()
                     showNoMediaState()
                     return@launch
                 }
 
-                // >>> NEW: publish results so ResultsFragment can display them
+                // publish fresh results so ResultsFragment can display them
                 vm.results = items
 
                 // navigate to results once done
@@ -238,14 +224,12 @@ class ScanFragment : Fragment() {
                     navigating = true
                     vb.cancelButton.isEnabled = false
                     viewLifecycleOwner.lifecycleScope.launch {
-                        viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
-                            val current = findNavController().currentDestination?.id
-                            if (current == R.id.scanFragment) {
-                                val opts = NavOptions.Builder()
-                                    .setPopUpTo(R.id.scanFragment, true)
-                                    .build()
-                                findNavController().navigate(R.id.action_scan_to_results, null, opts)
-                            }
+                        val current = findNavController().currentDestination?.id
+                        if (current == R.id.scanFragment) {
+                            val opts = NavOptions.Builder()
+                                .setPopUpTo(R.id.scanFragment, true)
+                                .build()
+                            findNavController().navigate(R.id.action_scan_to_results, null, opts)
                         }
                     }
                 }
@@ -363,6 +347,7 @@ class ScanFragment : Fragment() {
         job?.cancel()
         stopCountTicker()
         stopPulses()
+        vm.results = emptyList() // ensure nothing lingers
         val nav = findNavController()
         if (nav.currentDestination?.id == R.id.scanFragment) {
             nav.popBackStack(R.id.homeFragment, false)
@@ -376,7 +361,6 @@ class ScanFragment : Fragment() {
         vb.cancelButton.isEnabled = show && !navigating
     }
 
-    // shown if device version too low
     private fun showNotSupportedState() {
         showScanUI(false)
         vb.stateTitle.text = getString(R.string.android_13_required_title)
@@ -391,7 +375,6 @@ class ScanFragment : Fragment() {
         }
     }
 
-    // shown if permission missing
     private fun showPermissionState() {
         showScanUI(false)
         vb.stateTitle.text = getString(R.string.perm_required_title)
@@ -420,7 +403,6 @@ class ScanFragment : Fragment() {
         }
     }
 
-    // optional no-media state
     private fun showNoMediaState() {
         showScanUI(false)
         vb.stateTitle.text = getString(R.string.no_media_title)
@@ -435,7 +417,6 @@ class ScanFragment : Fragment() {
         }
     }
 
-    // shown on unexpected errors
     private fun showErrorState() {
         showScanUI(false)
         vb.stateTitle.text = getString(R.string.scan_error_title)
