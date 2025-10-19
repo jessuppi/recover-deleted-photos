@@ -2,6 +2,10 @@
 
 ## Changelog
 
+### 0.16.7
+- ScanFragment: now waits until RESUMED before navigating to results for safer transitions
+- ScanFragment: clears all previous `vm.results` at start and on cancel to prevent cached data
+
 ### 0.16.6
 - ScanFragment.kt: fixed results handoff so scan results now appear correctly
 - ScanFragment.kt: adjusted final count animation to dwell while neon green before navigating
