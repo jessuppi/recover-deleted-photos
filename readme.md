@@ -2,6 +2,10 @@
 
 ## Changelog
 
+### 0.16.6
+- ScanFragment.kt: fixed results handoff so scan results now appear correctly
+- ScanFragment.kt: adjusted final count animation to dwell while neon green before navigating
+
 ## 0.16.5
 - ScanFragment.kt: restored slow in-progress counter via lightweight ticker (no animator churn)
 - ScanFragment.kt: single smooth final animation to total + neon-green highlight
