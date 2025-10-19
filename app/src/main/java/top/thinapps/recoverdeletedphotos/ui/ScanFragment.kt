@@ -46,18 +46,15 @@ class ScanFragment : Fragment() {
     private var started = false
     private var selectedType: TypeChoice = TypeChoice.PHOTOS
 
-    // animations
     private val runningAnims = mutableListOf<ObjectAnimator>()
     private var countAnimator: ValueAnimator? = null
 
-    // timing (ms)
     private companion object {
-        private const val COUNT_ANIM_MS = 3_800L
-        private const val POST_ANIM_DWELL_MS = 1_200L
-        private const val PULSE_CYCLE_MS = 2_800L
+        private const val COUNT_ANIM_MS = 3800L
+        private const val POST_ANIM_DWELL_MS = 1200L
+        private const val PULSE_CYCLE_MS = 2800L
     }
 
-    // gates
     private var job: Job? = null
 
     enum class TypeChoice { PHOTOS, VIDEOS, AUDIO }
@@ -71,7 +68,6 @@ class ScanFragment : Fragment() {
         }
     }
 
-    // single-permission launcher (Android 13+ only)
     private val requestPerm =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
             if (granted) {
@@ -92,7 +88,6 @@ class ScanFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         vb.cancelButton.setOnClickListener { cancel() }
 
-        // skip re-scan if results already exist
         if (vm.results.isNotEmpty()) {
             if (!navigating) {
                 navigating = true
@@ -107,13 +102,11 @@ class ScanFragment : Fragment() {
             return
         }
 
-        // only support android 13+ where granular media permissions exist
         if (!isAndroid13Plus()) {
             showNotSupportedState()
             return
         }
 
-        // check permission
         val perm = requiredPerm(selectedType)
         val granted = ContextCompat.checkSelfPermission(requireContext(), perm) == PackageManager.PERMISSION_GRANTED
         if (granted) {
@@ -125,8 +118,6 @@ class ScanFragment : Fragment() {
             showPermissionState()
         }
     }
-
-    // ---------- permissions (Android 13+) ----------
 
     private fun isAndroid13Plus(): Boolean =
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
@@ -146,8 +137,6 @@ class ScanFragment : Fragment() {
         return ContextCompat.checkSelfPermission(requireContext(), p) == PackageManager.PERMISSION_GRANTED
     }
 
-    // ---------- scanning ----------
-
     private var countAnimDone = CompletableDeferred<Unit>()
 
     private fun start(type: TypeChoice) = withVb {
@@ -155,14 +144,12 @@ class ScanFragment : Fragment() {
 
         job = viewLifecycleOwner.lifecycleScope.launch {
             try {
-                // verify permission again right before scanning (prevents SecurityException)
                 if (!hasPermission(type)) {
                     showPermissionState()
                     stopPulses()
                     return@launch
                 }
 
-                // init UI
                 vb.totalLabel.text = when (type) {
                     TypeChoice.PHOTOS -> getString(R.string.total_photos_label)
                     TypeChoice.VIDEOS -> getString(R.string.total_videos_label)
@@ -173,7 +160,6 @@ class ScanFragment : Fragment() {
                 countAnimDone = CompletableDeferred()
                 startPulses()
 
-                // MediaStore scan (includes trashed on API 30+, excludes pending)
                 val items = runCatching {
                     withContext(Dispatchers.IO) {
                         var lastTotal = 0
@@ -184,7 +170,7 @@ class ScanFragment : Fragment() {
                         ) { _, total ->
                             if (!countAnimDone.isCompleted && total > 0 && total != lastTotal) {
                                 lastTotal = total
-                                animateCountTo(total)
+                                vb.root.post { animateCountTo(total) }
                             }
                         }
                     }
@@ -198,7 +184,6 @@ class ScanFragment : Fragment() {
                     return@launch
                 }
 
-                // lock the count animation to the final total
                 if (!countAnimDone.isCompleted) {
                     animateCountTo(items.size)
                 }
@@ -221,8 +206,6 @@ class ScanFragment : Fragment() {
                 }
             } catch (t: Throwable) {
                 if (t is CancellationException) return@launch
-
-                // fallback states
                 if (!isAndroid13Plus()) {
                     showNotSupportedState()
                 } else {
@@ -234,10 +217,7 @@ class ScanFragment : Fragment() {
 
     private fun animateCountTo(target: Int) = withVb {
         countAnimator?.cancel()
-        val startValue = vb.totalCount.text.toString()
-            .replace(Regex("[^0-9]"), "")
-            .toIntOrNull() ?: 0
-
+        val startValue = vb.totalCount.text.toString().replace(Regex("[^0-9]"), "").toIntOrNull() ?: 0
         countAnimator = ValueAnimator.ofInt(startValue, target).apply {
             duration = COUNT_ANIM_MS
             interpolator = FastOutSlowInInterpolator()
@@ -289,20 +269,14 @@ class ScanFragment : Fragment() {
         runningAnims.forEach { it.cancel() }
         runningAnims.clear()
         withVb {
-            pulse1.alpha = 0f
-            pulse1.scaleX = 1f
-            pulse1.scaleY = 1f
-
-            pulse2.alpha = 0f
-            pulse2.scaleX = 1f
-            pulse2.scaleY = 1f
+            pulse1.alpha = 0f; pulse1.scaleX = 1f; pulse1.scaleY = 1f
+            pulse2.alpha = 0f; pulse2.scaleX = 1f; pulse2.scaleY = 1f
         }
     }
 
     private fun cancel() {
         job?.cancel()
         stopPulses()
-
         val nav = findNavController()
         if (nav.currentDestination?.id == R.id.scanFragment) {
             nav.popBackStack(R.id.homeFragment, false)
@@ -333,7 +307,6 @@ class ScanFragment : Fragment() {
         showScanUI(false)
         vb.stateTitle.text = getString(R.string.perm_required_title)
         vb.stateMessage.text = getString(R.string.perm_required_msg)
-
         vb.statePrimary.text = getString(R.string.perm_open_settings)
         vb.statePrimary.setOnClickListener {
             val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
@@ -341,7 +314,6 @@ class ScanFragment : Fragment() {
             }
             startActivity(intent)
         }
-
         vb.stateSecondary.apply {
             visibility = View.VISIBLE
             text = when (selectedType) {
@@ -418,8 +390,6 @@ class ScanFragment : Fragment() {
         _vb = null
         super.onDestroyView()
     }
-
-    // ---------- helpers ----------
 
     private inline fun withVb(block: FragmentScanBinding.() -> Unit) {
         val v = _vb ?: return
