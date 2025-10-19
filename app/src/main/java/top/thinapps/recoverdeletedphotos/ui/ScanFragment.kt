@@ -223,9 +223,6 @@ class ScanFragment : Fragment() {
                 }
                 countAnimDone.await()
 
-                // paint final number neon green
-                vb.totalCount.setTextColor(ContextCompat.getColor(requireContext(), R.color.md_green_A400))
-
                 // navigate to results once done
                 if (!navigating) {
                     navigating = true
@@ -299,6 +296,8 @@ class ScanFragment : Fragment() {
                 vb.totalCount.text = getString(R.string.total_files_count, v)
             }
             doOnEnd {
+                // turn green immediately at final value, then dwell
+                vb.totalCount.setTextColor(ContextCompat.getColor(requireContext(), R.color.md_green_A400))
                 lifecycleScope.launch {
                     delay(POST_ANIM_DWELL_MS)
                     if (!countAnimDone.isCompleted) countAnimDone.complete(Unit)
