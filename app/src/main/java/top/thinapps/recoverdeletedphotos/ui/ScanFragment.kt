@@ -21,7 +21,9 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import kotlinx.coroutines.CancellationException
@@ -40,7 +42,6 @@ class ScanFragment : Fragment() {
 
     private var _vb: FragmentScanBinding? = null
     private val vb get() = _vb!!
-
     private val vm: ScanViewModel by activityViewModels()
 
     // state flags
@@ -57,23 +58,19 @@ class ScanFragment : Fragment() {
         private const val COUNT_ANIM_MS = 3800L
         private const val POST_ANIM_DWELL_MS = 1200L
         private const val PULSE_CYCLE_MS = 2800L
-
-        // ticker pacing (ms between updates)
         private const val TICK_MS = 50L
     }
 
     // coroutine jobs
     private var job: Job? = null
     private var tickerJob: Job? = null
-
-    // live target for the ticker to approach
     private var latestTotal: Int = 0
 
     enum class TypeChoice { PHOTOS, VIDEOS, AUDIO }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // read selected media type from nav args
+        // read scan type from nav args
         selectedType = when (arguments?.getString("type")) {
             "VIDEOS" -> TypeChoice.VIDEOS
             "AUDIO" -> TypeChoice.AUDIO
@@ -100,18 +97,17 @@ class ScanFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        // always start from a clean slate — no caching between runs
+        // always clear results when opening this screen
         vm.results = emptyList()
-
         vb.cancelButton.setOnClickListener { cancel() }
 
-        // feature only for android 13+
+        // android 13+ required
         if (!isAndroid13Plus()) {
             showNotSupportedState()
             return
         }
 
-        // check permission for selected type
+        // check permission and start scan if granted
         val perm = requiredPerm(selectedType)
         val granted = ContextCompat.checkSelfPermission(requireContext(), perm) == PackageManager.PERMISSION_GRANTED
         if (granted) {
@@ -140,38 +136,38 @@ class ScanFragment : Fragment() {
         return ContextCompat.checkSelfPermission(requireContext(), p) == PackageManager.PERMISSION_GRANTED
     }
 
-    // tracks completion of final count animation
+    // tracks completion of dwell after final count animation
     private var countAnimDone = CompletableDeferred<Unit>()
 
-    // starts the scanning process
+    // starts scanning flow
     private fun start(type: TypeChoice) = withVb {
         showScanUI(true)
 
         job = viewLifecycleOwner.lifecycleScope.launch {
             try {
-                // recheck permission before scan
+                // confirm permission before scanning
                 if (!hasPermission(type)) {
                     showPermissionState()
                     stopPulses()
                     return@launch
                 }
 
-                // set initial labels
+                // reset ui state for new scan
                 vb.totalLabel.text = when (type) {
                     TypeChoice.PHOTOS -> getString(R.string.total_photos_label)
                     TypeChoice.VIDEOS -> getString(R.string.total_videos_label)
                     TypeChoice.AUDIO -> getString(R.string.total_audio_label)
                 }
                 vb.totalCount.text = getString(R.string.total_files_count, 0)
-                // reset color at start in case a previous run painted it green
                 vb.totalCount.setTextColor(ContextCompat.getColor(requireContext(), R.color.md_on_surface))
                 latestTotal = 0
 
+                // start animations and ticker
                 countAnimDone = CompletableDeferred()
                 startPulses()
-                startCountTicker() // slow, steady count-up during scan
+                startCountTicker()
 
-                // run mediascanner off main thread
+                // run mediascanner in background
                 val items = runCatching {
                     withContext(Dispatchers.IO) {
                         var lastEmitted = 0
@@ -181,7 +177,6 @@ class ScanFragment : Fragment() {
                             includeVideos = type == TypeChoice.VIDEOS,
                             includeAudio = type == TypeChoice.AUDIO
                         ) { _, total ->
-                            // only push new totals occasionally; ticker will do the smooth climb
                             val now = SystemClock.uptimeMillis()
                             if (total != lastEmitted && now - lastUiPost >= 150L) {
                                 lastEmitted = total
@@ -201,63 +196,61 @@ class ScanFragment : Fragment() {
                     return@launch
                 }
 
-                // stop the ticker; do one nice final animation to the exact total
+                // stop ticker and finish final count
                 stopCountTicker()
                 val finalTotal = items.size
-                if (!countAnimDone.isCompleted) {
-                    animateCountTo(finalTotal)
-                }
+                if (!countAnimDone.isCompleted) animateCountTo(finalTotal)
                 countAnimDone.await()
 
-                // if no results, show empty state instead of navigating
+                // show empty state if nothing found
                 if (items.isEmpty()) {
                     stopPulses()
                     showNoMediaState()
                     return@launch
                 }
 
-                // publish fresh results so ResultsFragment can display them
+                // publish new results to shared viewmodel
                 vm.results = items
 
-                // navigate to results once done
+                // navigate to results safely when ready
                 if (!navigating) {
                     navigating = true
                     vb.cancelButton.isEnabled = false
-                    viewLifecycleOwner.lifecycleScope.launch {
-                        val current = findNavController().currentDestination?.id
-                        if (current == R.id.scanFragment) {
-                            val opts = NavOptions.Builder()
-                                .setPopUpTo(R.id.scanFragment, true)
-                                .build()
-                            findNavController().navigate(R.id.action_scan_to_results, null, opts)
-                        }
-                    }
+                    navigateToResultsSafely()
                 }
             } catch (t: Throwable) {
                 if (t is CancellationException) return@launch
                 stopCountTicker()
-                if (!isAndroid13Plus()) {
-                    showNotSupportedState()
-                } else {
-                    showErrorState()
-                }
+                if (!isAndroid13Plus()) showNotSupportedState() else showErrorState()
             }
         }
     }
 
-    // ticker: gently increments the visible count toward latestTotal
+    // safe navigation helper (waits until fragment is resumed)
+    private fun navigateToResultsSafely() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                val nav = findNavController()
+                if (nav.currentDestination?.id == R.id.scanFragment) {
+                    val opts = NavOptions.Builder()
+                        .setPopUpTo(R.id.scanFragment, true)
+                        .build()
+                    nav.navigate(R.id.action_scan_to_results, null, opts)
+                }
+                return@repeatOnLifecycle
+            }
+        }
+    }
+
+    // ticker slowly increases visible count during scan
     private fun startCountTicker() {
         stopCountTicker()
         tickerJob = viewLifecycleOwner.lifecycleScope.launch {
             while (isActive) {
-                val current = vb.totalCount.text.toString()
-                    .replace(Regex("[^0-9]"), "")
-                    .toIntOrNull() ?: 0
+                val current = vb.totalCount.text.toString().replace(Regex("[^0-9]"), "").toIntOrNull() ?: 0
                 val target = latestTotal
                 if (current < target) {
                     val diff = target - current
-                    // small adaptive step so it feels deliberate, not jumpy
-                    // ~20–40 steps to reach target depending on diff
                     val step = when {
                         diff > 1000 -> 50
                         diff > 400 -> 25
@@ -278,7 +271,7 @@ class ScanFragment : Fragment() {
         tickerJob = null
     }
 
-    // animates the numeric counter smoothly to final target
+    // animates counter to final total and turns green briefly
     private fun animateCountTo(target: Int) = withVb {
         countAnimator?.cancel()
         val startValue = vb.totalCount.text.toString().replace(Regex("[^0-9]"), "").toIntOrNull() ?: 0
@@ -286,11 +279,9 @@ class ScanFragment : Fragment() {
             duration = COUNT_ANIM_MS
             interpolator = FastOutSlowInInterpolator()
             addUpdateListener { anim ->
-                val v = anim.animatedValue as Int
-                vb.totalCount.text = getString(R.string.total_files_count, v)
+                vb.totalCount.text = getString(R.string.total_files_count, anim.animatedValue as Int)
             }
             doOnEnd {
-                // turn green immediately at final value, then dwell
                 vb.totalCount.setTextColor(ContextCompat.getColor(requireContext(), R.color.md_green_A400))
                 lifecycleScope.launch {
                     delay(POST_ANIM_DWELL_MS)
@@ -301,7 +292,7 @@ class ScanFragment : Fragment() {
         }
     }
 
-    // starts pulsing ring animations
+    // starts pulsing ring effect
     private fun startPulses() {
         fun pulse(view: View, delayMs: Long) {
             val scaleX = ObjectAnimator.ofFloat(view, View.SCALE_X, 1f, 1.6f).apply {
@@ -332,7 +323,7 @@ class ScanFragment : Fragment() {
         pulse(vb.pulse2, PULSE_CYCLE_MS / 2)
     }
 
-    // stops and clears pulse animations
+    // stops pulse animations
     private fun stopPulses() {
         runningAnims.forEach { it.cancel() }
         runningAnims.clear()
@@ -342,25 +333,26 @@ class ScanFragment : Fragment() {
         }
     }
 
-    // cancels scan and returns home
+    // cancels scan and returns to home
     private fun cancel() {
         job?.cancel()
         stopCountTicker()
         stopPulses()
-        vm.results = emptyList() // ensure nothing lingers
+        vm.results = emptyList()
         val nav = findNavController()
         if (nav.currentDestination?.id == R.id.scanFragment) {
             nav.popBackStack(R.id.homeFragment, false)
         }
     }
 
-    // toggles between scanning and state ui
+    // toggles between scan ui and state screen
     private fun showScanUI(show: Boolean) {
         vb.scanContent.visibility = if (show) View.VISIBLE else View.GONE
         vb.stateContainer.visibility = if (show) View.GONE else View.VISIBLE
         vb.cancelButton.isEnabled = show && !navigating
     }
 
+    // state: android version too low
     private fun showNotSupportedState() {
         showScanUI(false)
         vb.stateTitle.text = getString(R.string.android_13_required_title)
@@ -369,12 +361,10 @@ class ScanFragment : Fragment() {
         vb.statePrimary.setOnClickListener {
             findNavController().popBackStack(R.id.homeFragment, false)
         }
-        vb.stateSecondary.apply {
-            visibility = View.GONE
-            setOnClickListener(null)
-        }
+        vb.stateSecondary.visibility = View.GONE
     }
 
+    // state: missing permission
     private fun showPermissionState() {
         showScanUI(false)
         vb.stateTitle.text = getString(R.string.perm_required_title)
@@ -386,23 +376,19 @@ class ScanFragment : Fragment() {
             }
             startActivity(intent)
         }
-        vb.stateSecondary.apply {
-            visibility = View.VISIBLE
-            text = when (selectedType) {
-                TypeChoice.PHOTOS -> getString(R.string.perm_request_images)
-                TypeChoice.VIDEOS -> getString(R.string.perm_request_videos)
-                TypeChoice.AUDIO -> getString(R.string.perm_request_audio)
-            }
-            setOnClickListener {
-                if (isAndroid13Plus()) {
-                    requestPerm.launch(requiredPerm(selectedType))
-                } else {
-                    showNotSupportedState()
-                }
-            }
+        vb.stateSecondary.visibility = View.VISIBLE
+        vb.stateSecondary.text = when (selectedType) {
+            TypeChoice.PHOTOS -> getString(R.string.perm_request_images)
+            TypeChoice.VIDEOS -> getString(R.string.perm_request_videos)
+            TypeChoice.AUDIO -> getString(R.string.perm_request_audio)
+        }
+        vb.stateSecondary.setOnClickListener {
+            if (isAndroid13Plus()) requestPerm.launch(requiredPerm(selectedType))
+            else showNotSupportedState()
         }
     }
 
+    // state: no media found
     private fun showNoMediaState() {
         showScanUI(false)
         vb.stateTitle.text = getString(R.string.no_media_title)
@@ -411,12 +397,10 @@ class ScanFragment : Fragment() {
         vb.statePrimary.setOnClickListener {
             findNavController().popBackStack(R.id.homeFragment, false)
         }
-        vb.stateSecondary.apply {
-            visibility = View.GONE
-            setOnClickListener(null)
-        }
+        vb.stateSecondary.visibility = View.GONE
     }
 
+    // state: general scan error
     private fun showErrorState() {
         showScanUI(false)
         vb.stateTitle.text = getString(R.string.scan_error_title)
@@ -431,26 +415,22 @@ class ScanFragment : Fragment() {
                 showPermissionState()
             }
         }
-        vb.stateSecondary.apply {
-            text = getString(R.string.go_home)
-            visibility = View.VISIBLE
-            setOnClickListener { findNavController().popBackStack(R.id.homeFragment, false) }
+        vb.stateSecondary.text = getString(R.string.go_home)
+        vb.stateSecondary.visibility = View.VISIBLE
+        vb.stateSecondary.setOnClickListener {
+            findNavController().popBackStack(R.id.homeFragment, false)
         }
     }
 
     override fun onStart() {
         super.onStart()
         withVb {
-            if (scanContent.visibility == View.VISIBLE && runningAnims.isEmpty()) {
-                startPulses()
-            }
+            if (scanContent.visibility == View.VISIBLE && runningAnims.isEmpty()) startPulses()
         }
     }
 
     override fun onStop() {
-        withVb {
-            if (runningAnims.isNotEmpty()) stopPulses()
-        }
+        withVb { if (runningAnims.isNotEmpty()) stopPulses() }
         super.onStop()
     }
 
@@ -462,7 +442,7 @@ class ScanFragment : Fragment() {
         super.onDestroyView()
     }
 
-    // safe binding access helper
+    // safe binding access
     private inline fun withVb(block: FragmentScanBinding.() -> Unit) {
         val v = _vb ?: return
         block(v)
