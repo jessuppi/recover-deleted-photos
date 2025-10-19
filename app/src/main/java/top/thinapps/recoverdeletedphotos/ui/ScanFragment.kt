@@ -42,25 +42,31 @@ class ScanFragment : Fragment() {
     private val vb get() = _vb!!
 
     private val vm: ScanViewModel by activityViewModels()
+
+    // state flags
     private var navigating = false
     private var started = false
     private var selectedType: TypeChoice = TypeChoice.PHOTOS
 
+    // active animations
     private val runningAnims = mutableListOf<ObjectAnimator>()
     private var countAnimator: ValueAnimator? = null
 
+    // timing constants
     private companion object {
         private const val COUNT_ANIM_MS = 3800L
         private const val POST_ANIM_DWELL_MS = 1200L
         private const val PULSE_CYCLE_MS = 2800L
     }
 
+    // coroutine job for cancel control
     private var job: Job? = null
 
     enum class TypeChoice { PHOTOS, VIDEOS, AUDIO }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // read selected media type from nav args
         selectedType = when (arguments?.getString("type")) {
             "VIDEOS" -> TypeChoice.VIDEOS
             "AUDIO" -> TypeChoice.AUDIO
@@ -68,6 +74,7 @@ class ScanFragment : Fragment() {
         }
     }
 
+    // permission launcher for android 13+
     private val requestPerm =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
             if (granted) {
@@ -88,6 +95,7 @@ class ScanFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         vb.cancelButton.setOnClickListener { cancel() }
 
+        // skip if already have results
         if (vm.results.isNotEmpty()) {
             if (!navigating) {
                 navigating = true
@@ -102,11 +110,13 @@ class ScanFragment : Fragment() {
             return
         }
 
+        // feature only for android 13+
         if (!isAndroid13Plus()) {
             showNotSupportedState()
             return
         }
 
+        // check permission for selected type
         val perm = requiredPerm(selectedType)
         val granted = ContextCompat.checkSelfPermission(requireContext(), perm) == PackageManager.PERMISSION_GRANTED
         if (granted) {
@@ -123,12 +133,10 @@ class ScanFragment : Fragment() {
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
 
     @RequiresApi(33)
-    private fun requiredPerm(type: TypeChoice): String {
-        return when (type) {
-            TypeChoice.PHOTOS -> Manifest.permission.READ_MEDIA_IMAGES
-            TypeChoice.VIDEOS -> Manifest.permission.READ_MEDIA_VIDEO
-            TypeChoice.AUDIO -> Manifest.permission.READ_MEDIA_AUDIO
-        }
+    private fun requiredPerm(type: TypeChoice): String = when (type) {
+        TypeChoice.PHOTOS -> Manifest.permission.READ_MEDIA_IMAGES
+        TypeChoice.VIDEOS -> Manifest.permission.READ_MEDIA_VIDEO
+        TypeChoice.AUDIO -> Manifest.permission.READ_MEDIA_AUDIO
     }
 
     private fun hasPermission(type: TypeChoice): Boolean {
@@ -137,19 +145,23 @@ class ScanFragment : Fragment() {
         return ContextCompat.checkSelfPermission(requireContext(), p) == PackageManager.PERMISSION_GRANTED
     }
 
+    // tracks completion of count animation
     private var countAnimDone = CompletableDeferred<Unit>()
 
+    // starts the scanning process
     private fun start(type: TypeChoice) = withVb {
         showScanUI(true)
 
         job = viewLifecycleOwner.lifecycleScope.launch {
             try {
+                // recheck permission before scan
                 if (!hasPermission(type)) {
                     showPermissionState()
                     stopPulses()
                     return@launch
                 }
 
+                // set initial labels
                 vb.totalLabel.text = when (type) {
                     TypeChoice.PHOTOS -> getString(R.string.total_photos_label)
                     TypeChoice.VIDEOS -> getString(R.string.total_videos_label)
@@ -160,6 +172,7 @@ class ScanFragment : Fragment() {
                 countAnimDone = CompletableDeferred()
                 startPulses()
 
+                // run mediascanner off main thread
                 val items = runCatching {
                     withContext(Dispatchers.IO) {
                         var lastTotal = 0
@@ -168,6 +181,7 @@ class ScanFragment : Fragment() {
                             includeVideos = type == TypeChoice.VIDEOS,
                             includeAudio = type == TypeChoice.AUDIO
                         ) { _, total ->
+                            // post updates to main thread safely
                             if (!countAnimDone.isCompleted && total > 0 && total != lastTotal) {
                                 lastTotal = total
                                 vb.root.post { animateCountTo(total) }
@@ -184,11 +198,13 @@ class ScanFragment : Fragment() {
                     return@launch
                 }
 
+                // animate final count and wait
                 if (!countAnimDone.isCompleted) {
                     animateCountTo(items.size)
                 }
                 countAnimDone.await()
 
+                // navigate to results once done
                 if (!navigating) {
                     navigating = true
                     vb.cancelButton.isEnabled = false
@@ -215,6 +231,7 @@ class ScanFragment : Fragment() {
         }
     }
 
+    // animates the numeric counter smoothly
     private fun animateCountTo(target: Int) = withVb {
         countAnimator?.cancel()
         val startValue = vb.totalCount.text.toString().replace(Regex("[^0-9]"), "").toIntOrNull() ?: 0
@@ -235,6 +252,7 @@ class ScanFragment : Fragment() {
         }
     }
 
+    // starts pulsing ring animations
     private fun startPulses() {
         fun pulse(view: View, delayMs: Long) {
             val scaleX = ObjectAnimator.ofFloat(view, View.SCALE_X, 1f, 1.6f).apply {
@@ -265,6 +283,7 @@ class ScanFragment : Fragment() {
         pulse(vb.pulse2, PULSE_CYCLE_MS / 2)
     }
 
+    // stops and clears pulse animations
     private fun stopPulses() {
         runningAnims.forEach { it.cancel() }
         runningAnims.clear()
@@ -274,6 +293,7 @@ class ScanFragment : Fragment() {
         }
     }
 
+    // cancels scan and returns home
     private fun cancel() {
         job?.cancel()
         stopPulses()
@@ -283,12 +303,14 @@ class ScanFragment : Fragment() {
         }
     }
 
+    // toggles between scanning and state ui
     private fun showScanUI(show: Boolean) {
         vb.scanContent.visibility = if (show) View.VISIBLE else View.GONE
         vb.stateContainer.visibility = if (show) View.GONE else View.VISIBLE
         vb.cancelButton.isEnabled = show && !navigating
     }
 
+    // shown if device version too low
     private fun showNotSupportedState() {
         showScanUI(false)
         vb.stateTitle.text = getString(R.string.android_13_required_title)
@@ -303,6 +325,7 @@ class ScanFragment : Fragment() {
         }
     }
 
+    // shown if permission missing
     private fun showPermissionState() {
         showScanUI(false)
         vb.stateTitle.text = getString(R.string.perm_required_title)
@@ -331,6 +354,7 @@ class ScanFragment : Fragment() {
         }
     }
 
+    // optional no-media state
     private fun showNoMediaState() {
         showScanUI(false)
         vb.stateTitle.text = getString(R.string.no_media_title)
@@ -345,6 +369,7 @@ class ScanFragment : Fragment() {
         }
     }
 
+    // shown on unexpected errors
     private fun showErrorState() {
         showScanUI(false)
         vb.stateTitle.text = getString(R.string.scan_error_title)
@@ -377,9 +402,7 @@ class ScanFragment : Fragment() {
 
     override fun onStop() {
         withVb {
-            if (runningAnims.isNotEmpty()) {
-                stopPulses()
-            }
+            if (runningAnims.isNotEmpty()) stopPulses()
         }
         super.onStop()
     }
@@ -391,6 +414,7 @@ class ScanFragment : Fragment() {
         super.onDestroyView()
     }
 
+    // safe binding access helper
     private inline fun withVb(block: FragmentScanBinding.() -> Unit) {
         val v = _vb ?: return
         block(v)
