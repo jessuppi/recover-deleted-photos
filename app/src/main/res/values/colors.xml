@@ -45,4 +45,7 @@
     <!-- pure white text color for recover button labels -->
     <color name="recover_button_text">#FFFFFF</color>
 
+    <!-- vivid neon green used for the final found file count -->
+    <color name="md_green_A400">#76FF03</color>
+
 </resources>
