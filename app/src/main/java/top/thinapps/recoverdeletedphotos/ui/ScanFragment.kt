@@ -31,6 +31,7 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import top.thinapps.recoverdeletedphotos.R
@@ -58,10 +59,17 @@ class ScanFragment : Fragment() {
         private const val COUNT_ANIM_MS = 3800L
         private const val POST_ANIM_DWELL_MS = 1200L
         private const val PULSE_CYCLE_MS = 2800L
+
+        // ticker pacing (ms between updates)
+        private const val TICK_MS = 50L
     }
 
-    // coroutine job for cancel control
+    // coroutine jobs
     private var job: Job? = null
+    private var tickerJob: Job? = null
+
+    // live target for the ticker to approach
+    private var latestTotal: Int = 0
 
     enum class TypeChoice { PHOTOS, VIDEOS, AUDIO }
 
@@ -146,7 +154,7 @@ class ScanFragment : Fragment() {
         return ContextCompat.checkSelfPermission(requireContext(), p) == PackageManager.PERMISSION_GRANTED
     }
 
-    // tracks completion of count animation
+    // tracks completion of final count animation
     private var countAnimDone = CompletableDeferred<Unit>()
 
     // starts the scanning process
@@ -171,28 +179,28 @@ class ScanFragment : Fragment() {
                 vb.totalCount.text = getString(R.string.total_files_count, 0)
                 // reset color at start in case a previous run painted it green
                 vb.totalCount.setTextColor(ContextCompat.getColor(requireContext(), R.color.md_on_surface))
+                latestTotal = 0
 
                 countAnimDone = CompletableDeferred()
                 startPulses()
+                startCountTicker() // slow, steady count-up during scan
 
                 // run mediascanner off main thread
                 val items = runCatching {
                     withContext(Dispatchers.IO) {
-                        var lastTotal = 0
-                        var lastUiUpdate = 0L
+                        var lastEmitted = 0
+                        var lastUiPost = 0L
                         MediaScanner(requireContext().applicationContext).scan(
                             includeImages = type == TypeChoice.PHOTOS,
                             includeVideos = type == TypeChoice.VIDEOS,
                             includeAudio = type == TypeChoice.AUDIO
                         ) { _, total ->
-                            // cheap progress updates: text only, throttled to ~5 fps
+                            // only push new totals occasionally; ticker will do the smooth climb
                             val now = SystemClock.uptimeMillis()
-                            if (total != lastTotal && now - lastUiUpdate >= 200L) {
-                                lastTotal = total
-                                lastUiUpdate = now
-                                vb.root.post {
-                                    vb.totalCount.text = getString(R.string.total_files_count, total)
-                                }
+                            if (total != lastEmitted && now - lastUiPost >= 150L) {
+                                lastEmitted = total
+                                lastUiPost = now
+                                vb.root.post { latestTotal = total }
                             }
                         }
                     }
@@ -202,17 +210,21 @@ class ScanFragment : Fragment() {
                     } else {
                         showErrorState()
                     }
+                    stopCountTicker()
                     stopPulses()
                     return@launch
                 }
 
-                // final polish: one smooth animation to the final total, then mark done
+                // stop the ticker; do one nice final animation to the exact total
+                stopCountTicker()
+                val finalTotal = items.size
                 if (!countAnimDone.isCompleted) {
-                    // paint the final number neon green for emphasis
-                    vb.totalCount.setTextColor(ContextCompat.getColor(requireContext(), R.color.md_green_A400))
-                    animateCountTo(items.size)
+                    animateCountTo(finalTotal)
                 }
                 countAnimDone.await()
+
+                // paint final number neon green
+                vb.totalCount.setTextColor(ContextCompat.getColor(requireContext(), R.color.md_green_A400))
 
                 // navigate to results once done
                 if (!navigating) {
@@ -232,6 +244,7 @@ class ScanFragment : Fragment() {
                 }
             } catch (t: Throwable) {
                 if (t is CancellationException) return@launch
+                stopCountTicker()
                 if (!isAndroid13Plus()) {
                     showNotSupportedState()
                 } else {
@@ -241,7 +254,40 @@ class ScanFragment : Fragment() {
         }
     }
 
-    // animates the numeric counter smoothly
+    // ticker: gently increments the visible count toward latestTotal
+    private fun startCountTicker() {
+        stopCountTicker()
+        tickerJob = viewLifecycleOwner.lifecycleScope.launch {
+            while (isActive) {
+                val current = vb.totalCount.text.toString()
+                    .replace(Regex("[^0-9]"), "")
+                    .toIntOrNull() ?: 0
+                val target = latestTotal
+                if (current < target) {
+                    val diff = target - current
+                    // small adaptive step so it feels deliberate, not jumpy
+                    // ~20–40 steps to reach target depending on diff
+                    val step = when {
+                        diff > 1000 -> 50
+                        diff > 400 -> 25
+                        diff > 150 -> 10
+                        diff > 30 -> 5
+                        else -> 1
+                    }
+                    val next = (current + step).coerceAtMost(target)
+                    vb.totalCount.text = getString(R.string.total_files_count, next)
+                }
+                delay(TICK_MS)
+            }
+        }
+    }
+
+    private fun stopCountTicker() {
+        tickerJob?.cancel()
+        tickerJob = null
+    }
+
+    // animates the numeric counter smoothly to final target
     private fun animateCountTo(target: Int) = withVb {
         countAnimator?.cancel()
         val startValue = vb.totalCount.text.toString().replace(Regex("[^0-9]"), "").toIntOrNull() ?: 0
@@ -306,6 +352,7 @@ class ScanFragment : Fragment() {
     // cancels scan and returns home
     private fun cancel() {
         job?.cancel()
+        stopCountTicker()
         stopPulses()
         val nav = findNavController()
         if (nav.currentDestination?.id == R.id.scanFragment) {
@@ -419,6 +466,7 @@ class ScanFragment : Fragment() {
 
     override fun onDestroyView() {
         job?.cancel()
+        stopCountTicker()
         stopPulses()
         _vb = null
         super.onDestroyView()
