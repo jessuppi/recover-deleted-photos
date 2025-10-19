@@ -8,6 +8,7 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.SystemClock
 import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
@@ -168,6 +169,8 @@ class ScanFragment : Fragment() {
                     TypeChoice.AUDIO -> getString(R.string.total_audio_label)
                 }
                 vb.totalCount.text = getString(R.string.total_files_count, 0)
+                // reset color at start in case a previous run painted it green
+                vb.totalCount.setTextColor(ContextCompat.getColor(requireContext(), R.color.md_on_surface))
 
                 countAnimDone = CompletableDeferred()
                 startPulses()
@@ -176,15 +179,20 @@ class ScanFragment : Fragment() {
                 val items = runCatching {
                     withContext(Dispatchers.IO) {
                         var lastTotal = 0
+                        var lastUiUpdate = 0L
                         MediaScanner(requireContext().applicationContext).scan(
                             includeImages = type == TypeChoice.PHOTOS,
                             includeVideos = type == TypeChoice.VIDEOS,
                             includeAudio = type == TypeChoice.AUDIO
                         ) { _, total ->
-                            // post updates to main thread safely
-                            if (!countAnimDone.isCompleted && total > 0 && total != lastTotal) {
+                            // cheap progress updates: text only, throttled to ~5 fps
+                            val now = SystemClock.uptimeMillis()
+                            if (total != lastTotal && now - lastUiUpdate >= 200L) {
                                 lastTotal = total
-                                vb.root.post { animateCountTo(total) }
+                                lastUiUpdate = now
+                                vb.root.post {
+                                    vb.totalCount.text = getString(R.string.total_files_count, total)
+                                }
                             }
                         }
                     }
@@ -198,8 +206,10 @@ class ScanFragment : Fragment() {
                     return@launch
                 }
 
-                // animate final count and wait
+                // final polish: one smooth animation to the final total, then mark done
                 if (!countAnimDone.isCompleted) {
+                    // paint the final number neon green for emphasis
+                    vb.totalCount.setTextColor(ContextCompat.getColor(requireContext(), R.color.md_green_A400))
                     animateCountTo(items.size)
                 }
                 countAnimDone.await()
