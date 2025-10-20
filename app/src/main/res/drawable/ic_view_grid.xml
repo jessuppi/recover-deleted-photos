@@ -4,7 +4,8 @@
     android:viewportWidth="24"
     android:viewportHeight="24">
 
-    <!-- material "view_grid" icon -->
+    <!-- material "view_grid" icon with hardcoded dark fill -->
     <path
+        android:fillColor="@color/icon_grid_light"
         android:pathData="M3,3h8v8H3V3zM13,3h8v8h-8V3zM3,13h8v8H3v-8zM13,13h8v8h-8v-8z" />
 </vector>
