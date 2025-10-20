@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.*
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import androidx.activity.OnBackPressedCallback
 import androidx.annotation.AttrRes
 import androidx.core.graphics.drawable.DrawableCompat
 import androidx.core.view.MenuHost
@@ -61,10 +62,13 @@ class ResultsFragment : Fragment() {
         // allow toolbar menu events to reach this fragment
         setHasOptionsMenu(true)
 
-        // handle system back press same as toolbar up arrow
-        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
-            findNavController().popBackStack(R.id.homeFragment, false)
+        // handle system back same as toolbar up → always go home
+        val backCallback = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                findNavController().popBackStack(R.id.homeFragment, false)
+            }
         }
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, backCallback)
 
         // init adapter and layout manager
         adapter = MediaAdapter(
