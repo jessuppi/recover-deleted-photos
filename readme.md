@@ -4,6 +4,7 @@
 
 ### 0.16.12
 - fixed pulse animation transparency to remove square background artifact
+- fixed pulse number color to use md_blue_700 base with md_green_A400 glow during dwell
 
 ### 0.16.11
 - ScanFragment: fixed pulse visuals by clipping to oval and adjusting gradient so no square outline shows
