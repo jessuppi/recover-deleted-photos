@@ -2,6 +2,10 @@
 
 ## Changelog
 
+### 0.16.13
+- ScanFragment: changed pulse number color to md_on_surface (dark) for better contrast
+- ScanFragment: removed green glow; added subtle final scale pulse highlight instead
+
 ### 0.16.12
 - fixed pulse animation transparency to remove square background artifact
 - fixed pulse number color to use md_blue_700 base with md_green_A400 glow during dwell
