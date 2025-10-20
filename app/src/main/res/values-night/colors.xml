@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- ============================================================ -->
+    <!-- DARK MODE COLORS ONLY                                        -->
+    <!-- ============================================================ -->
+
+    <!-- bright blue base remains same for brand consistency -->
+    <color name="md_seed">#2962FF</color>
+
+    <!-- primary vivid blue for key brand elements -->
+    <color name="md_primary">#2962FF</color>
+
+    <!-- secondary soft blue accent color -->
+    <color name="md_secondary">#6C7BFF</color>
+
+    <!-- lighter blue tone used for readable text on dark background -->
+    <color name="md_blue_700">#90CAF9</color>
+
+    <!-- dark gray surface background for screens and containers -->
+    <color name="md_surface">#121212</color>
+
+    <!-- white text and icons on dark surfaces -->
+    <color name="md_on_surface">#FFFFFF</color>
+
+    <!-- lighter gray outlines on dark background -->
+    <color name="md_outline">#9E9E9E</color>
+
+    <!-- slightly lighter gray variant for panels and cards -->
+    <color name="md_surface_variant">#1E1E1E</color>
+
+    <!-- toolbar background dark gray -->
+    <color name="md_toolbar_background">#121212</color>
+
+    <!-- toolbar icons and text white for contrast -->
+    <color name="md_toolbar_tint">#FFFFFF</color>
+
+    <!-- background for adaptive app icons (unchanged) -->
+    <color name="ic_launcher_background">#1976D2</color>
+
+    <!-- translucent bright blue overlay for selected tiles -->
+    <color name="selection_highlight">#332196F3</color>
+
+    <!-- softer red used for trash or deleted item badges -->
+    <color name="badge_trash">#EF5350</color>
+
+    <!-- bright blue button background for recover button -->
+    <color name="recover_button_enabled_bg">#1976D2</color>
+
+    <!-- darker gray background for disabled recover button -->
+    <color name="recover_button_disabled_bg">#424242</color>
+
+    <!-- white text color for recover button labels -->
+    <color name="recover_button_text">#FFFFFF</color>
+
+    <!-- vivid neon green for found file count on dark surfaces -->
+    <color name="md_green_A400">#76FF03</color>
+
+    <!-- bright neon green for scan success glow -->
+    <color name="md_green_A200">#B2FF59</color>
+
+    <!-- deep blue used for outer pulse gradient -->
+    <color name="md_blue_50">#0D47A1</color>
+
+    <!-- lighter blue used for inner pulse gradient -->
+    <color name="md_blue_200">#42A5F5</color>
+
+    <!-- transparent edge color for pulse fade -->
+    <color name="md_blue_50_transparent">#00000000</color>
+
+    <!-- pure white icons for grid/list toggle and toolbar -->
+    <color name="icon_grid">#FFFFFF</color>
+    <color name="icon_list">#FFFFFF</color>
+
+</resources>
