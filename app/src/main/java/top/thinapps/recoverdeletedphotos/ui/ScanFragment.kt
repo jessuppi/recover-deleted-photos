@@ -391,49 +391,56 @@ class ScanFragment : Fragment() {
         }
     }
 
-    // ---- cancel handling -----------------------------------------------------
+// ---- cancel handling -----------------------------------------------------
 
-    // cancel stops scanning/animations, clears results, and returns to home without minimizing/crashing
-    private fun cancel() {
-        if (canceled) return
-        canceled = true
-        navigating = true
-        vb.cancelButton.isEnabled = false
+// cancel stops scanning/animations, clears results, and returns to home without minimizing/crashing
+private fun cancel() {
+    if (canceled) return
+    canceled = true
+    navigating = true
 
-        // stop all work/animations immediately
-        job?.cancel()
-        stopCountTicker()
-        countAnimator?.cancel()
-        stopPulses()
+    // immediate visual feedback on the button
+    vb.cancelButton.apply {
+        isEnabled = false
+        text = getString(R.string.cancelling) // new string
+        animate().alpha(0.6f).scaleX(0.98f).scaleY(0.98f).setDuration(180L).start()
+    }
 
-        // clear any in-memory results for privacy/freshness
-        vm.results = emptyList()
+    // stop all work/animations right away
+    job?.cancel()
+    stopCountTicker()
+    countAnimator?.cancel()
+    stopPulses()
 
-        val nav = runCatching { findNavController() }.getOrNull() ?: return
+    // clear any in-memory results for privacy/freshness
+    vm.results = emptyList()
 
-        // wait for resumed before touching nav to avoid illegalstateexception
-        viewLifecycleOwner.lifecycleScope.launch {
-            while (lifecycle.currentState < Lifecycle.State.RESUMED) {
-                delay(16)
-            }
-            runCatching {
-                // prefer popping back to an existing home
-                val popped = nav.popBackStack(R.id.homeFragment, false)
-                if (!popped) {
-                    // fallback: navigate explicitly to home (or start destination)
-                    val homeId = if (nav.graph.findNode(R.id.homeFragment) != null)
-                        R.id.homeFragment
-                    else
-                        nav.graph.startDestinationId
+    val nav = runCatching { findNavController() }.getOrNull() ?: return
 
-                    val opts = NavOptions.Builder()
-                        .setPopUpTo(homeId, false)
-                        .build()
-                    nav.navigate(homeId, null, opts)
-                }
+    // brief dwell so the feedback is perceivable, then navigate safely on RESUMED
+    viewLifecycleOwner.lifecycleScope.launch {
+        delay(450L) // micro dwell
+
+        while (lifecycle.currentState < Lifecycle.State.RESUMED) {
+            delay(16)
+        }
+        runCatching {
+            val popped = nav.popBackStack(R.id.homeFragment, false)
+            if (!popped) {
+                val homeId = if (nav.graph.findNode(R.id.homeFragment) != null)
+                    R.id.homeFragment
+                else
+                    nav.graph.startDestinationId
+
+                val opts = NavOptions.Builder()
+                    .setPopUpTo(homeId, false)
+                    .build()
+                nav.navigate(homeId, null, opts)
             }
         }
     }
+}
+
 
     // ---- state screens -------------------------------------------------------
 
