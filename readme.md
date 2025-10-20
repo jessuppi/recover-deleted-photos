@@ -2,6 +2,10 @@
 
 ## Changelog
 
+### 0.16.11
+- ScanFragment: fixed pulse visuals by clipping to oval and adjusting gradient so no square outline shows
+- ResultsFragment: fixed results screen navigation so toolbar up and system back go Home
+
 ### 0.16.10
 - ScanFragment: fixed toolbar back arrow to safely trigger the same Cancel behavior without crashing
 - added smooth “Cancelling...” feedback animation and short dwell before returning to Home screen
