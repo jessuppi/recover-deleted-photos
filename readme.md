@@ -2,6 +2,10 @@
 
 ## Changelog
 
+### 0.16.10
+- ScanFragment: fixed toolbar back arrow to safely trigger the same Cancel behavior without crashing
+- added smooth “Cancelling...” feedback animation and short dwell before returning to Home screen
+
 ### 0.16.9
 - ScanFragment: Hardened Cancel flow with lifecycle-aware navigation to avoid crashes
 - ScanFragment: System back now mirrors Cancel (stops scan, clears results, and returns to Home)
