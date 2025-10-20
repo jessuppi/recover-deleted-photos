@@ -11,6 +11,7 @@ import android.os.Bundle
 import android.os.SystemClock
 import android.provider.Settings
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.LinearInterpolator
@@ -19,6 +20,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.core.animation.doOnEnd
 import androidx.core.content.ContextCompat
+import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
@@ -124,6 +126,11 @@ class ScanFragment : Fragment() {
             }
         )
 
+        // wire toolbar up arrow to the same safe cancel path
+        setHasOptionsMenu(true)
+        vb.root.findViewById<Toolbar?>(R.id.toolbar)?.setNavigationOnClickListener { cancel() }
+        requireActivity().findViewById<Toolbar?>(R.id.toolbar)?.setNavigationOnClickListener { cancel() }
+
         // feature is android 13+ only
         if (!isAndroid13Plus()) {
             showNotSupportedState()
@@ -140,6 +147,16 @@ class ScanFragment : Fragment() {
             }
         } else {
             showPermissionState()
+        }
+    }
+
+    // intercept actionbar home as a final safety net
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return if (item.itemId == android.R.id.home) {
+            cancel()
+            true
+        } else {
+            super.onOptionsItemSelected(item)
         }
     }
 
