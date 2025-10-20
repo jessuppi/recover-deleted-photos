@@ -4,7 +4,8 @@
     android:viewportWidth="24"
     android:viewportHeight="24">
 
-    <!-- material "view_list" icon -->
+    <!-- material "view_list" icon with hardcoded dark fill -->
     <path
+        android:fillColor="@color/icon_list_light"
         android:pathData="M4,14h4v-4H4V14zM4,19h4v-4H4V19zM4,9h4V5H4V9zM9,14h11v-4H9V14zM9,19h11v-4H9V19zM9,5v4h11V5H9z" />
 </vector>
