@@ -206,7 +206,7 @@ class ScanFragment : Fragment() {
                     TypeChoice.AUDIO -> getString(R.string.total_audio_label)
                 }
                 vb.totalCount.text = getString(R.string.total_files_count, 0)
-                vb.totalCount.setTextColor(ContextCompat.getColor(requireContext(), R.color.md_blue_700))
+                vb.totalCount.setTextColor(ContextCompat.getColor(requireContext(), R.color.md_on_surface))
                 latestTotal = 0
 
                 // kick off visuals: soft transparent pulses + ticker that climbs toward live total
