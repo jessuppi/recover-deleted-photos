@@ -2,6 +2,9 @@
 
 ## Changelog
 
+### 0.16.12
+- fixed pulse animation transparency to remove square background artifact
+
 ### 0.16.11
 - ScanFragment: fixed pulse visuals by clipping to oval and adjusting gradient so no square outline shows
 - ResultsFragment: fixed results screen navigation so toolbar up and system back go Home
