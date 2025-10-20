@@ -2,6 +2,11 @@
 
 ## Changelog
 
+### 0.16.14
+- added new `values-night/colors.xml` for dark mode colors
+- updated toggle view icons to reference `@color/icon_list` and `@color/icon_grid`
+- icons now auto-switch between light and dark colors without tint logic
+
 ### 0.16.13
 - ScanFragment: changed pulse number color to md_on_surface (dark) for better contrast
 - ScanFragment: removed green glow; added subtle final scale pulse highlight instead
