@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <!-- ============================================================ -->
+    <!-- LIGHT MODE COLORS                                            -->
+    <!-- ============================================================ -->
+
     <!-- bright blue base used as the main seed color for material theme generation -->
     <color name="md_seed">#2962FF</color>
 
@@ -63,5 +67,81 @@
 
     <!-- fully transparent edge color for pulse fade -->
     <color name="md_blue_50_transparent">#00E8F0FE</color>
+
+    <!-- dark gray icons for grid/list toggle and other toolbar icons -->
+    <color name="icon_grid_light">#1C1B1F</color>
+    <color name="icon_list_light">#1C1B1F</color>
+
+
+    <!-- ============================================================ -->
+    <!-- DARK MODE COLORS (KEPT IN SAME FILE FOR SIMPLICITY)          -->
+    <!-- ============================================================ -->
+
+    <!-- bright blue base remains same for brand consistency -->
+    <color name="md_seed_dark">#2962FF</color>
+
+    <!-- primary vivid blue for key brand elements -->
+    <color name="md_primary_dark">#2962FF</color>
+
+    <!-- secondary soft blue accent color -->
+    <color name="md_secondary_dark">#6C7BFF</color>
+
+    <!-- lighter blue tone used for readable text on dark background -->
+    <color name="md_blue_700_dark">#90CAF9</color>
+
+    <!-- dark gray surface background for screens and containers -->
+    <color name="md_surface_dark">#121212</color>
+
+    <!-- white text and icons on dark surfaces -->
+    <color name="md_on_surface_dark">#FFFFFF</color>
+
+    <!-- lighter gray outlines on dark background -->
+    <color name="md_outline_dark">#9E9E9E</color>
+
+    <!-- slightly lighter gray variant for panels and cards -->
+    <color name="md_surface_variant_dark">#1E1E1E</color>
+
+    <!-- toolbar background dark gray -->
+    <color name="md_toolbar_background_dark">#121212</color>
+
+    <!-- toolbar icons and text white for contrast -->
+    <color name="md_toolbar_tint_dark">#FFFFFF</color>
+
+    <!-- background for adaptive app icons (unchanged) -->
+    <color name="ic_launcher_background_dark">#1976D2</color>
+
+    <!-- translucent bright blue overlay for selected tiles -->
+    <color name="selection_highlight_dark">#332196F3</color>
+
+    <!-- softer red used for trash or deleted item badges -->
+    <color name="badge_trash_dark">#EF5350</color>
+
+    <!-- bright blue button background for recover button -->
+    <color name="recover_button_enabled_bg_dark">#1976D2</color>
+
+    <!-- darker gray background for disabled recover button -->
+    <color name="recover_button_disabled_bg_dark">#424242</color>
+
+    <!-- white text color for recover button labels -->
+    <color name="recover_button_text_dark">#FFFFFF</color>
+
+    <!-- vivid neon green for found file count on dark surfaces -->
+    <color name="md_green_A400_dark">#76FF03</color>
+
+    <!-- bright neon green for scan success glow -->
+    <color name="md_green_A200_dark">#B2FF59</color>
+
+    <!-- deep blue used for outer pulse gradient -->
+    <color name="md_blue_50_dark">#0D47A1</color>
+
+    <!-- lighter blue used for inner pulse gradient -->
+    <color name="md_blue_200_dark">#42A5F5</color>
+
+    <!-- transparent edge color for pulse fade -->
+    <color name="md_blue_50_transparent_dark">#00000000</color>
+
+    <!-- pure white icons for grid/list toggle and toolbar -->
+    <color name="icon_grid_dark">#FFFFFF</color>
+    <color name="icon_list_dark">#FFFFFF</color>
 
 </resources>
