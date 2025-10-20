@@ -54,7 +54,8 @@
                 android:text="0"
                 android:textStyle="bold"
                 android:textSize="36sp"
-                android:fontFamily="monospace"/>
+                android:fontFamily="monospace"
+                android:textColor="@color/md_blue_700" />
         </FrameLayout>
 
         <com.google.android.material.button.MaterialButton
