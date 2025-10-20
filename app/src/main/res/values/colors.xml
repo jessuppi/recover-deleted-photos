@@ -9,6 +9,9 @@
     <!-- secondary soft blue used for highlights and accent details -->
     <color name="md_secondary">#6C7BFF</color>
 
+    <!-- dark blue tone used for key text (matches start scan button) -->
+    <color name="md_blue_700">#1976D2</color>
+
     <!-- white surface background for screens and containers -->
     <color name="md_surface">#FFFFFF</color>
 
