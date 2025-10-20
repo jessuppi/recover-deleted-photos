@@ -28,10 +28,10 @@
     <string name="total_videos_label">Total videos found:</string>
     <string name="total_audio_label">Total audio files found:</string>
     <string name="total_files_count">%1$,d</string>
-    <string name="cancel">Cancel</string>
     <string name="perms_denied">Storage permission is required to scan your device</string>
 
-    <string name="cancelling">Cancelling…</string>
+    <string name="cancel">Cancel</string>
+    <string name="cancelling">Cancelling...</string>
 
 
     <!-- results screen -->
