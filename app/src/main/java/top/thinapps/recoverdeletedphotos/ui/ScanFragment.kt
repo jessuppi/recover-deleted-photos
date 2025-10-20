@@ -69,7 +69,7 @@ class ScanFragment : Fragment() {
 
     private companion object {
         private const val COUNT_ANIM_MS = 3800L      // duration for final count-up
-        private const val POST_ANIM_DWELL_MS = 1200L // dwell on final green number
+        private const val POST_ANIM_DWELL_MS = 1200L // (unused now for glow; kept for future tweaks)
         private const val PULSE_CYCLE_MS = 2800L     // pulse ring cycle time
         private const val TICK_MS = 50L              // ticker cadence
     }
@@ -181,7 +181,7 @@ class ScanFragment : Fragment() {
         return ContextCompat.checkSelfPermission(requireContext(), p) == PackageManager.PERMISSION_GRANTED
     }
 
-    // completed when final count animation + dwell finish
+    // completed when final count animation + pulse completes
     private var countAnimDone = CompletableDeferred<Unit>()
 
     // ---- scanning flow -------------------------------------------------------
@@ -324,7 +324,7 @@ class ScanFragment : Fragment() {
         tickerJob = null
     }
 
-    // final animation: count to the exact total, then turn neon green and dwell briefly with a glow
+    // final animation: count to the exact total, then do a subtle scale pulse (no glow)
     private fun animateCountTo(target: Int) = withVb {
         countAnimator?.cancel()
         val startValue = vb.totalCount.text.toString().replace(Regex("[^0-9]"), "").toIntOrNull() ?: 0
@@ -335,15 +335,23 @@ class ScanFragment : Fragment() {
                 vb.totalCount.text = getString(R.string.total_files_count, anim.animatedValue as Int)
             }
             doOnEnd {
-                // turn green immediately at final value and add a soft glow for the dwell
-                val green = ContextCompat.getColor(requireContext(), R.color.md_green_A400)
-                vb.totalCount.setShadowLayer(10f, 0f, 0f, green)
-
-                lifecycleScope.launch {
-                    delay(POST_ANIM_DWELL_MS)
-                    vb.totalCount.setShadowLayer(0f, 0f, 0f, 0)
-                    if (!countAnimDone.isCompleted) countAnimDone.complete(Unit)
-                }
+                // subtle emphasis: scale up then back down (keeps text color unchanged)
+                val interp = FastOutSlowInInterpolator()
+                vb.totalCount.animate()
+                    .scaleX(1.12f).scaleY(1.12f)
+                    .setDuration(180L)
+                    .setInterpolator(interp)
+                    .withEndAction {
+                        vb.totalCount.animate()
+                            .scaleX(1f).scaleY(1f)
+                            .setDuration(180L)
+                            .setInterpolator(interp)
+                            .withEndAction {
+                                if (!countAnimDone.isCompleted) countAnimDone.complete(Unit)
+                            }
+                            .start()
+                    }
+                    .start()
             }
             start()
         }
