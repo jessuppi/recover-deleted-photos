@@ -206,7 +206,7 @@ class ScanFragment : Fragment() {
                     TypeChoice.AUDIO -> getString(R.string.total_audio_label)
                 }
                 vb.totalCount.text = getString(R.string.total_files_count, 0)
-                vb.totalCount.setTextColor(ContextCompat.getColor(requireContext(), R.color.md_on_surface))
+                vb.totalCount.setTextColor(ContextCompat.getColor(requireContext(), R.color.md_blue_700))
                 latestTotal = 0
 
                 // kick off visuals: soft transparent pulses + ticker that climbs toward live total
@@ -337,8 +337,8 @@ class ScanFragment : Fragment() {
             doOnEnd {
                 // turn green immediately at final value and add a soft glow for the dwell
                 val green = ContextCompat.getColor(requireContext(), R.color.md_green_A400)
-                vb.totalCount.setTextColor(green)
-                vb.totalCount.setShadowLayer(8f, 0f, 0f, green)
+                vb.totalCount.setShadowLayer(10f, 0f, 0f, green)
+
                 lifecycleScope.launch {
                     delay(POST_ANIM_DWELL_MS)
                     vb.totalCount.setShadowLayer(0f, 0f, 0f, 0)
