@@ -1,13 +1,10 @@
 package top.thinapps.recoverdeletedphotos.ui
 
-import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.*
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.activity.OnBackPressedCallback
-import androidx.annotation.AttrRes
-import androidx.core.graphics.drawable.DrawableCompat
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.core.view.isVisible
@@ -131,8 +128,7 @@ class ResultsFragment : Fragment() {
                 menu.clear()
                 menuInflater.inflate(R.menu.menu_results, menu)
                 val item = menu.findItem(R.id.action_toggle_layout)
-                refreshToggleMenuIcon(item)
-                tintMenuItemIcon(item, androidx.appcompat.R.attr.colorControlNormal)
+                refreshToggleMenuIcon(item) // icons themselves carry color from vectors
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
@@ -146,8 +142,7 @@ class ResultsFragment : Fragment() {
                     R.id.action_toggle_layout -> {
                         useGrid = !useGrid
                         updateLayoutManager()
-                        refreshToggleMenuIcon(menuItem)
-                        tintMenuItemIcon(menuItem, androidx.appcompat.R.attr.colorControlNormal)
+                        refreshToggleMenuIcon(menuItem) // just swap icon; no tinting
                         true
                     }
                     else -> false
@@ -160,28 +155,14 @@ class ResultsFragment : Fragment() {
     private fun refreshToggleMenuIcon(item: MenuItem?) {
         if (item == null) return
         if (useGrid) {
+            // ic_view_list.xml should use @color/icon_list_light (or your chosen hardcoded color)
             item.setIcon(R.drawable.ic_view_list)
             item.title = getString(R.string.action_view_list)
         } else {
+            // ic_view_grid.xml should use @color/icon_grid_light (or your chosen hardcoded color)
             item.setIcon(R.drawable.ic_view_grid)
             item.title = getString(R.string.action_view_grid)
         }
-    }
-
-    // tint menu icons using theme color
-    private fun tintMenuItemIcon(item: MenuItem?, @AttrRes attr: Int) {
-        if (item?.icon == null) return
-        val color = resolveAttrColor(attr)
-        val wrapped = DrawableCompat.wrap(item.icon!!)
-        DrawableCompat.setTint(wrapped, color)
-        item.icon = wrapped
-        item.iconTintList = ColorStateList.valueOf(color)
-    }
-
-    // resolve theme color safely
-    private fun resolveAttrColor(@AttrRes attr: Int): Int {
-        val ta = requireContext().theme.obtainStyledAttributes(intArrayOf(attr))
-        return try { ta.getColor(0, 0xFF000000.toInt()) } finally { ta.recycle() }
     }
 
     // update layout manager for grid/list
