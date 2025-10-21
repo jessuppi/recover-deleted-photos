@@ -5,12 +5,9 @@ import android.view.*
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.activity.OnBackPressedCallback
-import androidx.core.view.MenuHost
-import androidx.core.view.MenuProvider
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DiffUtil
@@ -55,9 +52,6 @@ class ResultsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        // allow toolbar menu events to reach this fragment
-        setHasOptionsMenu(true)
 
         // handle system back same as toolbar up → always go home
         val backCallback = object : OnBackPressedCallback(true) {
@@ -121,45 +115,30 @@ class ResultsFragment : Fragment() {
             override fun onNothingSelected(parent: AdapterView<*>?) = Unit
         }
 
-        // add toolbar menu for grid/list toggle and handle up arrow
-        val menuHost: MenuHost = requireActivity()
-        menuHost.addMenuProvider(object : MenuProvider {
-            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                menu.clear()
-                menuInflater.inflate(R.menu.menu_results, menu)
-                val item = menu.findItem(R.id.action_toggle_layout)
-                refreshToggleMenuIcon(item) // icons themselves carry color from vectors
-            }
-
-            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-                return when (menuItem.itemId) {
-                    // go to home when toolbar up arrow clicked
-                    android.R.id.home -> {
-                        findNavController().popBackStack(R.id.homeFragment, false)
-                        true
-                    }
-                    // toggle between grid and list layouts
-                    R.id.action_toggle_layout -> {
-                        useGrid = !useGrid
-                        updateLayoutManager()
-                        refreshToggleMenuIcon(menuItem) // just swap icon; no tinting
-                        true
-                    }
-                    else -> false
+        // shared menu helper for grid/list toggle
+        withMenu(R.menu.menu_results, onCreate = { menu ->
+            val item = menu.findItem(R.id.action_toggle_layout)
+            refreshToggleIcon(item)
+        }) { item ->
+            when (item.itemId) {
+                R.id.action_toggle_layout -> {
+                    useGrid = !useGrid
+                    updateLayoutManager()
+                    refreshToggleIcon(item)
+                    true
                 }
+                else -> false
             }
-        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+        }
     }
 
     // update menu icon based on layout type
-    private fun refreshToggleMenuIcon(item: MenuItem?) {
+    private fun refreshToggleIcon(item: MenuItem?) {
         if (item == null) return
         if (useGrid) {
-            // ic_view_list.xml should use @color/icon_list_light (or your chosen hardcoded color)
             item.setIcon(R.drawable.ic_view_list)
             item.title = getString(R.string.action_view_list)
         } else {
-            // ic_view_grid.xml should use @color/icon_grid_light (or your chosen hardcoded color)
             item.setIcon(R.drawable.ic_view_grid)
             item.title = getString(R.string.action_view_grid)
         }
