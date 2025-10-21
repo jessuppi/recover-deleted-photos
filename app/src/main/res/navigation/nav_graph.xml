@@ -23,6 +23,12 @@
             app:argType="string"
             android:defaultValue="PHOTOS" />
 
+        <!-- optional dynamic title for toolbar -->
+        <argument
+            android:name="title_override"
+            app:argType="string"
+            android:nullable="true" />
+
         <action
             android:id="@+id/action_scan_to_results"
             app:destination="@id/resultsFragment" />
@@ -31,5 +37,12 @@
     <fragment
         android:id="@+id/resultsFragment"
         android:name="top.thinapps.recoverdeletedphotos.ui.ResultsFragment"
-        android:label="@string/results_title" />
+        android:label="@string/results_title">
+
+        <!-- optional dynamic title for toolbar -->
+        <argument
+            android:name="title_override"
+            app:argType="string"
+            android:nullable="true" />
+    </fragment>
 </navigation>
