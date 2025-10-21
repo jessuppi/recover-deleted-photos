@@ -2,6 +2,12 @@
 
 ## Changelog
 
+### 0.17.0
+- centralized toolbar and navigation handling in `MainActivity` with a single shared `MaterialToolbar`
+- removed fragment-level toolbar logic and deprecated `setHasOptionsMenu` usage in favor of a shared `withMenu()` helper
+- unified title, up button, and menu behavior across all screens for simpler and more consistent navigation
+- streamlined layouts: flat `activity_main.xml` with `MaterialToolbar` + `FragmentContainerView`; cleaner `menu_results.xml`
+
 ### 0.16.14
 - added new `values-night/colors.xml` for dark mode colors
 - updated toggle view icons to reference `@color/icon_list` and `@color/icon_grid`
