@@ -16,6 +16,7 @@ import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
 import top.thinapps.recoverdeletedphotos.R
 import top.thinapps.recoverdeletedphotos.databinding.FragmentHomeBinding
+import top.thinapps.recoverdeletedphotos.MainActivity
 
 private const val ARG_TYPE = "type"
 
@@ -72,6 +73,10 @@ class HomeFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        // ensure toolbar visible and reset title for home screen
+        (activity as? MainActivity)?.setToolbarVisible(true)
+        (activity as? MainActivity)?.setToolbarTitle(getString(R.string.app_name))
+
         // show subtitle text on home screen
         vb.subtitle.isVisible = true
 
