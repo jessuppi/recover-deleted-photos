@@ -45,6 +45,14 @@ class MainActivity : AppCompatActivity() {
         // wire navigation to action bar; titles come from nav_graph labels
         appBarConfig = AppBarConfiguration(navController.graph)
         setupActionBarWithNavController(navController, appBarConfig)
+
+        // optional dynamic titles via nav args (title_override), otherwise use labels
+        navController.addOnDestinationChangedListener { _, _, args ->
+            val override = args?.getString("title_override")
+            if (!override.isNullOrBlank()) {
+                supportActionBar?.title = override
+            }
+        }
     }
 
     // support the up button
