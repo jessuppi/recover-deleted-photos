@@ -1,3 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.RecoverDeletedPhotos" parent="Theme.Material3.DayNight.NoActionBar"/>
+
+    <!-- this file is intentionally minimal as Material 3 DayNight handles most color switching automatically -->
+    <style name="Theme.RecoverDeletedPhotos" parent="Theme.Material3.DayNight.NoActionBar">
+        
+        <!-- you can override any custom attribute here if it needs a different dark mode value -->
+        
+        <!-- we rely on the themes colorOnSurface for toolbar elements in dark mode -->
+        <item name="actionMenuTextColor">@color/md_toolbar_tint</item>
+        <item name="actionMenuIconTint">@color/md_toolbar_tint</item>
+
+    </style>
+
 </resources>
