@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- android 13+ granular media permissions -->
+    <!-- android 13 granular permissions for media access -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
 
-    <!-- pre-android 13 fallback -->
+    <!-- pre-android 13 fallback using maxSdkVersion 32 -->
     <uses-permission
         android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
@@ -18,11 +18,14 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.RecoverDeletedPhotos">
 
+        <!-- the main single-activity entry point for the app -->
         <activity
             android:name="top.thinapps.recoverdeletedphotos.MainActivity"
             android:exported="true">
             <intent-filter>
+                <!-- sets this activity as the main entry point -->
                 <action android:name="android.intent.action.MAIN" />
+                <!-- allows the app to appear in the launcher -->
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
