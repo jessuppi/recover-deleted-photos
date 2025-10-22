@@ -17,7 +17,7 @@
     </style>
 
     <!-- custom style to apply md_toolbar_tint to all icons and text within the toolbar -->
-    <style name="Widget.App.Toolbar.Tinted" parent="Widget.Material3.Toolbar.Surface">
+    <style name="Widget.App.Toolbar.Tinted" parent="Widget.MaterialComponents.Toolbar">
         <item name="actionMenuTextColor">@color/md_toolbar_tint</item>
         <item name="actionMenuIconTint">@color/md_toolbar_tint</item>
     </style>
