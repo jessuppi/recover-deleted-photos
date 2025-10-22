@@ -64,10 +64,7 @@
 
     <!-- lighter blue used for inner pulse gradient -->
     <color name="md_blue_200">#42A5F5</color>
-
-    <!-- transparent edge color for pulse fade -->
-    <color name="md_blue_50_transparent">#00000000</color>
-
+    
     <!-- pure white icons for grid/list toggle and toolbar -->
     <color name="icon_grid">#FFFFFF</color>
     <color name="icon_list">#FFFFFF</color>
