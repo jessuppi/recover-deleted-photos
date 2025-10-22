@@ -65,9 +65,6 @@
     <!-- soft blue midtone used for inner pulse gradient -->
     <color name="md_blue_200">#90CAF9</color>
 
-    <!-- fully transparent edge color for pulse fade -->
-    <color name="md_blue_50_transparent">#00E8F0FE</color>
-
     <!-- dark gray icons for grid/list toggle and other toolbar icons -->
     <color name="icon_grid">#1C1B1F</color>
     <color name="icon_list">#1C1B1F</color>
