@@ -3,22 +3,25 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-parcelize'
 
 android {
+    // sets the kotlin package namespace for the app
     namespace "top.thinapps.recoverdeletedphotos"
+    // sets the api level used for compilation
     compileSdk 35
 
     defaultConfig {
         applicationId "top.thinapps.recoverdeletedphotos"
         minSdk 21
         targetSdk 35
-        versionCode 73
-        versionName "0.17.0"
+        versionCode 74
+        versionName "0.17.1"
 
-        // fix: forces the use of the support library for vector drawables to resolve aapt2 resource conflicts in ci
+        // forces the use of the support library for vector drawables
         vectorDrawables.useSupportLibrary = true
     }
 
     signingConfigs {
         release {
+            // reads keystore properties from gradle.properties for signing
             storeFile file(project.findProperty("RELEASE_STORE_FILE"))
             storePassword project.findProperty("RELEASE_STORE_PASSWORD")
             keyAlias project.findProperty("RELEASE_KEY_ALIAS")
@@ -28,35 +31,39 @@ android {
 
     buildTypes {
         release {
+            // applies signing configuration for the release build
             signingConfig signingConfigs.release
-            // keep default no-minify for now; add proguard later if needed
+            // minification and obfuscation is disabled for this open source app
         }
         debug {
-            // use defaults for debug builds
+            // standard debug defaults are used
         }
     }
 
     buildFeatures {
+        // enables view binding for safer compile-time binding to xml views
         viewBinding true
-        // buildconfig not needed now that scan_video is removed
+        // buildconfig is commented out as it is not currently needed
     }
 
     compileOptions {
+        // aligns java source and target compatibility to match the jvm target
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
 
     kotlinOptions {
+        // defines the java virtual machine compatibility version
         jvmTarget = "17"
     }
 }
 
 dependencies {
-    // kotlin bom aligns transitive kotlin modules
+    // imports the kotlin bill of materials to align all kotlin library versions
     implementation platform("org.jetbrains.kotlin:kotlin-bom:1.9.24")
     implementation "org.jetbrains.kotlin:kotlin-stdlib"
 
-    // core and ui foundation
+    // core and ui foundation libraries
     implementation "androidx.core:core-ktx:1.15.0"
     implementation "androidx.appcompat:appcompat:1.7.0"
     implementation "com.google.android.material:material:1.13.0"
@@ -65,23 +72,23 @@ dependencies {
     implementation "androidx.recyclerview:recyclerview:1.3.2"
     implementation "androidx.constraintlayout:constraintlayout:2.2.0"
 
-    // lifecycle fragments and activity ktx
+    // lifecycle fragments and activity ktx extensions
     implementation "androidx.activity:activity-ktx:1.9.3"
     implementation "androidx.fragment:fragment-ktx:1.8.4"
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.8.6"
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.6"
 
-    // navigation components
+    // jetpack navigation components for single-activity architecture
     implementation "androidx.navigation:navigation-fragment-ktx:2.8.3"
     implementation "androidx.navigation:navigation-ui-ktx:2.8.3"
 
-    // image loading
+    // image loading library used for displaying thumbnails
     implementation "io.coil-kt:coil:2.7.0"
 
-    // interpolators for scanfragment animations
+    // interpolators library used for custom scanfragment animations
     implementation "androidx.interpolator:interpolator:1.0.0"
 
-    // optional helpers for future features or backward compat
+    // optional androidx helpers for potential future feature needs
     implementation "androidx.preference:preference-ktx:1.2.1"
     implementation "androidx.annotation:annotation:1.8.2"
 }
