@@ -6,6 +6,7 @@ import kotlinx.parcelize.Parcelize
 import java.text.SimpleDateFormat
 import java.util.*
 
+// data class for recovered media, made parcelable for fragment argument passing
 @Parcelize
 data class MediaItem(
     val id: Long,
@@ -16,15 +17,15 @@ data class MediaItem(
     val origin: Origin = Origin.NORMAL
 ) : Parcelable {
 
-    // origin type for scanned files
+    // defines if the file was normal or in the system trash folder
     enum class Origin { NORMAL, TRASHED }
 
-    // readable date for ui display
+    // computed property to return a user-friendly date string for display
     val dateReadable: String
         get() = sharedFormatter.format(Date(dateAddedSec * 1000))
 
     companion object {
-        // shared date formatter (consistent across locales)
+        // singleton date formatter used to ensure consistent date output across locales
         private val sharedFormatter by lazy {
             SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.US)
         }
