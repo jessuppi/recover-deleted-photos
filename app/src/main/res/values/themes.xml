@@ -14,12 +14,17 @@
         <!-- default Toolbar style for MaterialToolbar -->
         <item name="toolbarStyle">@style/Widget.Material3.Toolbar.Surface</item>
 
-        <!-- ensures menu text uses the Toolbar designated tint color -->
-        <item name="actionMenuTextColor">@color/md_toolbar_tint</item>
-        <!-- ensures menu icons like the grid/list toggle use the Toolbar designated tint color -->
-        <item name="actionMenuIconTint">@color/md_toolbar_tint</item>
+        <!-- use a custom style to ensure all toolbar text and icons are colored via md_toolbar_tint -->
+        <item name="toolbarNavigationButtonStyle">@style/Widget.App.Toolbar.Tinted</item>
+        <item name="actionBarStyle">@style/Widget.App.Toolbar.Tinted</item>
 
         <!-- we omit explicit statusBarColor and navigationBarColor to let Material 3 DayNight handle color and contrast automatically -->
+    </style>
+
+    <!-- custom style to apply md_toolbar_tint to all icons and text within the toolbar -->
+    <style name="Widget.App.Toolbar.Tinted" parent="Widget.Material3.Toolbar.Surface">
+        <item name="actionMenuTextColor">@color/md_toolbar_tint</item>
+        <item name="actionMenuIconTint">@color/md_toolbar_tint</item>
     </style>
 
 </resources>
