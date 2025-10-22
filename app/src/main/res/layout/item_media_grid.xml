@@ -18,7 +18,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintDimensionRatio="1:1"
-        tools:src="@drawable/ic_launcher_foreground"
+        tools:src="@mipmap/ic_launcher_foreground"
         tools:ignore="ContentDescription" />
 
     <!-- overlay view for selection highlight -->
