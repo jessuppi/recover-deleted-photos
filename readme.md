@@ -2,6 +2,10 @@
 
 ## Changelog
 
+### 0.17.1
+- removed two obsolete layout files (`include_filter_chips.xml` and `view_empty_state.xml`) to simplify project structure
+- corrected menu icon visibility in light mode by explicitly defining `actionMenuIconTint` and `actionMenuTextColor` in base and night themes
+
 ### 0.17.0
 - centralized toolbar and navigation handling in `MainActivity` with a single shared `MaterialToolbar`
 - removed fragment-level toolbar logic and deprecated `setHasOptionsMenu` usage in favor of a shared `withMenu()` helper
