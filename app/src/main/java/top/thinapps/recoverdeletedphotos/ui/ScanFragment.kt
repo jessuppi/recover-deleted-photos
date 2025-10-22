@@ -352,33 +352,207 @@ class ScanFragment : Fragment() {
     // ---- pulse ring visuals --------------------------------------------------
 
     // soft transparent pulses: scale the view, fade only the drawable (not view.alpha)
-    private fun startPulses() { /* unchanged from original */ }
+    private fun startPulses() {
+        stopPulses() // clean any previous
+
+        fun setup(view: View, delayMs: Long) {
+            // unique drawable instance so alpha changes don't leak between views
+            view.background = ContextCompat.getDrawable(requireContext(), R.drawable.pulse_circle)?.mutate()
+
+            // view stays fully opaque (we'll fade the drawable only)
+            view.alpha = 1f
+            view.scaleX = 1f
+            view.scaleY = 1f
+            view.setLayerType(View.LAYER_TYPE_NONE, null)
+
+            val interp = FastOutSlowInInterpolator()
+
+            val sx = ObjectAnimator.ofFloat(view, View.SCALE_X, 1f, 1.6f).apply {
+                duration = PULSE_CYCLE_MS
+                interpolator = interp
+                repeatCount = ObjectAnimator.INFINITE
+                repeatMode = ObjectAnimator.RESTART
+                startDelay = delayMs
+            }
+            val sy = ObjectAnimator.ofFloat(view, View.SCALE_Y, 1f, 1.6f).apply {
+                duration = PULSE_CYCLE_MS
+                interpolator = interp
+                repeatCount = ObjectAnimator.INFINITE
+                repeatMode = ObjectAnimator.RESTART
+                startDelay = delayMs
+            }
+
+            // fade only the drawable alpha (prevents rectangular layer fade)
+            val da = ValueAnimator.ofInt(90, 0).apply {
+                duration = PULSE_CYCLE_MS
+                interpolator = LinearInterpolator()
+                repeatCount = ValueAnimator.INFINITE
+                repeatMode = ValueAnimator.RESTART
+                startDelay = delayMs
+                addUpdateListener { (view.background ?: return@addUpdateListener).alpha = it.animatedValue as Int }
+            }
+
+            runningAnims += listOf(sx, sy)
+            pulseAlphaAnimators += da
+            sx.start(); sy.start(); da.start()
+        }
+
+        setup(vb.pulse1, 0L)
+        setup(vb.pulse2, PULSE_CYCLE_MS / 2)
+    }
 
     // stops and clears all running pulse animations and resets views
-    private fun stopPulses() { /* unchanged from original */ }
+    private fun stopPulses() {
+        runningAnims.forEach { it.cancel() }
+        runningAnims.clear()
+        pulseAlphaAnimators.forEach { it.cancel() }
+        pulseAlphaAnimators.clear()
+        withVb {
+            pulse1.alpha = 1f; pulse1.scaleX = 1f; pulse1.scaleY = 1f; pulse1.background = null
+            pulse2.alpha = 1f; pulse2.scaleX = 1f; pulse2.scaleY = 1f; pulse2.background = null
+        }
+    }
 
     // ---- cancel handling -----------------------------------------------------
 
     // cancel stops scanning/animations, clears results, and returns to home without minimizing/crashing
-    private fun cancel() { /* unchanged from original */ }
+    private fun cancel() {
+        if (canceled) return
+        canceled = true
+        navigating = true
+
+        // immediate visual feedback on the button
+        vb.cancelButton.apply {
+            isEnabled = false
+            text = getString(R.string.cancelling) // new string
+            animate().alpha(0.6f).scaleX(0.98f).scaleY(0.98f).setDuration(180L).start()
+        }
+
+        // stop all work/animations right away
+        job?.cancel()
+        stopCountTicker()
+        countAnimator?.cancel()
+        stopPulses()
+
+        // clear any in-memory results for privacy/freshness
+        vm.results = emptyList()
+
+        val nav = runCatching { findNavController() }.getOrNull() ?: return
+
+        // brief dwell so the feedback is perceivable, then navigate safely on RESUMED
+        viewLifecycleOwner.lifecycleScope.launch {
+            delay(450L) // micro dwell
+
+            while (lifecycle.currentState < Lifecycle.State.RESUMED) {
+                delay(16)
+            }
+            runCatching {
+                val popped = nav.popBackStack(R.id.homeFragment, false)
+                if (!popped) {
+                    val homeId = if (nav.graph.findNode(R.id.homeFragment) != null)
+                        R.id.homeFragment
+                    else
+                        nav.graph.startDestinationId
+
+                    val opts = NavOptions.Builder()
+                        .setPopUpTo(homeId, false)
+                        .build()
+                    nav.navigate(homeId, null, opts)
+                }
+            }
+        }
+    }
 
     // ---- state screens -------------------------------------------------------
 
     // toggle between the scanning ui and the generic state container.
     // when scanning, add a subtle breathing animation to the cancel button.
-    private fun showScanUI(show: Boolean) { /* unchanged from original */ }
+    private fun showScanUI(show: Boolean) {
+        vb.scanContent.visibility = if (show) View.VISIBLE else View.GONE
+        vb.stateContainer.visibility = if (show) View.GONE else View.VISIBLE
+        vb.cancelButton.isEnabled = show && !navigating
+
+        if (show) {
+            ObjectAnimator.ofFloat(vb.cancelButton, View.ALPHA, 0.8f, 1f).apply {
+                duration = 1200L
+                repeatCount = ObjectAnimator.INFINITE
+                repeatMode = ObjectAnimator.REVERSE
+                start()
+            }
+        } else {
+            vb.cancelButton.alpha = 1f
+        }
+    }
 
     // device not supported (sdk < 33)
-    private fun showNotSupportedState() { /* unchanged from original */ }
+    private fun showNotSupportedState() {
+        showScanUI(false)
+        vb.stateTitle.text = getString(R.string.android_13_required_title)
+        vb.stateMessage.text = getString(R.string.android_13_required_msg)
+        vb.statePrimary.text = getString(R.string.go_home)
+        vb.statePrimary.setOnClickListener {
+            findNavController().popBackStack(R.id.homeFragment, false)
+        }
+        vb.stateSecondary.visibility = View.GONE
+    }
 
     // permission needed to proceed
-    private fun showPermissionState() { /* unchanged from original */ }
+    private fun showPermissionState() {
+        showScanUI(false)
+        vb.stateTitle.text = getString(R.string.perm_required_title)
+        vb.stateMessage.text = getString(R.string.perm_required_msg)
+        vb.statePrimary.text = getString(R.string.perm_open_settings)
+        vb.statePrimary.setOnClickListener {
+            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                data = Uri.fromParts("package", requireContext().packageName, null)
+            }
+            startActivity(intent)
+        }
+        vb.stateSecondary.visibility = View.VISIBLE
+        vb.stateSecondary.text = when (selectedType) {
+            TypeChoice.PHOTOS -> getString(R.string.perm_request_images)
+            TypeChoice.VIDEOS -> getString(R.string.perm_request_videos)
+            TypeChoice.AUDIO -> getString(R.string.perm_request_audio)
+        }
+        vb.stateSecondary.setOnClickListener {
+            if (isAndroid13Plus()) requestPerm.launch(requiredPerm(selectedType))
+            else showNotSupportedState()
+        }
+    }
 
     // no media found for the chosen type
-    private fun showNoMediaState() { /* unchanged from original */ }
+    private fun showNoMediaState() {
+        showScanUI(false)
+        vb.stateTitle.text = getString(R.string.no_media_title)
+        vb.stateMessage.text = getString(R.string.no_media_msg)
+        vb.statePrimary.text = getString(R.string.go_home)
+        vb.statePrimary.setOnClickListener {
+            findNavController().popBackStack(R.id.homeFragment, false)
+        }
+        vb.stateSecondary.visibility = View.GONE
+    }
 
     // unexpected error during scan
-    private fun showErrorState() { /* unchanged from original */ }
+    private fun showErrorState() {
+        showScanUI(false)
+        vb.stateTitle.text = getString(R.string.scan_error_title)
+        vb.stateMessage.text = getString(R.string.scan_error_msg)
+        vb.statePrimary.text = getString(R.string.try_again)
+        vb.statePrimary.setOnClickListener {
+            val perm = if (isAndroid13Plus()) requiredPerm(selectedType) else null
+            if (perm == null || ContextCompat.checkSelfPermission(requireContext(), perm) == PackageManager.PERMISSION_GRANTED) {
+                started = false
+                start(selectedType)
+            } else {
+                showPermissionState()
+            }
+        }
+        vb.stateSecondary.text = getString(R.string.go_home)
+        vb.stateSecondary.visibility = View.VISIBLE
+        vb.stateSecondary.setOnClickListener {
+            findNavController().popBackStack(R.id.homeFragment, false)
+        }
+    }
 
     // ---- lifecycle glue ------------------------------------------------------
 
