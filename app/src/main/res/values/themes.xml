@@ -1,26 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources>
 
-    <!-- base material 3 theme with automatic day/night -->
+    <!-- Base Material 3 theme (Day/Night) with no action bar.
+         Our toolbar lives in activity_main.xml and is owned by MainActivity. -->
     <style name="Theme.RecoverDeletedPhotos" parent="Theme.Material3.DayNight.NoActionBar">
 
-        <!-- brand and surface colors -->
+        <!-- Brand & surface colors -->
         <item name="colorPrimary">@color/md_seed</item>
         <item name="colorSecondary">@color/md_secondary</item>
         <item name="colorSurface">@color/md_surface</item>
         <item name="colorOnSurface">@color/md_on_surface</item>
         <item name="colorOutline">@color/md_outline</item>
 
-        <!-- system bar colors -->
-        <item name="android:statusBarColor">?attr/colorSurface</item>
-        <item name="android:navigationBarColor">?attr/colorSurface</item>
-
-        <!-- let material3 handle icon contrast automatically -->
-        <item name="android:windowLightStatusBar" tools:ignore="NewApi">?attr/isLightTheme</item>
-        <item name="android:windowLightNavigationBar" tools:ignore="NewApi">?attr/isLightTheme</item>
-
-        <!-- default toolbar -->
+        <!-- Default toolbar style for MaterialToolbar -->
         <item name="toolbarStyle">@style/Widget.Material3.Toolbar.Surface</item>
+
+        <!-- NOTE:
+             We intentionally omit android:statusBarColor, android:navigationBarColor,
+             android:windowLightStatusBar, android:windowLightNavigationBar and all tools:
+             flags. Material3 + DayNight will handle contrast & system bars automatically. -->
     </style>
 
 </resources>
