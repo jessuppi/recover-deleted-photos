@@ -11,6 +11,14 @@
         <item name="colorOnSurface">@color/md_on_surface</item>
         <item name="colorOutline">@color/md_outline</item>
 
+        <!-- this ensures every MaterialToolbar defaults to using Widget.App.Toolbar.Tinted for consistent colors -->
+        <item name="toolbarStyle">@style/Widget.App.Toolbar.Tinted</item>
+        
+    </style>
+
+    <!-- custom style to apply md_on_surface color to toolbar icons from the main theme colorOnSurface attribute -->
+    <style name="Widget.App.Toolbar.Tinted" parent="Widget.Material3.Toolbar">
+
     </style>
 
 </resources>
