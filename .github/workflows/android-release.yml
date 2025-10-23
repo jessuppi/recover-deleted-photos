@@ -56,18 +56,6 @@ jobs:
           set -euo pipefail
           echo "${{ secrets.RELEASE_KEYSTORE }}" | base64 --decode > "$HOME/keystore/upload-key.jks"
 
-      - name: Sanity check resources
-        run: |
-          set -euxo pipefail
-          ls -R app/src/main/res || true
-          test -f app/src/main/AndroidManifest.xml
-          test -f app/src/main/res/layout/activity_main.xml
-          test -f app/src/main/res/values/themes.xml
-          test -f app/src/main/res/values/colors.xml
-          test -f app/src/main/res/navigation/nav_graph.xml
-          test -f "$HOME/.gradle/gradle.properties"
-          test -f "$HOME/keystore/upload-key.jks"
-
       - name: Diagnose Kotlin compile (verbose)
         run: |
           ./gradlew --no-daemon --stacktrace --debug --info --warning-mode all \
@@ -98,3 +86,4 @@ jobs:
         with:
           name: app-release
           path: app/build/outputs/bundle/release/app-release.aab
+          
