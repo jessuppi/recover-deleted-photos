@@ -3,6 +3,7 @@ package top.thinapps.recoverdeletedphotos.ui
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
+import android.os.Build.VERSION_CODES.TIRAMISU
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -62,6 +63,10 @@ class HomeFragment : Fragment() {
         vb.startButton.isEnabled = true
     }
 
+    // checks for Android 13+ support
+    private fun isAndroid13Plus(): Boolean =
+        Build.VERSION.SDK_INT >= TIRAMISU
+
     override fun onCreateView(
         inflater: LayoutInflater,
         c: ViewGroup?,
@@ -79,6 +84,15 @@ class HomeFragment : Fragment() {
 
         // show subtitle text on home screen
         vb.subtitle.isVisible = true
+
+        // Check for required API level before enabling functionality
+        if (!isAndroid13Plus()) {
+            vb.startButton.isEnabled = false
+            vb.homeTypeRow.isVisible = false
+            vb.stateMessage.text = getString(R.string.android_13_required_msg)
+            vb.stateMessage.isVisible = true
+            return
+        }
 
         // main action button for starting scan
         vb.startButton.setOnClickListener {
