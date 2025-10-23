@@ -6,22 +6,18 @@
     android:layout_height="match_parent"
     android:background="@color/md_surface">
 
-    <!-- top app bar (material toolbar) -->
+    <!-- Top Material Toolbar: Uses direct color attributes to force high-contrast dark icons/text on the light background. -->
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:title="@string/app_name"
         android:background="@color/md_toolbar_background"
-        
-        <!-- Setting these colors directly ensures high contrast against md_toolbar_background (White). 
-             These attributes specifically control the color of the title, subtitle, navigation icon, and menu items/icons. -->
         app:titleTextColor="@color/md_toolbar_tint"
         app:subtitleTextColor="@color/md_toolbar_tint"
         app:navigationIconTint="@color/md_toolbar_tint"
         app:actionMenuTextColor="@color/md_toolbar_tint"
-        app:actionMenuIconTint="@color/md_toolbar_tint" 
-    />
+        app:actionMenuIconTint="@color/md_toolbar_tint" />
 
     <!-- main navigation host for fragments -->
     <androidx.fragment.app.FragmentContainerView
