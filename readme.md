@@ -2,6 +2,11 @@
 
 ## Changelog
 
+## 0.17.2
+- resolved persistent issue where toolbar action menu icons (e.g., list/grid toggle) appeared white-on-white in light mode
+- explicitly applied `app:actionMenuIconTint` and `app:actionMenuTextColor` directly to the `<MaterialToolbar>` in `activity_main.xml`
+- removed the now unnecessary and conflicting style attributes from `themes.xml`
+
 ### 0.17.1
 - removed two obsolete layout files (`include_filter_chips.xml` and `view_empty_state.xml`) to simplify project structure
 - corrected menu icon visibility in light mode by explicitly defining `actionMenuIconTint` and `actionMenuTextColor` in base and night themes
