@@ -426,9 +426,8 @@ class ScanFragment : Fragment() {
             isEnabled = false
             text = getString(R.string.cancelling) // new string
 
-            // Apply temporary Contained Button style using explicit colors
-            // This pulls colors from recover_button_enabled_bg (blue) and recover_button_text (white)
-            backgroundTintList = ContextCompat.getColorStateList(context, R.color.recover_button_enabled_bg)
+            // Apply temporary Contained Button style using the DISABLED background color
+            backgroundTintList = ContextCompat.getColorStateList(context, R.color.recover_button_disabled_bg) // MODIFIED LINE
             setTextColor(ContextCompat.getColor(context, R.color.recover_button_text))
 
             // Use a full-opacity animation for the solid contained look
