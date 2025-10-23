@@ -456,11 +456,10 @@ class ScanFragment : Fragment() {
             runCatching {
                 val popped = nav.popBackStack(R.id.homeFragment, false)
                 if (!popped) {
-                    val homeId = if (nav.graph.findNode(R.id.homeFragment) != null) {
+                    val homeId = if (nav.graph.findNode(R.id.homeFragment) != null)
                         R.id.homeFragment
-                    } else {
+                    else
                         nav.graph.startDestinationId
-                    }
 
                     val opts = NavOptions.Builder()
                         .setPopUpTo(homeId, false)
@@ -481,12 +480,7 @@ class ScanFragment : Fragment() {
         vb.cancelButton.isEnabled = show && !navigating
 
         if (show) {
-            ObjectAnimator.ofFloat(vb.cancelButton, View.ALPHA, 0.8f, 1f).apply {
-                duration = 1200L
-                repeatCount = ObjectAnimator.INFINITE
-                repeatMode = ObjectAnimator.REVERSE
-                start()
-            }
+            // Removed the ObjectAnimator for the infinite alpha breathing effect on the Cancel button
         } else {
             vb.cancelButton.alpha = 1f
         }
