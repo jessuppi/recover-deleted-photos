@@ -35,12 +35,6 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Clean Gradle environment
-        run: |
-          set -euo pipefail
-          rm -rf ~/.gradle ~/.m2
-          ./gradlew clean || true
-
       - name: Clean any leftover/broken wrapper
         run: rm -f gradle/wrapper/gradle-wrapper.jar
 
@@ -64,7 +58,7 @@ jobs:
 
       - name: Diagnose Kotlin compile (verbose)
         run: |
-          ./gradlew --no-daemon --stacktrace --info --warning-mode all \
+          ./gradlew --no-daemon --stacktrace --debug --info --warning-mode all \
             --rerun-tasks :app:compileReleaseKotlin
 
       - name: Build signed Release bundle
@@ -82,6 +76,7 @@ jobs:
             **/build/reports/**
             **/build/tmp/kotlin-compile*/**
             ~/.gradle/daemon/*/daemon-*.out.log
+            ~/.gradle/caches/**/kotlin/**
             ./**/build/outputs/logs/**
             ./**/build/*/reports/**
 
@@ -91,3 +86,4 @@ jobs:
         with:
           name: app-release
           path: app/build/outputs/bundle/release/app-release.aab
+          
