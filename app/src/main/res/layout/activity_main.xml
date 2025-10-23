@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/md_surface">
 
-    <!-- Top Material Toolbar: Uses direct color attributes to force high-contrast dark icons/text on the light background. -->
+    <!-- simple static toolbar with back button and menu icons -->
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
@@ -16,19 +17,16 @@
         app:titleTextColor="@color/md_toolbar_tint"
         app:subtitleTextColor="@color/md_toolbar_tint"
         app:navigationIconTint="@color/md_toolbar_tint"
-        app:actionMenuTextColor="@color/md_toolbar_tint"
-        app:actionMenuIconTint="@color/md_toolbar_tint"
-    >
-    </com.google.android.material.appbar.MaterialToolbar>
+        app:actionMenuIconTint="@color/md_toolbar_tint" />
 
-    <!-- main navigation host for fragments -->
+    <!-- fragment container for navigation -->
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/nav_host"
         android:name="androidx.navigation.fragment.NavHostFragment"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        app:navGraph="@navigation/nav_graph"
-        app:defaultNavHost="true" />
+        app:defaultNavHost="true"
+        app:navGraph="@navigation/nav_graph" />
 
 </LinearLayout>
