@@ -17,7 +17,9 @@
         app:subtitleTextColor="@color/md_toolbar_tint"
         app:navigationIconTint="@color/md_toolbar_tint"
         app:actionMenuTextColor="@color/md_toolbar_tint"
-        app:actionMenuIconTint="@color/md_toolbar_tint" />
+        app:actionMenuIconTint="@color/md_toolbar_tint"
+    >
+    </com.google.android.material.appbar.MaterialToolbar>
 
     <!-- main navigation host for fragments -->
     <androidx.fragment.app.FragmentContainerView
