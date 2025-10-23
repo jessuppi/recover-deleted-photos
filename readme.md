@@ -2,6 +2,11 @@
 
 ## Changelog
 
+### 0.17.4
+- removed the redundant `app:iconTint` attribute from `menu_results.xml`
+- updated Snackbar action text on Home to the more explicit "Grant Access in Settings"
+- Cancel button now temporarily displays as a solid contained button when showing "Cancelling..." state
+
 ### 0.17.3
 - resolved (further) toolbar icon visibility issues in both light and dark modes
 - restructured `themes.xml` to use Material 3 toolbar overlays in both light and dark modes
