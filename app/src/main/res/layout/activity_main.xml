@@ -13,9 +13,16 @@
         android:layout_height="?attr/actionBarSize"
         android:title="@string/app_name"
         android:background="@color/md_toolbar_background"
+        
+        <!-- Setting these colors directly ensures high contrast against md_toolbar_background (White) -->
         app:titleTextColor="@color/md_toolbar_tint"
         app:subtitleTextColor="@color/md_toolbar_tint"
-        app:navigationIconTint="@color/md_toolbar_tint" />
+        app:navigationIconTint="@color/md_toolbar_tint"
+        
+        <!-- CRITICAL FIX: Explicitly set the tint for the action menu items (toggle icon, etc.) -->
+        <!-- This overrides the white default and forces the dark md_toolbar_tint color. -->
+        app:actionMenuIconTint="@color/md_toolbar_tint"
+        app:actionMenuTextColor="@color/md_toolbar_tint" />
 
     <!-- main navigation host for fragments -->
     <androidx.fragment.app.FragmentContainerView
