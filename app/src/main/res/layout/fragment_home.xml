@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:gravity="center"
     android:padding="24dp"
@@ -28,20 +29,22 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/startButton"
-        style="@style/Widget.Material3.Button"
+    <TextView
+        android:id="@+id/stateMessage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
-        android:text="@string/start_scan"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:visibility="gone"
+        android:textAlignment="center"
+        android:textAppearance="?attr/textAppearanceBodyLarge"
+        tools:text="@string/android_13_required_msg" />
 
-    <!-- media type picker (placed UNDER the Start Scan button) -->
     <LinearLayout
         android:id="@+id/homeTypeRow"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
+        android:layout_marginTop="24dp"
         android:paddingTop="12dp">
 
         <TextView
@@ -77,5 +80,13 @@
                 android:text="@string/type_audio"/>
         </RadioGroup>
     </LinearLayout>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/startButton"
+        style="@style/Widget.Material3.Button"
+        android:layout_marginTop="24dp"
+        android:text="@string/start_scan"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
 
 </LinearLayout>
