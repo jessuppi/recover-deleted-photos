@@ -6,6 +6,5 @@
         android:id="@+id/action_toggle_layout"
         android:title="@string/action_view_grid"
         android:icon="@drawable/ic_view_grid"
-        app:showAsAction="always"
-        app:iconTint="?attr/colorOnSurface" />
+        app:showAsAction="always" />
 </menu>
