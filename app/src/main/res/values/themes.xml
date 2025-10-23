@@ -8,10 +8,36 @@
         <item name="colorSurface">@color/md_surface</item>
         <item name="colorOnSurface">@color/md_on_surface</item>
         <item name="colorOutline">@color/md_outline</item>
+
+        <!-- apply our toolbar style globally -->
         <item name="toolbarStyle">@style/Widget.App.Toolbar.Tinted</item>
     </style>
 
-    <!-- custom toolbar style inheriting material 3 toolbar -->
-    <style name="Widget.App.Toolbar.Tinted" parent="Widget.Material3.Toolbar" />
+    <!-- material toolbar styled to use surface/onSurface so contrast works in light and dark -->
+    <style name="Widget.App.Toolbar.Tinted" parent="Widget.Material3.Toolbar">
+        <!-- background and text/icon colors -->
+        <item name="android:background">?attr/colorSurface</item>
+        <item name="titleTextColor">?attr/colorOnSurface</item>
+        <item name="subtitleTextColor">?attr/colorOnSurface</item>
+        <item name="navigationIconTint">?attr/colorOnSurface</item>
+
+        <!-- themed context for menu item icon tint and ripple -->
+        <item name="android:theme">@style/ThemeOverlay.App.Toolbar.Surface</item>
+
+        <!-- overflow popup uses matching colors -->
+        <item name="popupTheme">@style/ThemeOverlay.App.Toolbar.Popup</item>
+    </style>
+
+    <!-- overlay applied to the toolbar view itself -->
+    <style name="ThemeOverlay.App.Toolbar.Surface" parent="ThemeOverlay.Material3.ActionBar">
+        <item name="colorControlNormal">?attr/colorOnSurface</item>
+        <item name="android:textColorPrimary">?attr/colorOnSurface</item>
+    </style>
+
+    <!-- overlay for the overflow popup menu -->
+    <style name="ThemeOverlay.App.Toolbar.Popup" parent="ThemeOverlay.Material3">
+        <item name="colorControlNormal">?attr/colorOnSurface</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
 
 </resources>
