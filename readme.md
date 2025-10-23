@@ -2,7 +2,13 @@
 
 ## Changelog
 
-## 0.17.2
+### 0.17.3
+- resolved (further) toolbar icon visibility issues in both light and dark modes
+- restructured `themes.xml` to use Material 3 toolbar overlays in both light and dark modes
+- applied unified `toolbarStyle` reference for proper tint and contrast across all themes
+- removed redundant color attributes from `activity_main.xml` to rely fully on theme-driven styling
+
+### 0.17.2
 - resolved persistent issue where toolbar action menu icons (e.g., list/grid toggle) appeared white-on-white in light mode
 - refined toolbar color handling in `activity_main.xml` for consistent tint behavior across light and dark modes
 - cleaned up redundant and conflicting style attributes from `themes.xml`
