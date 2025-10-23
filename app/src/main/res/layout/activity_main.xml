@@ -12,11 +12,7 @@
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:title="@string/app_name"
-        android:background="@color/md_toolbar_background"
-        app:titleTextColor="@color/md_toolbar_tint"
-        app:subtitleTextColor="@color/md_toolbar_tint"
-        app:navigationIconTint="@color/md_toolbar_tint" />
+        android:title="@string/app_name" />
 
     <!-- fragment container for navigation -->
     <androidx.fragment.app.FragmentContainerView
