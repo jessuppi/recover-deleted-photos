@@ -16,7 +16,7 @@
         android:background="@color/md_toolbar_background"
         app:titleTextColor="@color/md_toolbar_tint"
         app:subtitleTextColor="@color/md_toolbar_tint"
-        app:navigationIconTint="@color/md_toolbar_tint"
+        app:navigationIconTint="@color/md_toolbar_tint" />
 
     <!-- fragment container for navigation -->
     <androidx.fragment.app.FragmentContainerView
