@@ -58,6 +58,7 @@
     <string name="perm_grant">Grant</string>
     <string name="open_settings">Open Settings</string>
     <string name="action_settings">Settings</string>
+    <string name="action_grant_settings">Grant Access in Settings</string>
 
     <!-- added for ScanFragment -->
     <string name="perm_open_settings">Open app settings</string>
