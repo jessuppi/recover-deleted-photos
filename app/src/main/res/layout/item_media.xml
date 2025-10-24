@@ -24,18 +24,24 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <ImageView
-            android:id="@+id/thumb"
+        <FrameLayout
+            android:id="@+id/thumb_wrapper"
             android:layout_width="96dp"
             android:layout_height="96dp"
-            android:scaleType="centerCrop"
-            android:contentDescription="@null"
-            android:padding="1dp"
+            android:padding="2dp"
             android:background="?attr/colorOutline"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            tools:ignore="ContentDescription" />
+            app:layout_constraintStart_toStartOf="parent">
+
+            <ImageView
+                android:id="@+id/thumb"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:contentDescription="@null"
+                tools:ignore="ContentDescription" />
+        </FrameLayout>
 
         <com.google.android.material.checkbox.MaterialCheckBox
             android:id="@+id/check"
@@ -45,8 +51,8 @@
             android:layout_marginEnd="0dp"
             app:useMaterialThemeColors="true"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@id/thumb"
-            app:layout_constraintBottom_toBottomOf="@id/thumb" />
+            app:layout_constraintTop_toTopOf="@id/thumb_wrapper"
+            app:layout_constraintBottom_toBottomOf="@id/thumb_wrapper" />
 
         <TextView
             android:id="@+id/name"
@@ -58,9 +64,9 @@
             android:maxLines="1"
             android:textStyle="bold"
             android:textSize="13sp"
-            app:layout_constraintStart_toEndOf="@id/thumb"
+            app:layout_constraintStart_toEndOf="@id/thumb_wrapper"
             app:layout_constraintEnd_toStartOf="@id/check"
-            app:layout_constraintTop_toTopOf="@id/thumb"
+            app:layout_constraintTop_toTopOf="@id/thumb_wrapper"
             app:layout_constraintBottom_toTopOf="@id/meta" />
 
         <TextView
@@ -74,7 +80,7 @@
             android:lineSpacingExtra="2dp"
             android:textSize="13sp"
             android:textColor="?android:attr/textColorSecondary"
-            app:layout_constraintStart_toEndOf="@id/thumb"
+            app:layout_constraintStart_toEndOf="@id/thumb_wrapper"
             app:layout_constraintEnd_toStartOf="@id/check"
             app:layout_constraintTop_toBottomOf="@id/name" />
 
@@ -94,7 +100,7 @@
             android:background="@drawable/bg_badge_round"
             android:visibility="gone"
             app:layout_constraintTop_toBottomOf="@id/meta"
-            app:layout_constraintStart_toEndOf="@id/thumb"
+            app:layout_constraintStart_toEndOf="@id/thumb_wrapper"
             app:layout_constraintEnd_toStartOf="@id/check"
             app:layout_constraintBottom_toBottomOf="parent" />
 
