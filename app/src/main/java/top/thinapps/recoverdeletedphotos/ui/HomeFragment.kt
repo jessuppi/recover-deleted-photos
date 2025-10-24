@@ -1,10 +1,13 @@
 package top.thinapps.recoverdeletedphotos.ui
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Build.VERSION_CODES.TIRAMISU
 import android.os.Bundle
+import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,7 +17,7 @@ import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
-import com.google.android.material.snackbar.Snackbar
+// import com.google.android.material.snackbar.Snackbar // Snackbar removed
 import top.thinapps.recoverdeletedphotos.R
 import top.thinapps.recoverdeletedphotos.databinding.FragmentHomeBinding
 import top.thinapps.recoverdeletedphotos.MainActivity
@@ -36,31 +39,21 @@ class HomeFragment : Fragment() {
         ActivityResultContracts.RequestPermission()
     ) { granted ->
         // safely exit if view is already destroyed
-        val root = _vb?.root ?: return@registerForActivityResult
         if (!isAdded) return@registerForActivityResult
 
         // read stored type and clear state
         val type = pendingType
         pendingType = null
+        
+        vb.startButton.isEnabled = true // Re-enable button after request attempt finishes
 
-        // open scan screen or show denied message
+        // open scan screen or update button to suggest opening settings
         if (granted && type != null) {
             navigateToScan(type)
         } else {
-            Snackbar.make(root, R.string.perms_denied, Snackbar.LENGTH_LONG)
-                .setAction(R.string.action_grant_settings) {
-                    // open system settings for manual permission grant
-                    val intent = android.content.Intent(
-                        android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                        android.net.Uri.fromParts("package", requireContext().packageName, null)
-                    )
-                    startActivity(intent)
-                }
-                .show()
+            // Permission denied -> update button state to prompt for manual settings change (No Snackbar)
+            updateButtonText()
         }
-
-        // re-enable button regardless of outcome
-        vb.startButton.isEnabled = true
     }
 
     // checks for Android 13+ support
@@ -93,24 +86,54 @@ class HomeFragment : Fragment() {
             vb.stateMessage.isVisible = true
             return
         }
+        
+        // Set initial button text based on current permission status
+        updateButtonText()
 
-        // main action button for starting scan
+        // Listener to re-update button text when user changes the media type filter
+        vb.homeTypeRadioGroup.setOnCheckedChangeListener { _, _ ->
+            updateButtonText()
+        }
+
+        // main action button for starting scan/settings
         vb.startButton.setOnClickListener {
             vb.startButton.isEnabled = false
             val type = currentType()
             val perm = requiredPerm(type)
+            val buttonText = vb.startButton.text
 
-            // skip permission if already granted
             if (hasPermission(perm)) {
+                // Flow 1: Permission is granted -> Start Scan
                 navigateToScan(type)
                 vb.startButton.isEnabled = true
+            } else if (buttonText == getString(R.string.action_grant_settings)) {
+                // Flow 2: Permission is denied and button says "Grant Access" -> Open Settings
+                val intent = Intent(
+                    Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                    Uri.fromParts("package", requireContext().packageName, null)
+                )
+                startActivity(intent)
+                vb.startButton.isEnabled = true // Re-enable as user is leaving the app
             } else {
-                // remember chosen type for callback
+                // Flow 3: Permission is NOT granted and button says "Start Scan" -> Request permission
                 pendingType = type
                 requestPerm.launch(perm)
             }
         }
     }
+
+    // NEW HELPER: Sets the button text based on the current permission state for the selected type.
+    private fun updateButtonText() {
+        val perm = requiredPerm(currentType())
+        if (hasPermission(perm)) {
+            vb.startButton.text = getString(R.string.start_scan)
+        } else {
+            // If permission is denied, change the button to prompt opening settings
+            vb.startButton.text = getString(R.string.action_grant_settings)
+        }
+        vb.startButton.isEnabled = true // The button should always be clickable here
+    }
+
 
     // returns user-selected media type
     private fun currentType(): TypeChoice = when {
