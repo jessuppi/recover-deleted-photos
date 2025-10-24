@@ -447,7 +447,7 @@ class ScanFragment : Fragment() {
 
         // brief dwell so the feedback is perceivable, then navigate safely on RESUMED
         viewLifecycleOwner.lifecycleScope.launch {
-            delay(450L) // micro dwell
+            delay(1000L) // micro dwell
 
             while (lifecycle.currentState < Lifecycle.State.RESUMED) {
                 delay(16)
