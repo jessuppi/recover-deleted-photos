@@ -62,10 +62,11 @@ class MainActivity : AppCompatActivity() {
             return super.onSupportNavigateUp()
         }
         
-        // FIX: If the current fragment is the scan screen, we manually trigger the
-        // system back dispatcher. This ensures the ScanFragment's custom cancel()
-        // logic is called, making the toolbar arrow behave like the system back button.
-        if (navController.currentDestination?.id == R.id.scanFragment) {
+        // FIX: If the current fragment is the scan or results screen, we manually trigger the
+        // system back dispatcher. This ensures the Fragment's custom OnBackPressedCallback
+        // (which calls cancel() or goes directly to Home) is executed.
+        val currentId = navController.currentDestination?.id
+        if (currentId == R.id.scanFragment || currentId == R.id.resultsFragment) {
             onBackPressedDispatcher.onBackPressed()
             return true
         }
