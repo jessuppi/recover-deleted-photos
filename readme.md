@@ -2,6 +2,11 @@
 
 ## Changelog
 
+### 0.17.8
+- fixed clipping and positioning issues for the "Trash" badge in the list view (`item_media.xml`)
+- improved the visibility of light-colored image thumbnails by adding a subtle, 1dp border using the theme's outline color
+- ensured the selection overlay color is consistent by adding new `selection_highlight` color reference
+
 ### 0.17.7
 - ResultsFragment: implemented dedicated `exitAndCleanup()` routine to ensure `vm.results` are cleared when exiting via the Up (Back) action
 - ScanFragment: Increased the visible duration of the "Cancelling..." state and navigation delay from 450ms to 1000ms
