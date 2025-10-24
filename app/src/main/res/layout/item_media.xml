@@ -11,7 +11,6 @@
     android:focusable="true"
     android:importantForAccessibility="yes">
 
-    <!-- Padded content container so overlay can cover full row (no white rim) -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/content"
         android:layout_width="0dp"
@@ -25,7 +24,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <!-- thumbnail (left) -->
         <ImageView
             android:id="@+id/thumb"
             android:layout_width="96dp"
@@ -37,7 +35,6 @@
             app:layout_constraintStart_toStartOf="parent"
             tools:ignore="ContentDescription" />
 
-        <!-- checkbox (floats on right) -->
         <com.google.android.material.checkbox.MaterialCheckBox
             android:id="@+id/check"
             android:layout_width="wrap_content"
@@ -49,7 +46,6 @@
             app:layout_constraintTop_toTopOf="@id/thumb"
             app:layout_constraintBottom_toBottomOf="@id/thumb" />
 
-        <!-- filename (to the right of the thumb, before checkbox) -->
         <TextView
             android:id="@+id/name"
             android:layout_width="0dp"
@@ -63,10 +59,8 @@
             app:layout_constraintStart_toEndOf="@id/thumb"
             app:layout_constraintEnd_toStartOf="@id/check"
             app:layout_constraintTop_toTopOf="@id/thumb"
-            app:layout_constraintBottom_toTopOf="@id/meta"
-            app:layout_constraintVertical_chainStyle="packed" />
+            app:layout_constraintBottom_toTopOf="@id/meta" />
 
-        <!-- meta line (date first, then size below it) -->
         <TextView
             android:id="@+id/meta"
             android:layout_width="0dp"
@@ -80,10 +74,8 @@
             android:textColor="?android:attr/textColorSecondary"
             app:layout_constraintStart_toEndOf="@id/thumb"
             app:layout_constraintEnd_toStartOf="@id/check"
-            app:layout_constraintTop_toBottomOf="@id/name"
-            app:layout_constraintBottom_toBottomOf="@id/thumb" />
+            app:layout_constraintTop_toBottomOf="@id/name" />
 
-        <!-- trash badge (under meta, same column as text, before checkbox) -->
         <TextView
             android:id="@+id/badge"
             android:layout_width="wrap_content"
@@ -101,10 +93,11 @@
             android:visibility="gone"
             app:layout_constraintTop_toBottomOf="@id/meta"
             app:layout_constraintStart_toEndOf="@id/thumb"
-            app:layout_constraintEnd_toStartOf="@id/check" />
+            app:layout_constraintEnd_toStartOf="@id/check"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <!-- selection overlay covers full row including gutter -->
     <View
         android:id="@+id/overlay"
         android:layout_width="0dp"
