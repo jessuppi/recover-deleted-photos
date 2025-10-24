@@ -39,7 +39,7 @@
     <color name="ic_launcher_background">#1976D2</color>
 
     <!-- translucent bright blue overlay to indicate selected tiles -->
-    <color name="selection_highlight">#1A2196F3</color>
+    <color name="selection_highlight">#332196F3</color>
 
     <!-- strong red used for trash or deleted item badges -->
     <color name="badge_trash">#D93025</color>
