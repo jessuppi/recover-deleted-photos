@@ -8,7 +8,6 @@
     android:padding="4dp"
     android:foreground="?attr/selectableItemBackgroundBorderless">
 
-    <!-- square thumbnail -->
     <ImageView
         android:id="@+id/thumb"
         android:layout_width="0dp"
@@ -21,7 +20,6 @@
         tools:src="@mipmap/ic_launcher_foreground"
         tools:ignore="ContentDescription" />
 
-    <!-- overlay view for selection highlight -->
     <View
         android:id="@+id/overlay"
         android:layout_width="0dp"
@@ -33,17 +31,21 @@
         app:layout_constraintStart_toStartOf="@id/thumb"
         app:layout_constraintEnd_toEndOf="@id/thumb" />
 
-    <!-- check mark overlay -->
-    <com.google.android.material.checkbox.MaterialCheckBox
-        android:id="@+id/check"
+    <FrameLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="6dp"
-        app:useMaterialThemeColors="true"
+        android:background="@drawable/bg_checkbox_halo"
         app:layout_constraintTop_toTopOf="@id/thumb"
-        app:layout_constraintEnd_toEndOf="@id/thumb" />
+        app:layout_constraintEnd_toEndOf="@id/thumb">
 
-    <!-- trash badge -->
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/check"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:useMaterialThemeColors="true" />
+    </FrameLayout>
+
     <TextView
         android:id="@+id/badge"
         android:layout_width="wrap_content"
@@ -61,7 +63,6 @@
         app:layout_constraintBottom_toBottomOf="@id/thumb"
         app:layout_constraintStart_toStartOf="@id/thumb" />
 
-    <!-- filename caption -->
     <TextView
         android:id="@+id/caption"
         android:layout_width="0dp"
