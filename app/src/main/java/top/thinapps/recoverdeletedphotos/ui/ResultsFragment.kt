@@ -56,7 +56,7 @@ class ResultsFragment : Fragment() {
         // handle system back same as toolbar up → always go home
         val backCallback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                findNavController().popBackStack(R.id.homeFragment, false)
+                exitAndCleanup() // Call cleanup function on back/up action
             }
         }
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, backCallback)
@@ -130,6 +130,15 @@ class ResultsFragment : Fragment() {
                 else -> false
             }
         }
+    }
+
+    /**
+     * Clears the results from the shared ViewModel and navigates to the Home Fragment.
+     * This is used for the system back and toolbar up actions.
+     */
+    private fun exitAndCleanup() {
+        vm.results = emptyList()
+        findNavController().popBackStack(R.id.homeFragment, false)
     }
 
     // update menu icon based on layout type
