@@ -5,6 +5,7 @@
 ### 0.17.7
 - ResultsFragment: implemented dedicated `exitAndCleanup()` routine to ensure `vm.results` are cleared when exiting via the Up (Back) action
 - ScanFragment: Increased the visible duration of the "Cancelling..." state and navigation delay from 450ms to 1000ms
+- added semi-transparent dark circular background "halo" (`bg_checkbox_halo.xml`) to the selection checkboxes in grid view (`item_media_grid.xml`)
 
 ### 0.17.6
 - Up (back) arrow in the toolbar on both Scan and Results screens now executes the proper back-stack and cancellation logic
