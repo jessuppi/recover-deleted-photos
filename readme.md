@@ -2,6 +2,10 @@
 
 ## Changelog
 
+### 0.17.6
+- Up (back) arrow in the toolbar on both Scan and Results screens now executes the proper back-stack and cancellation logic
+- replaced Snackbar notification for denied permissions on the Home screen with "Grant Access in Settings" CTA when access is needed
+
 ### 0.17.5
 - "Cancelling..." state now uses a neutral gray background (`recover_button_disabled_bg`) to clearly differentiate it
 - removed the continuous "breathing" alpha animation from the Cancel button during active scanning to reduce visual distraction
