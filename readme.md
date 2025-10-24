@@ -2,6 +2,10 @@
 
 ## Changelog
 
+### 0.17.9
+- improved thumbnail border inconsistency by increasing thickness from 1dp to 2dp and wrapping the thumbnail in a `FrameLayout`
+- refined  checkbox halo (`bg_checkbox_halo.xml`) by reducing it from 30dp to 26dp and lightening its opacity from 80% to 50%
+
 ### 0.17.8
 - fixed clipping and positioning issues for the "Trash" badge in the list view (`item_media.xml`)
 - improved the visibility of light-colored image thumbnails by adding a subtle, 1dp border using the theme's outline color
