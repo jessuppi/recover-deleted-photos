@@ -8,19 +8,25 @@
     android:padding="4dp"
     android:foreground="?attr/selectableItemBackgroundBorderless">
 
-    <ImageView
-        android:id="@+id/thumb"
+    <FrameLayout
+        android:id="@+id/thumb_wrapper"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:scaleType="centerCrop"
-        android:padding="1dp"
+        android:padding="2dp"
         android:background="?attr/colorOutline"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintDimensionRatio="1:1"
-        tools:src="@mipmap/ic_launcher_foreground"
-        tools:ignore="ContentDescription" />
+        app:layout_constraintDimensionRatio="1:1">
+
+        <ImageView
+            android:id="@+id/thumb"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            tools:src="@mipmap/ic_launcher_foreground"
+            tools:ignore="ContentDescription" />
+    </FrameLayout>
 
     <View
         android:id="@+id/overlay"
@@ -28,18 +34,18 @@
         android:layout_height="0dp"
         android:background="@color/selection_highlight"
         android:visibility="gone"
-        app:layout_constraintTop_toTopOf="@id/thumb"
-        app:layout_constraintBottom_toBottomOf="@id/thumb"
-        app:layout_constraintStart_toStartOf="@id/thumb"
-        app:layout_constraintEnd_toEndOf="@id/thumb" />
+        app:layout_constraintTop_toTopOf="@id/thumb_wrapper"
+        app:layout_constraintBottom_toBottomOf="@id/thumb_wrapper"
+        app:layout_constraintStart_toStartOf="@id/thumb_wrapper"
+        app:layout_constraintEnd_toEndOf="@id/thumb_wrapper" />
 
     <FrameLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="6dp"
         android:background="@drawable/bg_checkbox_halo"
-        app:layout_constraintTop_toTopOf="@id/thumb"
-        app:layout_constraintEnd_toEndOf="@id/thumb">
+        app:layout_constraintTop_toTopOf="@id/thumb_wrapper"
+        app:layout_constraintEnd_toEndOf="@id/thumb_wrapper">
 
         <com.google.android.material.checkbox.MaterialCheckBox
             android:id="@+id/check"
@@ -62,8 +68,8 @@
         android:textColor="@android:color/white"
         android:background="@drawable/bg_badge_round"
         android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="@id/thumb"
-        app:layout_constraintStart_toStartOf="@id/thumb" />
+        app:layout_constraintBottom_toBottomOf="@id/thumb_wrapper"
+        app:layout_constraintStart_toStartOf="@id/thumb_wrapper" />
 
     <TextView
         android:id="@+id/caption"
@@ -73,7 +79,7 @@
         android:ellipsize="end"
         android:maxLines="1"
         android:textSize="12sp"
-        app:layout_constraintTop_toBottomOf="@id/thumb"
+        app:layout_constraintTop_toBottomOf="@id/thumb_wrapper"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         tools:text="IMG_20251014_123456.jpg" />
