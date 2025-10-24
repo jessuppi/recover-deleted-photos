@@ -17,7 +17,6 @@ import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
-// import com.google.android.material.snackbar.Snackbar // Snackbar removed
 import top.thinapps.recoverdeletedphotos.R
 import top.thinapps.recoverdeletedphotos.databinding.FragmentHomeBinding
 import top.thinapps.recoverdeletedphotos.MainActivity
