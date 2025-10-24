@@ -55,7 +55,7 @@
             android:ellipsize="end"
             android:maxLines="1"
             android:textStyle="bold"
-            android:textSize="14sp"
+            android:textSize="13sp"
             app:layout_constraintStart_toEndOf="@id/thumb"
             app:layout_constraintEnd_toStartOf="@id/check"
             app:layout_constraintTop_toTopOf="@id/thumb"
