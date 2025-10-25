@@ -13,7 +13,7 @@
         <item name="toolbarStyle">@style/Widget.App.Toolbar.Tinted</item>
 
         <!-- apply white-outline checkbox tint globally for materialcheckBox -->
-        <item name="materialCheckBoxStyle">@style/Widget.App.CheckBox.WhiteOutline</item>
+        <item name="checkboxStyle">@style/Widget.App.CheckBox.WhiteOutline</item>
     </style>
 
     <!-- material toolbar styled to use surface/onSurface so contrast works in light and dark -->
