@@ -2,6 +2,11 @@
 
 ## Changelog
 
+### 0.17.14
+- fixed Grid view selection highlight to follow the rounded corners of the thumbnail by ensuring `MaterialCardView` clips its children
+- enlarged checkbox halo to 24dp and added internal padding (4dp) to add more visual space around the checkbox
+- forced the checkbox control to always display in white against the dark halo using `app:buttonTint` in all themes
+
 ### 0.17.13
 - replaced old `FrameLayout` thumbnail wrappers with `MaterialCardView` for proper 1dp stroke borders
 - reduced filename and metadata text sizes to 12sp in List view for better vertical spacing
