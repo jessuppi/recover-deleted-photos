@@ -80,7 +80,7 @@
                 android:ellipsize="end"
                 android:maxLines="1"
                 android:textStyle="bold"
-                android:textSize="13sp"
+                android:textSize="12sp"
                 tools:text="IMG_1234.JPG" />
 
             <!-- metadata (date, size, etc.) below the name -->
@@ -91,7 +91,7 @@
                 android:ellipsize="end"
                 android:maxLines="2"
                 android:lineSpacingExtra="2dp"
-                android:textSize="13sp"
+                android:textSize="12sp"
                 android:textColor="?android:attr/textColorSecondary"
                 tools:text="2025-10-24 10:30&#10;1.2 MB" />
 
