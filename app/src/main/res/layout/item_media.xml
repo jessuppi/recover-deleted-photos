@@ -54,55 +54,54 @@
             app:layout_constraintTop_toTopOf="@id/thumb_wrapper"
             app:layout_constraintBottom_toBottomOf="@id/thumb_wrapper" />
 
-        <TextView
-            android:id="@+id/name"
+        <LinearLayout
+            android:id="@+id/details_container"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:orientation="vertical"
             android:layout_marginStart="12dp"
             android:layout_marginEnd="12dp"
-            android:ellipsize="end"
-            android:maxLines="1"
-            android:textStyle="bold"
-            android:textSize="13sp"
             app:layout_constraintStart_toEndOf="@id/thumb_wrapper"
             app:layout_constraintEnd_toStartOf="@id/check"
-            app:layout_constraintTop_toTopOf="@id/thumb_wrapper"
-            app:layout_constraintBottom_toTopOf="@id/meta" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
 
-        <TextView
-            android:id="@+id/meta"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:layout_marginEnd="12dp"
-            android:ellipsize="end"
-            android:maxLines="2"
-            android:lineSpacingExtra="2dp"
-            android:textSize="13sp"
-            android:textColor="?android:attr/textColorSecondary"
-            app:layout_constraintStart_toEndOf="@id/thumb_wrapper"
-            app:layout_constraintEnd_toStartOf="@id/check"
-            app:layout_constraintTop_toBottomOf="@id/name" />
+            <TextView
+                android:id="@+id/name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textStyle="bold"
+                android:textSize="13sp"
+                tools:text="IMG_1234.JPG" />
 
-        <TextView
-            android:id="@+id/badge"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:layout_marginTop="6dp"
-            android:paddingStart="6dp"
-            android:paddingEnd="6dp"
-            android:paddingTop="2dp"
-            android:paddingBottom="2dp"
-            android:text="@string/badge_trashed"
-            android:textSize="12sp"
-            android:textColor="@android:color/white"
-            android:background="@drawable/bg_badge_round"
-            android:visibility="gone"
-            app:layout_constraintTop_toBottomOf="@id/meta"
-            app:layout_constraintStart_toEndOf="@id/thumb_wrapper"
-            app:layout_constraintEnd_toStartOf="@id/check"
-            app:layout_constraintBottom_toBottomOf="parent" />
+            <TextView
+                android:id="@+id/meta"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="2"
+                android:lineSpacingExtra="2dp"
+                android:textSize="13sp"
+                android:textColor="?android:attr/textColorSecondary"
+                tools:text="2025-10-24 10:30&#10;1.2 MB" />
+
+            <TextView
+                android:id="@+id/badge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:paddingStart="6dp"
+                android:paddingEnd="6dp"
+                android:paddingTop="2dp"
+                android:paddingBottom="2dp"
+                android:text="@string/badge_trashed"
+                android:textSize="12sp"
+                android:textColor="@android:color/white"
+                android:background="@drawable/bg_badge_round"
+                android:visibility="gone" />
+        </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
