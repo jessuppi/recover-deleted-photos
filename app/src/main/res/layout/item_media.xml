@@ -28,7 +28,7 @@
             android:id="@+id/thumb_wrapper"
             android:layout_width="96dp"
             android:layout_height="96dp"
-            android:padding="2dp"
+            android:padding="1dp"
             android:background="?attr/colorOutline"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
