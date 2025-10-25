@@ -3,9 +3,10 @@
 ## Changelog
 
 ### 0.17.13
-- replaced old `FrameLayout` thumbnail wrappers with `MaterialCardView` to use proper 1dp stroke borders
+- replaced old `FrameLayout` thumbnail wrappers with `MaterialCardView` for proper 1dp stroke borders
 - reduced filename and metadata text sizes to 12sp in List view for better vertical spacing
-
+- removed global white checkbox tint and applied scoped white checkboxes only in Grid view
+- 
 ### 0.17.12
 - refactored metadata text (name, meta, badge) into a single vertical `LinearLayout` wrapper in List view screen
 - fixed persistent checkbox halo size issue by setting the containing `FrameLayout` to a fixed 24dp x 24dp size
