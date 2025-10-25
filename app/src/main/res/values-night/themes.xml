@@ -36,4 +36,9 @@
         <item name="android:textColor">?attr/colorOnSurface</item>
     </style>
 
+    <!-- Theme overlay to force controls (like checkbox outline) to white for high contrast -->
+    <style name="ThemeOverlay.App.Checkbox.Light" parent="">
+        <item name="colorControlNormal">@android:color/white</item>
+    </style>
+
 </resources>
