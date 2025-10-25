@@ -40,8 +40,8 @@
         app:layout_constraintEnd_toEndOf="@id/thumb_wrapper" />
 
     <FrameLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
         android:layout_margin="6dp"
         android:background="@drawable/bg_checkbox_halo"
         android:theme="@style/ThemeOverlay.App.Checkbox.Light"
