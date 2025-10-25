@@ -16,7 +16,7 @@
         android:layout_height="0dp"
         app:strokeWidth="1dp"
         app:strokeColor="?attr/colorOutline"
-        app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.Material3.Corner.Small"
+        app:shapeAppearanceOverlay="@style/Shape.App.Corner.Small"
         app:cardUseCompatPadding="false"
         app:cardPreventCornerOverlap="true"
         app:layout_constraintTop_toTopOf="parent"
