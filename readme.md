@@ -2,6 +2,11 @@
 
 ## Changelog
 
+### 0.17.10
+- applied a theme overlay (`ThemeOverlay.App.Checkbox.Light`) to grid results checkboxes for a white control color
+- reduced checkbox halo size to 24dp x 24dp for an even subtler visual appearance
+- reduced thumbnail padding (border) to 1db from 2db for a cleaner look
+
 ### 0.17.9
 - improved thumbnail border inconsistency by increasing thickness from 1dp to 2dp and wrapping the thumbnail in a `FrameLayout`
 - refined  checkbox halo (`bg_checkbox_halo.xml`) by reducing it from 30dp to 26dp and lightening its opacity from 80% to 50%
