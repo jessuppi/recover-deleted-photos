@@ -5,8 +5,8 @@
 ### 0.17.11
 - fixed checkboxes showing dark boxes when unchecked by adding global white-outline tint via `themes.xml` and `colors.xml`
 - called new `checkbox_tint_light_on_dark.xml` selector inside `themes.xml` for consistent checked and unchecked states
-- updated app theme to include `materialCheckBoxStyle` referencing `Widget.App.CheckBox.WhiteOutline` for global checkbox tinting
-- adjusted halo background behind checkboxes to smaller 20x20 size with dark blue-gray color (`#80263238`) for cleaner look
+- updated app theme to include `checkboxStyle` referencing `Widget.App.CheckBox.WhiteOutline` for global checkbox tinting
+- adjusted checkbox halo to smaller 20x20 size with dark blue-gray color (`#80263238`) for cleaner look
 
 ### 0.17.10
 - applied a theme overlay (`ThemeOverlay.App.Checkbox.Light`) to grid results checkboxes for a white control color
