@@ -26,13 +26,16 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <!-- thumbnail image wrapper with border -->
-        <FrameLayout
+        <!-- thumbnail image wrapper using MaterialCardView for border -->
+        <com.google.android.material.card.MaterialCardView
             android:id="@+id/thumb_wrapper"
             android:layout_width="96dp"
             android:layout_height="96dp"
-            android:padding="1dp"
-            android:background="?attr/colorOutline"
+            app:strokeWidth="1dp"
+            app:strokeColor="?attr/colorOutline"
+            app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.Material3.Corner.Small"
+            app:cardUseCompatPadding="false"
+            app:cardPreventCornerOverlap="true"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent">
@@ -45,7 +48,7 @@
                 android:scaleType="centerCrop"
                 android:contentDescription="@null"
                 tools:ignore="ContentDescription" />
-        </FrameLayout>
+        </com.google.android.material.card.MaterialCardView>
 
         <!-- checkbox for selecting the item -->
         <com.google.android.material.checkbox.MaterialCheckBox
