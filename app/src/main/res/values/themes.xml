@@ -12,8 +12,7 @@
         <!-- apply our toolbar style globally -->
         <item name="toolbarStyle">@style/Widget.App.Toolbar.Tinted</item>
 
-        <!-- apply white-outline checkbox tint globally for materialcheckBox -->
-        <item name="checkboxStyle">@style/Widget.App.CheckBox.WhiteOutline</item>
+        <!-- removed global checkboxStyle to avoid app-wide white checkboxes -->
     </style>
 
     <!-- material toolbar styled to use surface/onSurface so contrast works in light and dark -->
@@ -43,9 +42,16 @@
         <item name="android:textColor">?attr/colorOnSurface</item>
     </style>
 
-    <!-- checkbox widget style that forces a white outline when unchecked -->
+    <!-- optional: keep the widget style definition (unused globally now) -->
     <style name="Widget.App.CheckBox.WhiteOutline" parent="Widget.Material3.CompoundButton.CheckBox">
         <item name="buttonTint">@color/checkbox_tint_light_on_dark</item>
+    </style>
+
+    <!-- scoped white checkbox overlay for the grid cell FrameLayout -->
+    <style name="ThemeOverlay.App.Checkbox.Light" parent="ThemeOverlay.Material3">
+        <item name="colorControlNormal">@android:color/white</item>
+        <item name="colorControlActivated">@android:color/white</item>
+        <item name="colorOnSurface">@android:color/white</item>
     </style>
 
 </resources>
