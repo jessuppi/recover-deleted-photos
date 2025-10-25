@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- root container for the entire list item -->
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -11,6 +12,7 @@
     android:focusable="true"
     android:importantForAccessibility="yes">
 
+    <!-- inner layout that holds the actual content of the item -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/content"
         android:layout_width="0dp"
@@ -24,6 +26,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
+        <!-- thumbnail image wrapper with border -->
         <FrameLayout
             android:id="@+id/thumb_wrapper"
             android:layout_width="96dp"
@@ -34,6 +37,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent">
 
+            <!-- main image thumbnail -->
             <ImageView
                 android:id="@+id/thumb"
                 android:layout_width="match_parent"
@@ -43,6 +47,7 @@
                 tools:ignore="ContentDescription" />
         </FrameLayout>
 
+        <!-- checkbox for selecting the item -->
         <com.google.android.material.checkbox.MaterialCheckBox
             android:id="@+id/check"
             android:layout_width="wrap_content"
@@ -54,6 +59,7 @@
             app:layout_constraintTop_toTopOf="@id/thumb_wrapper"
             app:layout_constraintBottom_toBottomOf="@id/thumb_wrapper" />
 
+        <!-- vertical layout for the file name, meta info, and badge -->
         <LinearLayout
             android:id="@+id/details_container"
             android:layout_width="0dp"
@@ -66,6 +72,7 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent">
 
+            <!-- main file or media name -->
             <TextView
                 android:id="@+id/name"
                 android:layout_width="match_parent"
@@ -76,6 +83,7 @@
                 android:textSize="13sp"
                 tools:text="IMG_1234.JPG" />
 
+            <!-- metadata (date, size, etc.) below the name -->
             <TextView
                 android:id="@+id/meta"
                 android:layout_width="match_parent"
@@ -87,6 +95,7 @@
                 android:textColor="?android:attr/textColorSecondary"
                 tools:text="2025-10-24 10:30&#10;1.2 MB" />
 
+            <!-- badge label for special states like “trashed” -->
             <TextView
                 android:id="@+id/badge"
                 android:layout_width="wrap_content"
@@ -105,6 +114,7 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
+    <!-- overlay view for highlighting item when selected -->
     <View
         android:id="@+id/overlay"
         android:layout_width="0dp"
