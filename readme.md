@@ -2,6 +2,10 @@
 
 ## Changelog
 
+### 0.17.12
+- refactored metadata text (name, meta, badge) into a single vertical `LinearLayout` wrapper in List view screen
+- fixed persistent checkbox halo size issue by setting the containing `FrameLayout` to a fixed 24dp x 24dp size
+
 ### 0.17.11
 - fixed checkboxes showing dark boxes when unchecked by adding global white-outline tint via `themes.xml` and `colors.xml`
 - called new `checkbox_tint_light_on_dark.xml` selector inside `themes.xml` for consistent checked and unchecked states
