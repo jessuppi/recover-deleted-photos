@@ -1,10 +1,13 @@
 package top.thinapps.recoverdeletedphotos.ui
 
+import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.*
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.activity.OnBackPressedCallback
+import androidx.annotation.AttrRes
+import androidx.core.content.res.use
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -55,7 +58,7 @@ class ResultsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // handle system back same as toolbar up → always go home
+        // handle system back same as toolbar up to always go home
         val backCallback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 exitAndCleanup()
@@ -72,7 +75,7 @@ class ResultsFragment : Fragment() {
         vb.list.adapter = adapter
         updateLayoutManager()
 
-        // no-blink patch (prevents fade/change animations that look like flicker on sort)
+        // no blink patch to prevent flicker on sort
         (vb.list.itemAnimator as? SimpleItemAnimator)?.supportsChangeAnimations = false
 
         applySortAndShow()
@@ -126,7 +129,7 @@ class ResultsFragment : Fragment() {
             override fun onNothingSelected(parent: AdapterView<*>?) = Unit
         }
 
-        // shared menu helper for grid/list toggle
+        // shared menu helper for grid or list toggle
         withMenu(R.menu.menu_results, onCreate = { menu ->
             val item = menu.findItem(R.id.action_toggle_layout)
             refreshToggleIcon(item)
@@ -147,13 +150,18 @@ class ResultsFragment : Fragment() {
      * Clears the results from the shared ViewModel and navigates to the Home Fragment.
      */
     private fun exitAndCleanup() {
+        // clear results so the next visit always triggers a fresh scan and protects privacy
         vm.results = emptyList()
         findNavController().popBackStack(R.id.homeFragment, false)
     }
 
-    // update menu icon based on layout type
+    // update menu item icon and enforce theme tint to avoid white on white
     private fun refreshToggleIcon(item: MenuItem?) {
         if (item == null) return
+
+        // resolve theme icon tint from colorControlNormal which toolbars use for action icons
+        val iconTint: ColorStateList? = resolveColorStateListAttr(androidx.appcompat.R.attr.colorControlNormal)
+
         if (useGrid) {
             item.setIcon(R.drawable.ic_view_list)
             item.title = getString(R.string.action_view_list)
@@ -161,20 +169,23 @@ class ResultsFragment : Fragment() {
             item.setIcon(R.drawable.ic_view_grid)
             item.title = getString(R.string.action_view_grid)
         }
+
+        // apply tint after setting the drawable so the new icon is correctly colored
+        item.icon?.setTintList(iconTint)
     }
 
-    // update layout manager for grid/list
+    // update layout manager for grid or list
     private fun updateLayoutManager() {
         vb.list.layoutManager = if (useGrid) {
             GridLayoutManager(requireContext(), 3)
         } else {
             LinearLayoutManager(requireContext())
         }
-        // keep the no-blink behavior if LM is recreated
+        // keep no blink behavior if we recreate the layout manager
         (vb.list.itemAnimator as? SimpleItemAnimator)?.supportsChangeAnimations = false
     }
 
-    // apply sorting, update adapter, and scroll to top after diff is applied
+    // apply sorting then update adapter and scroll to top
     private fun applySortAndShow() {
         val base = vm.results.orEmpty()
 
@@ -194,7 +205,6 @@ class ResultsFragment : Fragment() {
         adapter.submitList(sorted) {
             if (sorted.isNotEmpty()) {
                 val lm = vb.list.layoutManager
-                // GridLayoutManager extends LinearLayoutManager, so this works for both
                 (lm as? LinearLayoutManager)?.scrollToPositionWithOffset(0, 0)
                     ?: vb.list.scrollToPosition(0)
             }
@@ -210,7 +220,7 @@ class ResultsFragment : Fragment() {
         if (idx != -1) adapter.notifyItemChanged(idx)
     }
 
-    // enable recover button if any item selected
+    // enable recover button only when items are selected
     private fun updateRecoverButton() {
         val count = selectedIds.size
         vb.recoverButton.isEnabled = count > 0
@@ -224,7 +234,7 @@ class ResultsFragment : Fragment() {
         _vb = null
     }
 
-    // adapter for grid/list
+    // adapter for grid or list
     private inner class MediaAdapter(
         private val isGrid: () -> Boolean,
         private val onToggleSelect: (MediaItem) -> Unit,
@@ -299,4 +309,12 @@ private fun formatSize(bytes: Long): String {
     val group = (log10(bytes.toDouble()) / log10(1024.0)).toInt().coerceAtMost(units.lastIndex)
     val scaled = bytes / 1024.0.pow(group)
     return String.format("%.1f %s", scaled, units[group])
+}
+
+// resolve a ColorStateList from a theme attribute like colorControlNormal
+private fun Fragment.resolveColorStateListAttr(@AttrRes attr: Int): ColorStateList? {
+    // obtain styled attributes and recycle safely
+    return requireContext().theme.obtainStyledAttributes(intArrayOf(attr)).use {
+        it.getColorStateList(0)
+    }
 }
