@@ -2,6 +2,9 @@
 
 ## Changelog
 
+### 0.17.21
+- fixed persistent white-on-white toolbar icon issue by adding `android:fillColor="@android:color/white"` to the <path> tag in both `ic_view_grid.xml` and `ic_view_list.xml`, ensuring the Vector Drawable is fully receptive to theme tinting
+
 ### 0.17.20
 - fixed white-on-white toolbar icons by resolving `colorControlNormal` with fallback to `colorOnSurface`, mutating the drawable, and tinting after `setIcon`
 
