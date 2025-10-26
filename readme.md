@@ -2,6 +2,11 @@
 
 ## Changelog
 
+### 0.17.19
+- results now auto-scroll back to the top after users change the sorting order
+- added locale-aware name sorting for better A–Z accuracy in all languages
+- disabled change animations in `RecyclerView` to remove flicker during sorting
+
 ### 0.17.18
 - ensured the "Recover Selected" button uses the primary blue Material3.Button style and theme-defined white text
 - corrected the highlight to extend fully to the edges of the row, framing the inner content with 12dp padding
