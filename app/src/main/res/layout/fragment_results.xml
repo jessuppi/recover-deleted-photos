@@ -62,13 +62,11 @@
     <!-- bottom recover button used to restore selected files -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/recoverButton"
-        style="?attr/materialButtonTonalStyle"
+        style="@style/Widget.Material3.Button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="6dp"
         android:minHeight="48dp"
         android:text="@string/recover_selected"
-        android:textColor="@color/recover_button_text"
-        android:backgroundTint="@color/recover_button_disabled_bg"
         android:enabled="false" />
 </LinearLayout>
