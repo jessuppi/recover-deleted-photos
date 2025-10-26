@@ -46,8 +46,8 @@
 
     <!-- checkbox wrapper with halo background pinned to top-right of the thumb -->
     <FrameLayout
-        android:layout_width="24dp"
-        android:layout_height="24dp"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
         android:layout_margin="6dp"
         android:background="@drawable/bg_checkbox_halo"
         android:theme="@style/ThemeOverlay.App.Checkbox.Light"
@@ -60,7 +60,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_margin="4dp"
+            android:layout_margin="6dp"
             app:buttonTint="@color/checkbox_tint_light_on_dark"
             app:useMaterialThemeColors="true" />
     </FrameLayout>
