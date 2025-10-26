@@ -6,7 +6,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:minHeight="96dp"
+    android:minHeight="120dp"
     android:foreground="?attr/selectableItemBackground"
     android:clickable="true"
     android:focusable="true"
@@ -31,24 +31,29 @@
             android:id="@+id/thumb_wrapper"
             android:layout_width="96dp"
             android:layout_height="96dp"
+
             android:minWidth="96dp"
             android:minHeight="96dp"
             android:maxWidth="96dp"
             android:maxHeight="96dp"
-            app:cardElevation="0dp"
-            app:cardMaxElevation="0dp"
-            android:stateListAnimator="@null"
+
             android:clipToOutline="true"
             android:outlineProvider="background"
+            android:stateListAnimator="@null"
+            android:duplicateParentState="true"
+            android:transitionName="thumb_transition"
+
+            app:cardElevation="0dp"
+            app:cardMaxElevation="0dp"
+            app:cardUseCompatPadding="false"
+            app:cardPreventCornerOverlap="false"
+            app:cardBackgroundColor="?attr/colorSurface"
             app:strokeWidth="1dp"
             app:strokeColor="?attr/colorOutline"
             app:shapeAppearanceOverlay="@style/Shape.App.Corner.Small"
-            app:cardUseCompatPadding="false"
-            app:cardPreventCornerOverlap="false"
-            app:rippleColor="?attr/colorControlHighlight"
-            app:cardBackgroundColor="?attr/colorSurface"
-            android:duplicateParentState="true"
-            android:transitionName="thumb_transition"
+            <!-- avoid double ripples since root has foreground ripple -->
+            app:rippleColor="@android:color/transparent"
+
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent">
@@ -71,9 +76,9 @@
             android:layout_marginStart="12dp"
             android:layout_marginEnd="0dp"
             app:useMaterialThemeColors="true"
-            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@id/thumb_wrapper"
-            app:layout_constraintBottom_toBottomOf="@id/thumb_wrapper" />
+            app:layout_constraintBottom_toBottomOf="@id/thumb_wrapper"
+            app:layout_constraintEnd_toEndOf="parent" />
 
         <!-- vertical layout for the file name, meta info, and badge -->
         <LinearLayout
@@ -135,6 +140,10 @@
         android:id="@+id/overlay"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginBottom="12dp"
         android:background="@color/selection_highlight"
         android:visibility="gone"
         android:clickable="false"
