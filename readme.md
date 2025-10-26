@@ -2,6 +2,9 @@
 
 ## Changelog
 
+### 0.17.17
+- refined List item design for consistent thumbnail sizing, borders, and selection highlight on all screens
+
 ### 0.17.16
 - fixed 96dp thumbnail clipping on List view by introducing a 4dp vertical margin on the thumbnail card
 - corrected bottom spacing around "Recover Selected" button on results screen for a cleaner look
