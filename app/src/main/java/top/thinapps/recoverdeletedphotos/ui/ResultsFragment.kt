@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.SimpleItemAnimator
 import coil.load
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -24,6 +25,7 @@ import top.thinapps.recoverdeletedphotos.databinding.ItemMediaBinding
 import top.thinapps.recoverdeletedphotos.databinding.ItemMediaGridBinding
 import top.thinapps.recoverdeletedphotos.model.MediaItem
 import top.thinapps.recoverdeletedphotos.recover.Recovery
+import java.text.Collator
 import kotlin.math.log10
 import kotlin.math.pow
 
@@ -56,7 +58,7 @@ class ResultsFragment : Fragment() {
         // handle system back same as toolbar up → always go home
         val backCallback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                exitAndCleanup() // Call cleanup function on back/up action
+                exitAndCleanup()
             }
         }
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, backCallback)
@@ -69,6 +71,10 @@ class ResultsFragment : Fragment() {
         )
         vb.list.adapter = adapter
         updateLayoutManager()
+
+        // no-blink patch (prevents fade/change animations that look like flicker on sort)
+        (vb.list.itemAnimator as? SimpleItemAnimator)?.supportsChangeAnimations = false
+
         applySortAndShow()
 
         // show empty state if needed
@@ -99,10 +105,12 @@ class ResultsFragment : Fragment() {
             getString(R.string.sort_name_az_full),
             getString(R.string.sort_name_za_full)
         )
-        vb.sortDropdown.adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, sortLabels)
+        vb.sortDropdown.adapter =
+            ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, sortLabels)
+
         vb.sortDropdown.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, v: View?, position: Int, id: Long) {
-                currentSort = when (position) {
+                val newSort = when (position) {
                     0 -> Sort.DATE_DESC
                     1 -> Sort.DATE_ASC
                     2 -> Sort.SIZE_DESC
@@ -110,7 +118,10 @@ class ResultsFragment : Fragment() {
                     4 -> Sort.NAME_ASC
                     else -> Sort.NAME_DESC
                 }
-                applySortAndShow()
+                if (newSort != currentSort) {
+                    currentSort = newSort
+                    applySortAndShow()
+                }
             }
             override fun onNothingSelected(parent: AdapterView<*>?) = Unit
         }
@@ -134,7 +145,6 @@ class ResultsFragment : Fragment() {
 
     /**
      * Clears the results from the shared ViewModel and navigates to the Home Fragment.
-     * This is used for the system back and toolbar up actions.
      */
     private fun exitAndCleanup() {
         vm.results = emptyList()
@@ -155,23 +165,41 @@ class ResultsFragment : Fragment() {
 
     // update layout manager for grid/list
     private fun updateLayoutManager() {
-        vb.list.layoutManager = if (useGrid) GridLayoutManager(requireContext(), 3)
-        else LinearLayoutManager(requireContext())
+        vb.list.layoutManager = if (useGrid) {
+            GridLayoutManager(requireContext(), 3)
+        } else {
+            LinearLayoutManager(requireContext())
+        }
+        // keep the no-blink behavior if LM is recreated
+        (vb.list.itemAnimator as? SimpleItemAnimator)?.supportsChangeAnimations = false
     }
 
-    // apply sorting and update adapter
+    // apply sorting, update adapter, and scroll to top after diff is applied
     private fun applySortAndShow() {
-        val base = vm.results
+        val base = vm.results.orEmpty()
+
+        val collator = Collator.getInstance().apply {
+            strength = Collator.PRIMARY
+        }
+
         val sorted = when (currentSort) {
             Sort.DATE_DESC -> base.sortedByDescending { it.dateAddedSec }
-            Sort.DATE_ASC -> base.sortedBy { it.dateAddedSec }
+            Sort.DATE_ASC  -> base.sortedBy { it.dateAddedSec }
             Sort.SIZE_DESC -> base.sortedByDescending { it.sizeBytes }
-            Sort.SIZE_ASC -> base.sortedBy { it.sizeBytes }
-            Sort.NAME_ASC -> base.sortedBy { it.displayName }
-            Sort.NAME_DESC -> base.sortedByDescending { it.displayName }
+            Sort.SIZE_ASC  -> base.sortedBy { it.sizeBytes }
+            Sort.NAME_ASC  -> base.sortedWith(compareBy(collator) { it.displayName ?: "" })
+            Sort.NAME_DESC -> base.sortedWith(compareBy(collator) { it.displayName ?: "" }).asReversed()
         }
-        adapter.submitList(sorted)
-        vb.empty.isVisible = sorted.isEmpty()
+
+        adapter.submitList(sorted) {
+            if (sorted.isNotEmpty()) {
+                val lm = vb.list.layoutManager
+                // GridLayoutManager extends LinearLayoutManager, so this works for both
+                (lm as? LinearLayoutManager)?.scrollToPositionWithOffset(0, 0)
+                    ?: vb.list.scrollToPosition(0)
+            }
+            vb.empty.isVisible = sorted.isEmpty()
+        }
     }
 
     // toggle selection for tapped item
