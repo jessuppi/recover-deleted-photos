@@ -4,7 +4,7 @@
     android:paddingStart="16dp"
     android:paddingEnd="16dp"
     android:paddingTop="0dp"
-    android:paddingBottom="0dp"
+    android:paddingBottom="12dp"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -65,7 +65,7 @@
         style="?attr/materialButtonTonalStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="6dp"
         android:minHeight="48dp"
         android:text="@string/recover_selected"
         android:textColor="@color/recover_button_text"
