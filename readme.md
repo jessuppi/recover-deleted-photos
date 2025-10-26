@@ -2,6 +2,10 @@
 
 ## Changelog
 
+### 0.17.18
+- ensured the "Recover Selected" button uses the primary blue Material3.Button style and theme-defined white text
+- corrected the highlight to extend fully to the edges of the row, framing the inner content with 12dp padding
+
 ### 0.17.17
 - refined List item design for consistent thumbnail sizing, borders, and selection highlight on all screens
 
