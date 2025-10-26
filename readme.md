@@ -2,6 +2,13 @@
 
 ## Changelog
 
+### 0.17.15
+- Grid View: refined selection checkbox halo by increasing its container and drawable size to 36dp x 36dp
+- Grid View: restored thickness of the white checkbox lines by setting internal margin of the checkbox control to 0dp
+- List View: corrected thumbnail border clipping by increasing vertical padding of the list item content wrapper from 8dp to 12dp
+- List View: improved alignment of the checkbox by removing trailing margin (`layout_marginEnd="0dp"`) on metadata container
+- Results Screen: increased white spacing above the "Recover Selected" button by applying a `layout_marginTop` of 12dp
+
 ### 0.17.14
 - fixed Grid view selection highlight to follow the rounded corners of the thumbnail by ensuring `MaterialCardView` clips its children
 - enlarged checkbox halo to 24dp and added internal padding (4dp) to add more visual space around the checkbox
