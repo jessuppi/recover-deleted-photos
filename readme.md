@@ -2,6 +2,9 @@
 
 ## Changelog
 
+### 0.17.20
+- fixed white-on-white toolbar icons by resolving `colorControlNormal` with fallback to `colorOnSurface`, mutating the drawable, and tinting after `setIcon`
+
 ### 0.17.19
 - results now auto-scroll back to the top after users change the sorting order
 - added locale-aware name sorting for better A–Z accuracy in all languages
