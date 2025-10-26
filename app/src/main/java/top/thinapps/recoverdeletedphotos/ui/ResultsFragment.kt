@@ -159,8 +159,11 @@ class ResultsFragment : Fragment() {
     private fun refreshToggleIcon(item: MenuItem?) {
         if (item == null) return
 
-        // resolve theme icon tint from colorControlNormal which toolbars use for action icons
-        val iconTint: ColorStateList? = resolveColorStateListAttr(androidx.appcompat.R.attr.colorControlNormal)
+        // resolve toolbar icon tint from colorControlNormal; fall back to Material colorOnSurface
+        val iconTint: ColorStateList? = resolveColorStateListAttr(
+            androidx.appcompat.R.attr.colorControlNormal,
+            com.google.android.material.R.attr.colorOnSurface
+        )
 
         if (useGrid) {
             item.setIcon(R.drawable.ic_view_list)
@@ -170,8 +173,10 @@ class ResultsFragment : Fragment() {
             item.title = getString(R.string.action_view_grid)
         }
 
-        // apply tint after setting the drawable so the new icon is correctly colored
-        item.icon?.setTintList(iconTint)
+        // ensure this drawable has its own state before tint
+        item.icon?.mutate()
+        // apply tint after setting the icon so the new drawable is correctly colored
+        if (iconTint != null) item.icon?.setTintList(iconTint)
     }
 
     // update layout manager for grid or list
@@ -311,10 +316,11 @@ private fun formatSize(bytes: Long): String {
     return String.format("%.1f %s", scaled, units[group])
 }
 
-// resolve a ColorStateList from a theme attribute like colorControlNormal
-private fun Fragment.resolveColorStateListAttr(@AttrRes attr: Int): ColorStateList? {
-    // obtain styled attributes and recycle safely
-    return requireContext().theme.obtainStyledAttributes(intArrayOf(attr)).use {
-        it.getColorStateList(0)
-    }
+// resolve a ColorStateList from a theme attr with an optional fallback attr
+private fun Fragment.resolveColorStateListAttr(@AttrRes attr: Int, @AttrRes fallbackAttr: Int? = null): ColorStateList? {
+    val primary = requireContext().theme.obtainStyledAttributes(intArrayOf(attr)).use { it.getColorStateList(0) }
+    if (primary != null) return primary
+    return if (fallbackAttr != null) {
+        requireContext().theme.obtainStyledAttributes(intArrayOf(fallbackAttr)).use { it.getColorStateList(0) }
+    } else null
 }
