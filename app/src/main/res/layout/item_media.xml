@@ -31,18 +31,15 @@
             android:id="@+id/thumb_wrapper"
             android:layout_width="96dp"
             android:layout_height="96dp"
-
             android:minWidth="96dp"
             android:minHeight="96dp"
             android:maxWidth="96dp"
             android:maxHeight="96dp"
-
             android:clipToOutline="true"
             android:outlineProvider="background"
             android:stateListAnimator="@null"
             android:duplicateParentState="true"
             android:transitionName="thumb_transition"
-
             app:cardElevation="0dp"
             app:cardMaxElevation="0dp"
             app:cardUseCompatPadding="false"
@@ -51,9 +48,7 @@
             app:strokeWidth="1dp"
             app:strokeColor="?attr/colorOutline"
             app:shapeAppearanceOverlay="@style/Shape.App.Corner.Small"
-            <!-- avoid double ripples since root has foreground ripple -->
             app:rippleColor="@android:color/transparent"
-
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent">
