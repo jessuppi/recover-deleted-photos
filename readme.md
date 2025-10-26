@@ -2,6 +2,10 @@
 
 ## Changelog
 
+### 0.17.16
+- fixed 96dp thumbnail clipping on List view by introducing a 4dp vertical margin on the thumbnail card
+- corrected bottom spacing around "Recover Selected" button on results screen for a cleaner look
+
 ### 0.17.15
 - Grid View: refined selection checkbox halo by increasing its container and drawable size to 36dp x 36dp
 - Grid View: restored thickness of the white checkbox lines by setting internal margin of the checkbox control to 0dp
