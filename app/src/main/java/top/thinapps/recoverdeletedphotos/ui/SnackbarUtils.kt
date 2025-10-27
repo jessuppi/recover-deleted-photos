@@ -5,6 +5,7 @@ import android.view.View
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import top.thinapps.recoverdeletedphotos.R
 
 object SnackbarUtils {
     private var inProgressBar: Snackbar? = null
@@ -12,11 +13,22 @@ object SnackbarUtils {
     private fun rootView(activity: Activity): View =
         activity.findViewById(android.R.id.content)
 
+    // prefer results screen button; fall back to home screen button
+    private fun anchorView(activity: Activity): View? =
+        activity.findViewById<View>(R.id.recoverButton)
+            ?: activity.findViewById(R.id.startButton)
+
     fun showRecovering(activity: Activity, totalPlanned: Int? = null) {
         dismissRecovering()
-        val msg = if (totalPlanned != null && totalPlanned > 0) "Recovering $totalPlanned items…" else "Recovering items…"
-        inProgressBar = Snackbar.make(rootView(activity), msg, Snackbar.LENGTH_INDEFINITE)
-        inProgressBar?.show()
+        val msg = if (totalPlanned != null && totalPlanned > 0) {
+            "Recovering $totalPlanned items…"
+        } else {
+            "Recovering items…"
+        }
+        inProgressBar = Snackbar.make(rootView(activity), msg, Snackbar.LENGTH_INDEFINITE).apply {
+            setAnchorView(anchorView(activity))
+            show()
+        }
     }
 
     fun dismissRecovering() {
@@ -28,7 +40,12 @@ object SnackbarUtils {
         withContext(Dispatchers.Main) {
             val dest = if (isAudioOnly) "Music/Recovered" else "Pictures/Recovered"
             val label = if (count == 1) "item" else "items"
-            Snackbar.make(rootView(activity), "$count $label recovered to $dest", Snackbar.LENGTH_LONG).show()
+            Snackbar.make(
+                rootView(activity),
+                "$count $label recovered to $dest",
+                Snackbar.LENGTH_LONG
+            ).setAnchorView(anchorView(activity))
+             .show()
         }
     }
 }
