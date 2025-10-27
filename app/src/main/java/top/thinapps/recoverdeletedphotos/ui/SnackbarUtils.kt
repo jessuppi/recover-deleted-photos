@@ -13,10 +13,8 @@ object SnackbarUtils {
     private fun rootView(activity: Activity): View =
         activity.findViewById(android.R.id.content)
 
-    // prefer results screen button; fall back to home screen button
     private fun anchorView(activity: Activity): View? =
-        activity.findViewById<View>(R.id.recoverButton)
-            ?: activity.findViewById(R.id.startButton)
+        activity.findViewById(R.id.recoverButton)
 
     fun showRecovering(activity: Activity, totalPlanned: Int? = null) {
         dismissRecovering()
