@@ -2,6 +2,11 @@
 
 ## Changelog
 
+### 0.18.1
+- added Home screen privacy footer to assure users that scans are local, offline, and the code is open source
+- refined Home screen media type filter card by removing elevation and stroke (0dp) for a cleaner look
+- corrected radio button styling within the home filter card to ensure cleaner design
+
 ### 0.18.0
 - added SnackbarUtils.kt for recovery result popups feature that existed in earlier releases
 - updated ResultsFragment.kt to show snackbars after files recovered per file type
