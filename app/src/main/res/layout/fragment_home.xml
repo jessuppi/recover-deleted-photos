@@ -104,7 +104,7 @@
     <!-- main action button -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/startButton"
-        style="?attr/materialButtonStyle"
+        style="@style/Widget.Material3.Button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/start_scan"
