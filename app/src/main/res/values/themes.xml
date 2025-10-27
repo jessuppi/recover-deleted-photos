@@ -12,7 +12,6 @@
         <!-- apply our toolbar style globally -->
         <item name="toolbarStyle">@style/Widget.App.Toolbar.Tinted</item>
 
-        <!-- removed global checkboxStyle to avoid app-wide white checkboxes -->
     </style>
 
     <!-- material toolbar styled to use surface/onSurface so contrast works in light and dark -->
@@ -42,14 +41,11 @@
         <item name="android:textColor">?attr/colorOnSurface</item>
     </style>
 
-    <!-- overlay for inverted radio buttons using onSurface tint -->
-    <style name="ThemeOverlay.App.RadioButton.Inverted" parent="ThemeOverlay.Material3">
+    <!-- overlay for radio buttons: ring uses onSurface, center uses white surface, dot uses primary -->
+    <style name="ThemeOverlay.App.RadioButton.WhiteCenter" parent="ThemeOverlay.Material3">
         <item name="colorControlNormal">?attr/colorOnSurface</item>
-    </style>
-
-    <!-- optional: keep the widget style definition (unused globally now) -->
-    <style name="Widget.App.CheckBox.WhiteOutline" parent="Widget.Material3.CompoundButton.CheckBox">
-        <item name="buttonTint">@color/checkbox_tint_light_on_dark</item>
+        <item name="colorControlActivated">?attr/colorPrimary</item>
+        <item name="colorSurface">@android:color/white</item>
     </style>
 
     <!-- scoped white checkbox overlay for the grid cell FrameLayout -->
