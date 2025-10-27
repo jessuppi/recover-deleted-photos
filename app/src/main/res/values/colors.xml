@@ -69,4 +69,7 @@
     <color name="icon_grid">#1C1B1F</color>
     <color name="icon_list">#1C1B1F</color>
 
+    <!-- dark ring color for unselected radio buttons -->
+    <color name="radio_ring_dark">#2B2B2B</color>
+
 </resources>
