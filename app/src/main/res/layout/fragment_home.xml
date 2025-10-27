@@ -112,6 +112,16 @@
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
+    <!-- home footer message -->
+    <TextView
+        android:id="@+id/homeFooter"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="@string/home_footer_message"
+        android:textAppearance="?attr/textAppearanceBodySmall"
+        android:textAlignment="center"/>
+
     <!-- primary action button -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/startButton"
