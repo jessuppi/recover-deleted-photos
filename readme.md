@@ -2,6 +2,11 @@
 
 ## Changelog
 
+### 0.18.3
+- introduced smooth slide-and-fade transition for the Home screen title and subtitle
+- switched file type card to white background with thin md_outline stroke
+- refined spacing and layout details on the Home screen for cleaner visuals
+
 ### 0.18.2
 - moved the Home privacy message below the "Start Scan" button to prioritize the main call-to-action
 - corrected radio button styling within the home filter card to ensure desired colors
