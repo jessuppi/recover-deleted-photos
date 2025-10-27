@@ -82,7 +82,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:layout_marginTop="8dp"
-                android:theme="@style/ThemeOverlay.App.RadioButton.Inverted">
+                android:theme="@style/ThemeOverlay.App.RadioButton.WhiteCenter">
 
                 <!-- photo option -->
                 <RadioButton
