@@ -17,67 +17,73 @@ import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import top.thinapps.recoverdeletedphotos.MainActivity
 import top.thinapps.recoverdeletedphotos.R
 import top.thinapps.recoverdeletedphotos.databinding.FragmentHomeBinding
-import top.thinapps.recoverdeletedphotos.MainActivity
 
+// arg key for scan destination
 private const val ARG_TYPE = "type"
 
 class HomeFragment : Fragment() {
 
+    // viewbinding backing property
     private var _vb: FragmentHomeBinding? = null
     private val vb get() = _vb!!
 
+    // media type choices
     private enum class TypeChoice { PHOTOS, VIDEOS, AUDIO }
 
-    // stores selected type across permission request flow
+    // pending type across permission request
     private var pendingType: TypeChoice? = null
 
-    // handles runtime permission for a single media type
+    // tracks whether we already requested once in this session
+    private var hasRequestedOnce = false
+
+    // permission launcher for a single permission
     private val requestPerm = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted ->
-        // safely exit if view is already destroyed
+        // skip if fragment is not attached
         if (!isAdded) return@registerForActivityResult
 
-        // read stored type and clear state
+        // read and clear pending type
         val type = pendingType
         pendingType = null
-        
-        vb.startButton.isEnabled = true // Re-enable button after request attempt finishes
 
-        // open scan screen or update button to suggest opening settings
+        // reenable primary action after request completes
+        vb.startButton.isEnabled = true
+
+        // navigate on success else mark as tried and refresh label
         if (granted && type != null) {
             navigateToScan(type)
         } else {
-            // Permission denied -> update button state to prompt for manual settings change (No Snackbar)
+            hasRequestedOnce = true
             updateButtonText()
         }
     }
 
-    // checks for Android 13+ support
-    private fun isAndroid13Plus(): Boolean =
-        Build.VERSION.SDK_INT >= TIRAMISU
+    // android 13 feature gate
+    private fun isAndroid13Plus(): Boolean = Build.VERSION.SDK_INT >= TIRAMISU
 
     override fun onCreateView(
         inflater: LayoutInflater,
-        c: ViewGroup?,
-        s: Bundle?
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
     ): View {
-        // inflate layout for this fragment
-        _vb = FragmentHomeBinding.inflate(inflater, c, false)
+        // inflate layout
+        _vb = FragmentHomeBinding.inflate(inflater, container, false)
         return vb.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        // ensure toolbar visible and reset title for home screen
+        // ensure toolbar visible with app title
         (activity as? MainActivity)?.setToolbarVisible(true)
         (activity as? MainActivity)?.setToolbarTitle(getString(R.string.app_name))
 
-        // show subtitle text on home screen
+        // show subtitle on home
         vb.subtitle.isVisible = true
 
-        // Check for required API level before enabling functionality
+        // disable features on pre android 13
         if (!isAndroid13Plus()) {
             vb.startButton.isEnabled = false
             vb.homeTypeRow.isVisible = false
@@ -85,63 +91,61 @@ class HomeFragment : Fragment() {
             vb.stateMessage.isVisible = true
             return
         }
-        
-        // Set initial button text based on current permission status
+
+        // set initial button label
         updateButtonText()
 
-        // Listener to re-update button text when user changes the media type filter
+        // keep button label in sync with radio choice
         vb.homeTypeRadioGroup.setOnCheckedChangeListener { _, _ ->
             updateButtonText()
         }
 
-        // main action button for starting scan/settings
+        // main action for request or scan or settings
         vb.startButton.setOnClickListener {
             vb.startButton.isEnabled = false
+
             val type = currentType()
             val perm = requiredPerm(type)
-            val buttonText = vb.startButton.text
 
+            // flow 1 permission granted -> start scan
             if (hasPermission(perm)) {
-                // Flow 1: Permission is granted -> Start Scan
                 navigateToScan(type)
                 vb.startButton.isEnabled = true
-            } else if (buttonText == getString(R.string.action_grant_settings)) {
-                // Flow 2: Permission is denied and button says "Grant Access" -> Open Settings
-                val intent = Intent(
-                    Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                    Uri.fromParts("package", requireContext().packageName, null)
-                )
-                startActivity(intent)
-                vb.startButton.isEnabled = true // Re-enable as user is leaving the app
-            } else {
-                // Flow 3: Permission is NOT granted and button says "Start Scan" -> Request permission
+                return@setOnClickListener
+            }
+
+            // flow 2 not granted yet -> first ask then route to settings after a denial
+            if (!hasRequestedOnce) {
                 pendingType = type
+                hasRequestedOnce = true
                 requestPerm.launch(perm)
+            } else {
+                openAppSettings()
+                vb.startButton.isEnabled = true
             }
         }
     }
 
-    // NEW HELPER: Sets the button text based on the current permission state for the selected type.
+    // updates the primary button text based on permission and request history
     private fun updateButtonText() {
         val perm = requiredPerm(currentType())
-        if (hasPermission(perm)) {
-            vb.startButton.text = getString(R.string.start_scan)
-        } else {
-            // If permission is denied, change the button to prompt opening settings
-            vb.startButton.text = getString(R.string.action_grant_settings)
+        val textRes = when {
+            hasPermission(perm) -> R.string.start_scan
+            !hasRequestedOnce -> R.string.start_scan
+            else -> R.string.action_grant_settings
         }
-        vb.startButton.isEnabled = true // The button should always be clickable here
+        vb.startButton.text = getString(textRes)
+        vb.startButton.isEnabled = true
     }
 
-
-    // returns user-selected media type
+    // returns the selected media type
     private fun currentType(): TypeChoice = when {
         vb.homeTypeVideos?.isChecked == true -> TypeChoice.VIDEOS
         vb.homeTypeAudio?.isChecked == true -> TypeChoice.AUDIO
         else -> TypeChoice.PHOTOS
     }
 
-    // returns permission required for given media type
+    // returns the permission required for a given media type
     private fun requiredPerm(type: TypeChoice): String {
         return if (Build.VERSION.SDK_INT < 33) {
             Manifest.permission.READ_EXTERNAL_STORAGE
@@ -154,13 +158,22 @@ class HomeFragment : Fragment() {
         }
     }
 
-    // checks whether a permission is already granted
+    // checks if a permission is already granted
     private fun hasPermission(perm: String): Boolean {
         return ContextCompat.checkSelfPermission(requireContext(), perm) ==
             PackageManager.PERMISSION_GRANTED
     }
 
-    // opens scan fragment with selected type argument
+    // opens system app settings for this package
+    private fun openAppSettings() {
+        val intent = Intent(
+            Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+            Uri.fromParts("package", requireContext().packageName, null)
+        )
+        startActivity(intent)
+    }
+
+    // navigates to the scan screen with the selected type
     private fun navigateToScan(type: TypeChoice) {
         findNavController().navigate(
             R.id.action_home_to_scan,
@@ -169,8 +182,9 @@ class HomeFragment : Fragment() {
     }
 
     override fun onDestroyView() {
-        // clear references and pending state to avoid leaks
+        // clear transient state and bindings
         pendingType = null
+        hasRequestedOnce = false
         _vb = null
         super.onDestroyView()
     }
