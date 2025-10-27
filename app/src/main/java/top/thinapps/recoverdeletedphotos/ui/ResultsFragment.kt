@@ -28,7 +28,6 @@ import top.thinapps.recoverdeletedphotos.databinding.ItemMediaBinding
 import top.thinapps.recoverdeletedphotos.databinding.ItemMediaGridBinding
 import top.thinapps.recoverdeletedphotos.model.MediaItem
 import top.thinapps.recoverdeletedphotos.recover.Recovery
-import top.thinapps.recoverdeletedphotos.recover.MediaKinds
 import top.thinapps.recoverdeletedphotos.ui.SnackbarUtils
 import java.text.Collator
 import kotlin.math.log10
@@ -96,11 +95,11 @@ class ResultsFragment : Fragment() {
 
             viewLifecycleOwner.lifecycleScope.launch {
                 var recoveredCount = chosen.size
-                val toMusic = isAudioOnlyBatch(chosen)
+                val folderLabel = getRecoveryFolderLabel(chosen)
+                val toMusic = folderLabel.contains("Music")
                 try {
                     withContext(Dispatchers.IO) {
-                        // if Recovery.copyAll() returns a count in your codebase,
-                        // set recoveredCount = Recovery.copyAll(requireContext(), chosen)
+                        // if Recovery.copyAll returns a count, set recoveredCount = Recovery.copyAll(requireContext(), chosen)
                         Recovery.copyAll(requireContext(), chosen)
                     }
                     selectedIds.clear()
@@ -252,14 +251,14 @@ class ResultsFragment : Fragment() {
 
     // -- helpers ------------------------------------------------------------------------------
 
-    // decide if the chosen batch is audio-only using your MediaKinds helper
-    private fun isAudioOnlyBatch(chosen: List<MediaItem>): Boolean {
+    // decide folder label based on MIME type of the chosen items
+    private fun getRecoveryFolderLabel(chosen: List<MediaItem>): String {
         val cr = requireContext().contentResolver
-        val lightweight = chosen.map { item ->
-            val mt = try { cr.getType(item.uri) } catch (_: Exception) { null }
-            MediaKinds.MediaItem(mimeType = mt, path = null)
+        val allAudio = chosen.all { item ->
+            val mime = try { cr.getType(item.uri) } catch (_: Exception) { null }
+            mime?.startsWith("audio/") == true
         }
-        return MediaKinds.isAudioOnly(lightweight)
+        return if (allAudio) "Music/Recovered" else "Pictures/Recovered"
     }
 
     // adapter for grid or list
