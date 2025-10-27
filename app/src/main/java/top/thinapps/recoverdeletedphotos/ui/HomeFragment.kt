@@ -17,6 +17,7 @@ import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import top.thinapps.recoverdeletedphotos.MainActivity
 import top.thinapps.recoverdeletedphotos.R
 import top.thinapps.recoverdeletedphotos.databinding.FragmentHomeBinding
@@ -124,6 +125,27 @@ class HomeFragment : Fragment() {
                 vb.startButton.isEnabled = true
             }
         }
+
+        // subtle entrance animation for title and subtitle
+        // makes the screen feel alive without being flashy
+        val interp = FastOutSlowInInterpolator()
+
+        vb.title.translationY = 12f
+        vb.title.alpha = 0f
+        vb.title.animate()
+            .translationY(0f)
+            .alpha(1f)
+            .setDuration(250L)
+            .setInterpolator(interp)
+            .start()
+
+        vb.subtitle.alpha = 0f
+        vb.subtitle.animate()
+            .alpha(1f)
+            .setStartDelay(60L)
+            .setDuration(220L)
+            .setInterpolator(interp)
+            .start()
     }
 
     // updates the primary button text based on permission and request history
