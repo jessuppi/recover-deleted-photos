@@ -5,6 +5,8 @@
 ### 0.18.2
 - moved the Home privacy message below the "Start Scan" button to prioritize the main call-to-action
 - corrected radio button styling within the home filter card to ensure desired colors
+- fixed Snackbar placement in the results screen by anchoring it above the "Recover Selected" button
+- fixed “Recover Selected” button staying blue after recovery by resetting its state through `updateRecoverButton()`
 
 ### 0.18.1
 - added Home screen privacy footer to assure users that scans are local, offline, and the code is open source
