@@ -2,6 +2,10 @@
 
 ## Changelog
 
+### 0.18.0
+- added SnackbarUtils.kt for recovery result popups feature that existed in earlier releases
+- updated ResultsFragment.kt to show snackbars after files recovered per file type
+
 ### 0.17.23
 - re-added graphic and title elements to Home screen layout
 - simplified runtime permission logic in HomeFragment with a temporary in-session flag to handle denied requests cleanly (removed this incorrect entry in 0.17.22 changelog)
