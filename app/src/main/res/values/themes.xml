@@ -42,6 +42,11 @@
         <item name="android:textColor">?attr/colorOnSurface</item>
     </style>
 
+    <!-- overlay for inverted radio buttons using onSurface tint -->
+    <style name="ThemeOverlay.App.RadioButton.Inverted" parent="ThemeOverlay.Material3">
+        <item name="colorControlNormal">?attr/colorOnSurface</item>
+    </style>
+
     <!-- optional: keep the widget style definition (unused globally now) -->
     <style name="Widget.App.CheckBox.WhiteOutline" parent="Widget.Material3.CompoundButton.CheckBox">
         <item name="buttonTint">@color/checkbox_tint_light_on_dark</item>
