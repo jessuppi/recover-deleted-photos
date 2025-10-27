@@ -2,6 +2,10 @@
 
 ## Changelog
 
+### 0.18.2
+- moved the Home privacy message below the "Start Scan" button to prioritize the main call-to-action
+- corrected radio button styling within the home filter card to ensure desired colors
+
 ### 0.18.1
 - added Home screen privacy footer to assure users that scans are local, offline, and the code is open source
 - refined Home screen media type filter card by removing elevation and stroke (0dp) for a cleaner look
