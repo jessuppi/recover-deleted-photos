@@ -91,30 +91,28 @@ class ResultsFragment : Fragment() {
             val chosen = adapter.currentList.filter { selectedIds.contains(it.id) }
             if (chosen.isEmpty()) return@setOnClickListener
 
-            // ui: disable button and show "recovering…" snackbar
             vb.recoverButton.isEnabled = false
             vb.recoverButton.text = getString(R.string.recovering)
             SnackbarUtils.showRecovering(requireActivity(), chosen.size)
 
             viewLifecycleOwner.lifecycleScope.launch {
-                // do the copy on io thread
-                withContext(Dispatchers.IO) { Recovery.copyAll(requireContext(), chosen) }
-
-                // compute destination label based on media kinds (audio-only -> Music/Recovered)
+                var recoveredCount = chosen.size
                 val toMusic = isAudioOnlyBatch(chosen)
-
-                // ui: clear selection, refresh list/button, show result snackbar
-                selectedIds.clear()
-                updateRecoverButton()
-                adapter.notifyDataSetChanged()
-
-                SnackbarUtils.dismissRecovering()
-                // if Recovery.copyAll returns no count we fall back to selected size
-                val recoveredCount = chosen.size
-                SnackbarUtils.showRecovered(requireActivity(), recoveredCount, toMusic)
-
-                // re-enable button after finishing
-                vb.recoverButton.isEnabled = true
+                try {
+                    withContext(Dispatchers.IO) {
+                        // if Recovery.copyAll() returns a count in your codebase,
+                        // feel free to set recoveredCount = Recovery.copyAll(...).
+                        Recovery.copyAll(requireContext(), chosen)
+                    }
+                    selectedIds.clear()
+                    updateRecoverButton()
+                    adapter.notifyDataSetChanged()
+                } finally {
+                    SnackbarUtils.dismissRecovering()
+                    // show result even if there was an exception; adjust if you prefer to suppress on error
+                    SnackbarUtils.showRecovered(requireActivity(), recoveredCount, toMusic)
+                    vb.recoverButton.isEnabled = true
+                }
             }
         }
 
@@ -169,7 +167,6 @@ class ResultsFragment : Fragment() {
      * Clears the results from the shared ViewModel and navigates to the Home Fragment.
      */
     private fun exitAndCleanup() {
-        // clear results so the next visit always triggers a fresh scan and protects privacy
         vm.results = emptyList()
         findNavController().popBackStack(R.id.homeFragment, false)
     }
@@ -178,7 +175,6 @@ class ResultsFragment : Fragment() {
     private fun refreshToggleIcon(item: MenuItem?) {
         if (item == null) return
 
-        // resolve toolbar icon tint from colorControlNormal; fall back to Material colorOnSurface
         val iconTint: ColorStateList? = resolveColorStateListAttr(
             androidx.appcompat.R.attr.colorControlNormal,
             com.google.android.material.R.attr.colorOnSurface
@@ -192,9 +188,7 @@ class ResultsFragment : Fragment() {
             item.title = getString(R.string.action_view_grid)
         }
 
-        // ensure this drawable has its own state before tint
         item.icon?.mutate()
-        // apply tint after setting the icon so the new drawable is correctly colored
         if (iconTint != null) item.icon?.setTintList(iconTint)
     }
 
@@ -205,7 +199,6 @@ class ResultsFragment : Fragment() {
         } else {
             LinearLayoutManager(requireContext())
         }
-        // keep no blink behavior if we recreate the layout manager
         (vb.list.itemAnimator as? SimpleItemAnimator)?.supportsChangeAnimations = false
     }
 
@@ -254,6 +247,8 @@ class ResultsFragment : Fragment() {
     }
 
     override fun onDestroyView() {
+        // ensure any in-progress snackbar is removed if the view goes away
+        SnackbarUtils.dismissRecovering()
         super.onDestroyView()
         _vb = null
     }
@@ -261,7 +256,6 @@ class ResultsFragment : Fragment() {
     // -- helpers ------------------------------------------------------------------------------
 
     // decide if the chosen batch is audio-only using your MediaKinds helper
-    // we derive mime types via ContentResolver so MediaKinds doesn't need your model class
     private fun isAudioOnlyBatch(chosen: List<MediaItem>): Boolean {
         val cr = requireContext().contentResolver
         val lightweight = chosen.map { item ->
