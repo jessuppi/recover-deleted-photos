@@ -81,7 +81,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:layout_marginTop="8dp">
+                android:layout_marginTop="8dp"
+                android:theme="@style/ThemeOverlay.App.RadioButton.Inverted">
 
                 <!-- photo option -->
                 <RadioButton
@@ -89,7 +90,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/type_photos"
-                    android:buttonTint="@android:color/white"
                     android:checked="true" />
 
                 <!-- video option -->
@@ -98,7 +98,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="12dp"
-                    android:buttonTint="@android:color/white"
                     android:text="@string/type_videos" />
 
                 <!-- audio option -->
@@ -107,7 +106,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="12dp"
-                    android:buttonTint="@android:color/white"
                     android:text="@string/type_audio" />
             </RadioGroup>
         </LinearLayout>
