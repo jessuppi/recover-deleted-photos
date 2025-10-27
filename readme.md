@@ -2,10 +2,13 @@
 
 ## Changelog
 
+### 0.17.23
+- re-added graphic and title elements to Home screen layout
+- simplified runtime permission logic in HomeFragment with a temporary in-session flag to handle denied requests cleanly (removed this incorrect entry in 0.17.22 changelog)
+
 ### 0.17.22
 - changed the List View toggle icon from 16 units to 18 units to match the Grid View icon
 - replaced media type selector row in Home screen with a MaterialCardView for cleaner grouping
-- simplified permission flow and refreshed button/state handling in HomeFragment
 
 ### 0.17.21
 - fixed persistent white-on-white toolbar icon issue by adding `android:fillColor="@android:color/white"` to the <path> tag in both `ic_view_grid.xml` and `ic_view_list.xml`, ensuring the Vector Drawable is fully receptive to theme tinting
