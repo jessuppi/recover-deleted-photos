@@ -88,6 +88,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/type_photos"
+                    android:buttonTint="@android:color/white"
                     android:checked="true" />
 
                 <!-- video option -->
@@ -96,6 +97,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="12dp"
+                    android:buttonTint="@android:color/white"
                     android:text="@string/type_videos" />
 
                 <!-- audio option -->
@@ -104,6 +106,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="12dp"
+                    android:buttonTint="@android:color/white"
                     android:text="@string/type_audio" />
             </RadioGroup>
         </LinearLayout>
