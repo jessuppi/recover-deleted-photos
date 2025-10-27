@@ -36,7 +36,12 @@
         <item name="android:textColor">?attr/colorOnSurface</item>
     </style>
 
-    <!-- Theme overlay to force controls (like checkbox outline) to white for high contrast -->
+    <!-- overlay for inverted radio buttons using onSurface tint -->
+    <style name="ThemeOverlay.App.RadioButton.Inverted" parent="ThemeOverlay.Material3">
+        <item name="colorControlNormal">?attr/colorOnSurface</item>
+    </style>
+
+    <!-- theme overlay to force controls (like checkbox outline) to white for high contrast -->
     <style name="ThemeOverlay.App.Checkbox.Light" parent="ThemeOverlay.Material3">
         <item name="colorControlNormal">@android:color/white</item>
         <item name="colorControlActivated">@android:color/white</item>
