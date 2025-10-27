@@ -28,6 +28,8 @@ import top.thinapps.recoverdeletedphotos.databinding.ItemMediaBinding
 import top.thinapps.recoverdeletedphotos.databinding.ItemMediaGridBinding
 import top.thinapps.recoverdeletedphotos.model.MediaItem
 import top.thinapps.recoverdeletedphotos.recover.Recovery
+import top.thinapps.recoverdeletedphotos.recover.MediaKinds
+import top.thinapps.recoverdeletedphotos.ui.SnackbarUtils
 import java.text.Collator
 import kotlin.math.log10
 import kotlin.math.pow
@@ -84,17 +86,34 @@ class ResultsFragment : Fragment() {
         vb.empty.isVisible = adapter.itemCount == 0
         updateRecoverButton()
 
-        // recover selected items
+        // recover selected items with snackbars
         vb.recoverButton.setOnClickListener {
             val chosen = adapter.currentList.filter { selectedIds.contains(it.id) }
             if (chosen.isEmpty()) return@setOnClickListener
+
+            // ui: disable button and show "recovering…" snackbar
             vb.recoverButton.isEnabled = false
             vb.recoverButton.text = getString(R.string.recovering)
+            SnackbarUtils.showRecovering(requireActivity(), chosen.size)
+
             viewLifecycleOwner.lifecycleScope.launch {
+                // do the copy on io thread
                 withContext(Dispatchers.IO) { Recovery.copyAll(requireContext(), chosen) }
+
+                // compute destination label based on media kinds (audio-only -> Music/Recovered)
+                val toMusic = isAudioOnlyBatch(chosen)
+
+                // ui: clear selection, refresh list/button, show result snackbar
                 selectedIds.clear()
                 updateRecoverButton()
                 adapter.notifyDataSetChanged()
+
+                SnackbarUtils.dismissRecovering()
+                // if Recovery.copyAll returns no count we fall back to selected size
+                val recoveredCount = chosen.size
+                SnackbarUtils.showRecovered(requireActivity(), recoveredCount, toMusic)
+
+                // re-enable button after finishing
                 vb.recoverButton.isEnabled = true
             }
         }
@@ -237,6 +256,19 @@ class ResultsFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _vb = null
+    }
+
+    // -- helpers ------------------------------------------------------------------------------
+
+    // decide if the chosen batch is audio-only using your MediaKinds helper
+    // we derive mime types via ContentResolver so MediaKinds doesn't need your model class
+    private fun isAudioOnlyBatch(chosen: List<MediaItem>): Boolean {
+        val cr = requireContext().contentResolver
+        val lightweight = chosen.map { item ->
+            val mt = try { cr.getType(item.uri) } catch (_: Exception) { null }
+            MediaKinds.MediaItem(mimeType = mt, path = null)
+        }
+        return MediaKinds.isAudioOnly(lightweight)
     }
 
     // adapter for grid or list
