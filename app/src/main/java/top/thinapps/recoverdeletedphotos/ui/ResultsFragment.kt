@@ -86,14 +86,13 @@ class ResultsFragment : Fragment() {
         vb.empty.isVisible = adapter.itemCount == 0
         updateRecoverButton()
 
-        // recover selected items with snackbars
+        // recover selected items (snackbar only after success)
         vb.recoverButton.setOnClickListener {
             val chosen = adapter.currentList.filter { selectedIds.contains(it.id) }
             if (chosen.isEmpty()) return@setOnClickListener
 
             vb.recoverButton.isEnabled = false
             vb.recoverButton.text = getString(R.string.recovering)
-            SnackbarUtils.showRecovering(requireActivity(), chosen.size)
 
             viewLifecycleOwner.lifecycleScope.launch {
                 var recoveredCount = chosen.size
@@ -101,16 +100,16 @@ class ResultsFragment : Fragment() {
                 try {
                     withContext(Dispatchers.IO) {
                         // if Recovery.copyAll() returns a count in your codebase,
-                        // feel free to set recoveredCount = Recovery.copyAll(...).
+                        // set recoveredCount = Recovery.copyAll(requireContext(), chosen)
                         Recovery.copyAll(requireContext(), chosen)
                     }
                     selectedIds.clear()
                     updateRecoverButton()
                     adapter.notifyDataSetChanged()
-                } finally {
-                    SnackbarUtils.dismissRecovering()
-                    // show result even if there was an exception; adjust if you prefer to suppress on error
+
+                    // show final confirmation snackbar only after recovery finishes
                     SnackbarUtils.showRecovered(requireActivity(), recoveredCount, toMusic)
+                } finally {
                     vb.recoverButton.isEnabled = true
                 }
             }
@@ -247,8 +246,6 @@ class ResultsFragment : Fragment() {
     }
 
     override fun onDestroyView() {
-        // ensure any in-progress snackbar is removed if the view goes away
-        SnackbarUtils.dismissRecovering()
         super.onDestroyView()
         _vb = null
     }
