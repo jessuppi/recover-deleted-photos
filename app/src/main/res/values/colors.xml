@@ -5,71 +5,68 @@
     <!-- LIGHT MODE COLORS ONLY                                       -->
     <!-- ============================================================ -->
 
-    <!-- bright blue base used as the main seed color for material theme generation -->
+    <!-- main seed color that defines the generated material color scheme -->
     <color name="md_seed">#2962FF</color>
 
-    <!-- primary vivid blue used for key brand elements and call-to-action buttons -->
+    <!-- primary vivid blue used for buttons, highlights, and main brand identity -->
     <color name="md_primary">#2962FF</color>
 
-    <!-- secondary soft blue used for highlights and accent details -->
+    <!-- secondary soft blue used for accent details and minor UI highlights -->
     <color name="md_secondary">#6C7BFF</color>
 
-    <!-- dark blue tone used for key text (matches start scan button) -->
+    <!-- dark blue used for text or icons that emphasize primary actions -->
     <color name="md_blue_700">#1976D2</color>
 
-    <!-- white surface background for screens and containers -->
+    <!-- pure white surface color used for cards, dialogs, and background panels -->
     <color name="md_surface">#FFFFFF</color>
 
-    <!-- near-black text and icon color used on light surfaces -->
+    <!-- near-black text and icon color for use on white or light backgrounds -->
     <color name="md_on_surface">#1C1B1F</color>
 
-    <!-- medium gray line color for outlines and dividers -->
+    <!-- neutral gray tone used for thin outlines, strokes, and dividers -->
     <color name="md_outline">#79747E</color>
 
-    <!-- very light gray surface variant used behind sorting bar and cards -->
+    <!-- soft gray background for subtle UI regions like lists and toolbars -->
     <color name="md_surface_variant">#F5F5F5</color>
 
-    <!-- white background for the top toolbar area -->
+    <!-- white background color used for the top app bar and toolbar areas -->
     <color name="md_toolbar_background">#FFFFFF</color>
 
-    <!-- near-black color for toolbar icons and text -->
+    <!-- dark icon and text color specifically for the toolbar content -->
     <color name="md_toolbar_tint">#1C1B1F</color>
 
-    <!-- medium blue background used for adaptive app icons -->
+    <!-- solid medium blue used behind adaptive app icons and launchers -->
     <color name="ic_launcher_background">#1976D2</color>
 
-    <!-- translucent bright blue overlay to indicate selected tiles -->
+    <!-- translucent bright blue overlay that marks selected or active tiles -->
     <color name="selection_highlight">#332196F3</color>
 
-    <!-- strong red used for trash or deleted item badges -->
+    <!-- strong red used for destructive elements such as trash or delete badges -->
     <color name="badge_trash">#D93025</color>
 
-    <!-- bright blue background for enabled recover button -->
+    <!-- bright blue background for the enabled primary action (recover) button -->
     <color name="recover_button_enabled_bg">#1976D2</color>
 
-    <!-- medium gray background for disabled recover button -->
+    <!-- muted gray background for the disabled version of the recover button -->
     <color name="recover_button_disabled_bg">#BDBDBD</color>
 
-    <!-- pure white text color for recover button labels -->
+    <!-- pure white text color for all button labels shown on blue backgrounds -->
     <color name="recover_button_text">#FFFFFF</color>
 
-    <!-- vivid neon green used for the final found file count -->
+    <!-- vivid green used to emphasize successful actions or final result counts -->
     <color name="md_green_A400">#76FF03</color>
 
-    <!-- bright neon green midtone for scan success glow -->
+    <!-- slightly lighter neon green used for soft glow or animation highlights -->
     <color name="md_green_A200">#B2FF59</color>
 
-    <!-- pale blue used for outer pulse gradient -->
+    <!-- very pale blue used for outer gradients or light pulse backgrounds -->
     <color name="md_blue_50">#E8F0FE</color>
 
-    <!-- soft blue midtone used for inner pulse gradient -->
+    <!-- soft midtone blue used for inner gradient layers or pulse centers -->
     <color name="md_blue_200">#90CAF9</color>
 
-    <!-- dark gray icons for grid/list toggle and other toolbar icons -->
+    <!-- dark gray icon color shared by grid/list view toggles and toolbar icons -->
     <color name="icon_grid">#1C1B1F</color>
     <color name="icon_list">#1C1B1F</color>
-
-    <!-- dark ring color for unselected radio buttons -->
-    <color name="radio_ring_dark">#2B2B2B</color>
 
 </resources>
