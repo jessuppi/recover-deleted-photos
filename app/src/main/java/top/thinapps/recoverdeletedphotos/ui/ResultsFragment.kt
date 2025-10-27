@@ -103,13 +103,17 @@ class ResultsFragment : Fragment() {
                         Recovery.copyAll(requireContext(), chosen)
                     }
                     selectedIds.clear()
-                    updateRecoverButton()
                     adapter.notifyDataSetChanged()
-
                     // show final confirmation snackbar only after recovery finishes
                     SnackbarUtils.showRecovered(requireActivity(), recoveredCount, toMusic)
                 } finally {
-                    vb.recoverButton.isEnabled = true
+                    // let button state follow current selection; clear transient states and refresh
+                    vb.recoverButton.isPressed = false
+                    vb.recoverButton.isActivated = false
+                    // if the button is checkable anywhere, also ensure it's unchecked
+                    vb.recoverButton.isSelected = false
+                    updateRecoverButton()
+                    vb.recoverButton.refreshDrawableState()
                 }
             }
         }
