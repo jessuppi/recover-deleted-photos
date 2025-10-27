@@ -1,44 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- simple home screen layout with comments -->
+<!-- combined home screen: icon + captions + filter card + action button -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:gravity="center_horizontal"
+    android:gravity="center"
     android:padding="24dp">
 
-    <!-- app subtitle text -->
+    <!-- app hero icon -->
+    <ImageView
+        android:id="@+id/homeIcon"
+        android:layout_width="160dp"
+        android:layout_height="160dp"
+        android:layout_marginBottom="16dp"
+        android:src="@drawable/ic_empty_state"
+        android:contentDescription="@string/empty_art" />
+
+    <!-- app title -->
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/home_title"
+        android:textAppearance="?attr/textAppearanceHeadlineSmall" />
+
+    <!-- app subtitle -->
     <TextView
         android:id="@+id/subtitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?attr/textAppearanceBodyMedium"
-        android:text="@string/app_name"
-        android:paddingTop="4dp"
-        android:paddingBottom="8dp"
-        tools:visibility="visible" />
+        android:layout_marginTop="8dp"
+        android:text="@string/home_subtitle"
+        android:textAppearance="?attr/textAppearanceBodyMedium" />
 
     <!-- message shown for unsupported android versions -->
     <TextView
         android:id="@+id/stateMessage"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textAppearance="?attr/textAppearanceBodyMedium"
-        android:textColor="?attr/colorOnSurface"
-        android:paddingTop="4dp"
-        android:paddingBottom="8dp"
+        android:layout_marginTop="24dp"
         android:visibility="gone"
-        tools:text="android 13 or higher is required"
-        tools:visibility="visible" />
+        android:textAlignment="center"
+        android:textAppearance="?attr/textAppearanceBodyLarge"
+        tools:text="@string/android_13_required_msg" />
 
     <!-- card containing type selection -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/homeTypeRow"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="24dp"
         app:cardUseCompatPadding="true"
         app:cardElevation="2dp"
         app:cardBackgroundColor="?attr/colorSurfaceVariant"
@@ -58,8 +71,8 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textAppearance="?attr/textAppearanceTitleSmall"
-                android:text="@string/filter_type_label" />
+                android:text="@string/filter_type_label"
+                android:textAppearance="?attr/textAppearanceTitleSmall" />
 
             <!-- radio group for choosing file type -->
             <RadioGroup
@@ -96,18 +109,14 @@
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
-    <!-- spacer between card and button -->
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="24dp" />
-
-    <!-- main action button -->
+    <!-- primary action button -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/startButton"
         style="@style/Widget.Material3.Button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/start_scan"
-        android:minHeight="48dp" />
+        android:layout_marginTop="24dp"
+        android:minHeight="48dp"
+        android:text="@string/start_scan" />
 
 </LinearLayout>
