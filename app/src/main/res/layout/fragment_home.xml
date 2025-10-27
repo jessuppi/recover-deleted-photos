@@ -1,92 +1,112 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="vertical"
-    android:gravity="center"
-    android:padding="24dp"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center_horizontal"
+    android:padding="24dp">
 
-    <ImageView
-        android:src="@drawable/ic_empty_state"
-        android:contentDescription="@string/empty_art"
-        android:layout_width="160dp"
-        android:layout_height="160dp"
-        android:layout_marginBottom="16dp" />
-
-    <TextView
-        android:id="@+id/title"
-        android:text="@string/home_title"
-        android:textAppearance="?attr/textAppearanceHeadlineSmall"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
-
+    <!-- app subtitle text -->
     <TextView
         android:id="@+id/subtitle"
-        android:text="@string/home_subtitle"
-        android:layout_marginTop="8dp"
-        android:textAppearance="?attr/textAppearanceBodyMedium"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
-
-    <TextView
-        android:id="@+id/stateMessage"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:visibility="gone"
-        android:textAlignment="center"
-        android:textAppearance="?attr/textAppearanceBodyLarge"
-        tools:text="@string/android_13_required_msg" />
+        android:textAppearance="?attr/textAppearanceBodyMedium"
+        android:text="@string/app_name"
+        android:paddingTop="4dp"
+        android:paddingBottom="8dp"
+        tools:visibility="visible" />
 
-    <LinearLayout
+    <!-- message shown for unsupported android versions -->
+    <TextView
+        android:id="@+id/stateMessage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?attr/textAppearanceBodyMedium"
+        android:textColor="?attr/colorOnSurface"
+        android:paddingTop="4dp"
+        android:paddingBottom="8dp"
+        android:visibility="gone"
+        tools:text="android 13 or higher is required"
+        tools:visibility="visible" />
+
+    <!-- card containing type selection -->
+    <com.google.android.material.card.MaterialCardView
         android:id="@+id/homeTypeRow"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_marginTop="24dp"
-        android:paddingTop="12dp">
+        android:layout_marginTop="16dp"
+        app:cardUseCompatPadding="true"
+        app:cardElevation="2dp"
+        app:cardBackgroundColor="?attr/colorSurfaceVariant"
+        app:shapeAppearanceOverlay="@style/Shape.App.Corner.Small">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/filter_type_label" />
-
-        <RadioGroup
-            android:id="@+id/homeTypeRadioGroup"
+        <!-- card content column -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp">
 
-            <RadioButton
-                android:id="@+id/homeTypePhotos"
+            <!-- card header label -->
+            <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/type_photos"
-                android:checked="true"/>
+                android:textAppearance="?attr/textAppearanceTitleSmall"
+                android:text="@string/filter_type_label" />
 
-            <RadioButton
-                android:id="@+id/homeTypeVideos"
-                android:layout_width="wrap_content"
+            <!-- radio group for choosing file type -->
+            <RadioGroup
+                android:id="@+id/homeTypeRadioGroup"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
-                android:text="@string/type_videos"/>
+                android:orientation="horizontal"
+                android:layout_marginTop="8dp">
 
-            <RadioButton
-                android:id="@+id/homeTypeAudio"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
-                android:text="@string/type_audio"/>
-        </RadioGroup>
-    </LinearLayout>
+                <!-- photo option -->
+                <RadioButton
+                    android:id="@+id/homeTypePhotos"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/type_photos"
+                    android:checked="true" />
 
+                <!-- video option -->
+                <RadioButton
+                    android:id="@+id/homeTypeVideos"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:text="@string/type_videos" />
+
+                <!-- audio option -->
+                <RadioButton
+                    android:id="@+id/homeTypeAudio"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:text="@string/type_audio" />
+            </RadioGroup>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- spacer between card and button -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="24dp" />
+
+    <!-- main action button -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/startButton"
-        style="@style/Widget.Material3.Button"
-        android:layout_marginTop="24dp"
-        android:text="@string/start_scan"
+        style="@style/Widget.Material3.Button.Filled"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:text="@string/start_scan"
+        android:minHeight="48dp" />
 
 </LinearLayout>
