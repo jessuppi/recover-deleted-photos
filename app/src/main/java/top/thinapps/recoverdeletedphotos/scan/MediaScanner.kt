@@ -286,7 +286,8 @@ class MediaScanner(private val context: Context) {
                 sizeBytes = size,
                 dateAddedSec = dateAdded,
                 origin = if (isTrashed) MediaItem.Origin.TRASHED else MediaItem.Origin.NORMAL,
-                isProbablyVideo = isProbablyVideo
+                isProbablyVideo = isProbablyVideo,
+                mimeType = mime // <--- MODIFIED: Pass the actual MIME type
             )
 
             consumed++
