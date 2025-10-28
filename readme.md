@@ -3,9 +3,9 @@
 ## Changelog
 
 ### 0.18.5
-- improved video thumbnail reliability by explicitly passing MIME type hints to Coil when available  
-- refined `ResultsFragment` thumbnail loading with conditional `videoFrameMillis()` calls and safe `mimeType()` usage  
-- prevented mis-decoding by skipping empty MIME type hints for ambiguous URIs  
+- implemented MIME hinting via coil parameters with the key "coil#image_source_mime_type"
+- refined `ResultsFragment` thumbnail loading with conditional `videoFrameMillis()` for videos
+- avoided mis-decoding by skipping empty or unknown MIME type hints for ambiguous uris
 
 ### 0.18.4
 - added `io.coil-kt:coil-video` to `build.gradle` to enable video thumbnail decoding  
