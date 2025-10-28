@@ -276,13 +276,17 @@ class MediaScanner(private val context: Context) {
             val dateAdded = c.getLong(dateIdx)
             val isTrashed = trashedIdx != -1 && c.getInt(trashedIdx) == 1
 
+            val mime = if (mimeIdx != -1) c.getString(mimeIdx) ?: "" else ""
+            val isProbablyVideo = mime.startsWith("video/")
+
             out += MediaItem(
                 id = id,
                 uri = uri,
                 displayName = name,
                 sizeBytes = size,
                 dateAddedSec = dateAdded,
-                origin = if (isTrashed) MediaItem.Origin.TRASHED else MediaItem.Origin.NORMAL
+                origin = if (isTrashed) MediaItem.Origin.TRASHED else MediaItem.Origin.NORMAL,
+                isProbablyVideo = isProbablyVideo
             )
 
             consumed++
