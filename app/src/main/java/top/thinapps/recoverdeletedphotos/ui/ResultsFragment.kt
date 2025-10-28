@@ -20,7 +20,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SimpleItemAnimator
 import coil.load
 import coil.request.videoFrameMillis
-import coil.request.mimeType
+import coil.request.Options
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -304,7 +304,10 @@ class ResultsFragment : Fragment() {
                         videoFrameMillis(1_000)
                     }
                     val mt = item.mimeType.takeIf { it.isNotBlank() }
-                    if (mt != null) mimeType(mt)
+                    if (mt != null) {
+                        // pass MIME type hint without using the removed mimeType() extension
+                        setParameter(Options.MIME_TYPE, mt)
+                    }
                 }
                 b.name?.text = item.displayName
                 b.meta?.text = buildString {
@@ -332,7 +335,10 @@ class ResultsFragment : Fragment() {
                         videoFrameMillis(1_000)
                     }
                     val mt = item.mimeType.takeIf { it.isNotBlank() }
-                    if (mt != null) mimeType(mt)
+                    if (mt != null) {
+                        // pass MIME type hint without using the removed mimeType() extension
+                        setParameter(Options.MIME_TYPE, mt)
+                    }
                 }
                 b.caption?.text = item.displayName
                 val selected = isSelected(item.id)
