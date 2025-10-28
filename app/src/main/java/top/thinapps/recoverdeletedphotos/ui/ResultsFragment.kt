@@ -21,7 +21,6 @@ import androidx.recyclerview.widget.SimpleItemAnimator
 import coil.load
 import coil.request.videoFrameMillis
 import coil.request.Parameters
-import coil.request.Options
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -306,8 +305,8 @@ class ResultsFragment : Fragment() {
                     }
                     val mt = item.mimeType.takeIf { it.isNotBlank() }
                     if (mt != null) {
-                        // pass MIME type hint via parameters api for coil 2.x
-                        parameters(Parameters.Builder().set(Options.MIME_TYPE, mt).build())
+                        // pass MIME type hint without relying on Options.MIME_TYPE
+                        parameters(Parameters.Builder().set("coil#image_source_mime_type", mt).build())
                     }
                 }
                 b.name?.text = item.displayName
@@ -337,8 +336,8 @@ class ResultsFragment : Fragment() {
                     }
                     val mt = item.mimeType.takeIf { it.isNotBlank() }
                     if (mt != null) {
-                        // pass MIME type hint via parameters api for coil 2.x
-                        parameters(Parameters.Builder().set(Options.MIME_TYPE, mt).build())
+                        // pass MIME type hint without relying on Options.MIME_TYPE
+                        parameters(Parameters.Builder().set("coil#image_source_mime_type", mt).build())
                     }
                 }
                 b.caption?.text = item.displayName
