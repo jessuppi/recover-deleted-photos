@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SimpleItemAnimator
 import coil.load
 import coil.request.videoFrameMillis
+import coil.request.mimeType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -301,6 +302,9 @@ class ResultsFragment : Fragment() {
                     crossfade(true)
                     if (item.isProbablyVideo) {
                         videoFrameMillis(1_000)
+                        mimeType(item.mimeType)
+                    } else {
+                        mimeType(item.mimeType)
                     }
                 }
                 b.name?.text = item.displayName
@@ -327,6 +331,9 @@ class ResultsFragment : Fragment() {
                     crossfade(true)
                     if (item.isProbablyVideo) {
                         videoFrameMillis(1_000)
+                        mimeType(item.mimeType)
+                    } else {
+                        mimeType(item.mimeType)
                     }
                 }
                 b.caption?.text = item.displayName
