@@ -19,8 +19,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SimpleItemAnimator
 import coil.load
+import coil.request.mimeType
 import coil.request.videoFrameMillis
-import coil.request.Options
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -305,8 +305,8 @@ class ResultsFragment : Fragment() {
                     }
                     val mt = item.mimeType.takeIf { it.isNotBlank() }
                     if (mt != null) {
-                        // pass MIME type hint without using the removed mimeType() extension
-                        setParameter(Options.MIME_TYPE, mt)
+                        // pass MIME type hint only when present
+                        mimeType(mt)
                     }
                 }
                 b.name?.text = item.displayName
@@ -336,8 +336,8 @@ class ResultsFragment : Fragment() {
                     }
                     val mt = item.mimeType.takeIf { it.isNotBlank() }
                     if (mt != null) {
-                        // pass MIME type hint without using the removed mimeType() extension
-                        setParameter(Options.MIME_TYPE, mt)
+                        // pass MIME type hint only when present
+                        mimeType(mt)
                     }
                 }
                 b.caption?.text = item.displayName
