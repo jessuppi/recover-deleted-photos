@@ -168,7 +168,7 @@ class ResultsFragment : Fragment() {
     }
 
     /**
-     * Clears the results from the shared ViewModel and navigates to the Home Fragment.
+     * clears the results from the shared viewmodel and navigates to the home fragment
      */
     private fun exitAndCleanup() {
         vm.results = emptyList()
@@ -257,7 +257,7 @@ class ResultsFragment : Fragment() {
 
     // -- helpers ------------------------------------------------------------------------------
 
-    // decide folder label based on MIME type of the chosen items
+    // decide folder label based on mime type of the chosen items
     private fun getRecoveryFolderLabel(chosen: List<MediaItem>): String {
         val cr = requireContext().contentResolver
         val allAudio = chosen.all { item ->
@@ -300,12 +300,16 @@ class ResultsFragment : Fragment() {
             fun bind(item: MediaItem) {
                 b.thumb.load(item.uri) {
                     crossfade(true)
-                    if (item.isProbablyVideo) {
-                        videoFrameMillis(1_000)
-                    }
                     val mt = item.mimeType.takeIf { it.isNotBlank() }
-                    if (mt != null) {
-                        // pass MIME type hint without relying on Options.MIME_TYPE
+                    val isVideo = item.isProbablyVideo || (mt?.startsWith("video/") == true)
+
+                    if (isVideo) {
+                        // rely on coil-video decoder for media store videos
+                        videoFrameMillis(1_000)
+                        // enable only if some devices still fail to render frames
+                        // allowHardware(false)
+                    } else if (mt != null) {
+                        // pass mime hint for non-videos to improve image decoding
                         parameters(Parameters.Builder().set("coil#image_source_mime_type", mt).build())
                     }
                 }
@@ -331,12 +335,16 @@ class ResultsFragment : Fragment() {
             fun bind(item: MediaItem) {
                 b.thumb.load(item.uri) {
                     crossfade(true)
-                    if (item.isProbablyVideo) {
-                        videoFrameMillis(1_000)
-                    }
                     val mt = item.mimeType.takeIf { it.isNotBlank() }
-                    if (mt != null) {
-                        // pass MIME type hint without relying on Options.MIME_TYPE
+                    val isVideo = item.isProbablyVideo || (mt?.startsWith("video/") == true)
+
+                    if (isVideo) {
+                        // rely on coil-video decoder for media store videos
+                        videoFrameMillis(1_000)
+                        // enable only if some devices still fail to render frames
+                        // allowHardware(false)
+                    } else if (mt != null) {
+                        // pass mime hint for non-videos to improve image decoding
                         parameters(Parameters.Builder().set("coil#image_source_mime_type", mt).build())
                     }
                 }
@@ -364,7 +372,7 @@ private fun formatSize(bytes: Long): String {
     return String.format("%.1f %s", scaled, units[group])
 }
 
-// resolve a ColorStateList from a theme attr with an optional fallback attr
+// resolve a colorstatelist from a theme attr with an optional fallback attr
 private fun Fragment.resolveColorStateListAttr(@AttrRes attr: Int, @AttrRes fallbackAttr: Int? = null): ColorStateList? {
     val primary = requireContext().theme.obtainStyledAttributes(intArrayOf(attr)).use { it.getColorStateList(0) }
     if (primary != null) return primary
