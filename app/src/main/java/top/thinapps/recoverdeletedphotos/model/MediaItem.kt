@@ -14,7 +14,8 @@ data class MediaItem(
     val displayName: String,
     val sizeBytes: Long,
     val dateAddedSec: Long,
-    val origin: Origin = Origin.NORMAL
+    val origin: Origin = Origin.NORMAL,
+    val isProbablyVideo: Boolean = false
 ) : Parcelable {
 
     // defines if the file was normal or in the system trash folder
