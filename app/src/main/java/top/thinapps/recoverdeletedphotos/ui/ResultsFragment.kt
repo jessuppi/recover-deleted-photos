@@ -19,6 +19,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SimpleItemAnimator
 import coil.load
+import coil.request.videoFrameMillis
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -296,7 +297,12 @@ class ResultsFragment : Fragment() {
         // list item holder
         private inner class ListVH(private val b: ItemMediaBinding) : RecyclerView.ViewHolder(b.root) {
             fun bind(item: MediaItem) {
-                b.thumb.load(item.uri)
+                b.thumb.load(item.uri) {
+                    crossfade(true)
+                    if (item.isProbablyVideo) {
+                        videoFrameMillis(1_000)
+                    }
+                }
                 b.name?.text = item.displayName
                 b.meta?.text = buildString {
                     append(item.dateReadable)
@@ -317,7 +323,12 @@ class ResultsFragment : Fragment() {
         // grid item holder
         private inner class GridVH(private val b: ItemMediaGridBinding) : RecyclerView.ViewHolder(b.root) {
             fun bind(item: MediaItem) {
-                b.thumb.load(item.uri)
+                b.thumb.load(item.uri) {
+                    crossfade(true)
+                    if (item.isProbablyVideo) {
+                        videoFrameMillis(1_000)
+                    }
+                }
                 b.caption?.text = item.displayName
                 val selected = isSelected(item.id)
                 b.root.findViewById<View>(R.id.overlay)?.isVisible = selected
