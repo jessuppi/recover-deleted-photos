@@ -2,6 +2,11 @@
 
 ## Changelog
 
+### 0.18.6
+- removed custom MIME hint for videos to let `coil-video` pick the correct decoder
+- kept MIME parameters active only for still images to preserve format accuracy
+- simplified ResultsFragment logic by deriving `isVideo` from `item.isProbablyVideo` or a `video/` MIME prefix
+
 ### 0.18.5
 - implemented MIME hinting via coil parameters with the key "coil#image_source_mime_type"
 - refined `ResultsFragment` thumbnail loading with conditional `videoFrameMillis()` for videos
