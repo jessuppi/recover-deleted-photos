@@ -2,6 +2,12 @@
 
 ## Changelog
 
+### 0.18.4
+- added `io.coil-kt:coil-video` to `build.gradle` to enable video thumbnail decoding  
+- fixed missing video thumbnails by using `videoFrameMillis()` in `ResultsFragment` for video URIs  
+- modified `MediaScanner` to read MIME types from `MediaStore` and set the new `isProbablyVideo` flag  
+- updated `MediaItem` to include the `isProbablyVideo` property for accurate video detection
+
 ### 0.18.3
 - introduced smooth slide-and-fade transition for the Home screen title and subtitle
 - switched file type card to white background with thin md_outline stroke
