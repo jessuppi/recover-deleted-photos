@@ -302,10 +302,9 @@ class ResultsFragment : Fragment() {
                     crossfade(true)
                     if (item.isProbablyVideo) {
                         videoFrameMillis(1_000)
-                        mimeType(item.mimeType)
-                    } else {
-                        mimeType(item.mimeType)
                     }
+                    val mt = item.mimeType.takeIf { it.isNotBlank() }
+                    if (mt != null) mimeType(mt)
                 }
                 b.name?.text = item.displayName
                 b.meta?.text = buildString {
@@ -331,10 +330,9 @@ class ResultsFragment : Fragment() {
                     crossfade(true)
                     if (item.isProbablyVideo) {
                         videoFrameMillis(1_000)
-                        mimeType(item.mimeType)
-                    } else {
-                        mimeType(item.mimeType)
                     }
+                    val mt = item.mimeType.takeIf { it.isNotBlank() }
+                    if (mt != null) mimeType(mt)
                 }
                 b.caption?.text = item.displayName
                 val selected = isSelected(item.id)
