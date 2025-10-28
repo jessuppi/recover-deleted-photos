@@ -21,6 +21,8 @@ import androidx.recyclerview.widget.SimpleItemAnimator
 import coil.load
 import coil.request.videoFrameMillis
 import coil.request.mimeType
+import coil.request.listener
+import android.media.MediaMetadataRetriever
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
