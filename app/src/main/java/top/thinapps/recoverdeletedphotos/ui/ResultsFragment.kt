@@ -368,6 +368,9 @@ class ResultsFragment : Fragment() {
                     }
                 }
 
+                // play overlay only for videos
+                b.playIcon?.isVisible = isVideo
+
                 b.name?.text = item.displayName
                 b.meta?.text = buildString {
                     append(item.dateReadable)
@@ -410,6 +413,9 @@ class ResultsFragment : Fragment() {
                         size(ViewSizeResolver(b.thumb))
                     }
                 }
+
+                // play overlay only for videos
+                b.playIcon?.isVisible = isVideo
 
                 b.caption?.text = item.displayName
 
