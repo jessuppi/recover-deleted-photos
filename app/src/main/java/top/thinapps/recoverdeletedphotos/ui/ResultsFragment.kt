@@ -353,12 +353,13 @@ class ResultsFragment : Fragment() {
             fun bind(item: MediaItem) {
                 val mt = item.mimeType.takeIf { it.isNotBlank() }
                 val isVideo = item.isProbablyVideo || (mt?.startsWith("video/") == true)
+                val isAudio = !isVideo && (mt?.startsWith("audio/") == true)
 
                 if (isVideo) {
                     // videos: software decode + MIME hint + platform fallback on error
                     loadVideoThumbWithFallback(b.thumb, item.uri, mt)
                 } else {
-                    // images: normal Coil path with MIME hint (helps ambiguous extensions)
+                    // images or audio: normal Coil path with MIME hint (helps ambiguous extensions)
                     b.thumb.load(item.uri) {
                         crossfade(true)
                         if (mt != null) {
@@ -368,8 +369,9 @@ class ResultsFragment : Fragment() {
                     }
                 }
 
-                // play overlay only for videos
+                // overlays
                 b.playIcon?.isVisible = isVideo
+                b.audioIcon?.isVisible = isAudio
 
                 b.name?.text = item.displayName
                 b.meta?.text = buildString {
@@ -399,12 +401,13 @@ class ResultsFragment : Fragment() {
             fun bind(item: MediaItem) {
                 val mt = item.mimeType.takeIf { it.isNotBlank() }
                 val isVideo = item.isProbablyVideo || (mt?.startsWith("video/") == true)
+                val isAudio = !isVideo && (mt?.startsWith("audio/") == true)
 
                 if (isVideo) {
                     // videos: software decode + MIME hint + platform fallback on error
                     loadVideoThumbWithFallback(b.thumb, item.uri, mt)
                 } else {
-                    // images: normal Coil path with MIME hint (helps ambiguous extensions)
+                    // images or audio: normal Coil path with MIME hint (helps ambiguous extensions)
                     b.thumb.load(item.uri) {
                         crossfade(true)
                         if (mt != null) {
@@ -414,8 +417,9 @@ class ResultsFragment : Fragment() {
                     }
                 }
 
-                // play overlay only for videos
+                // overlays
                 b.playIcon?.isVisible = isVideo
+                b.audioIcon?.isVisible = isAudio
 
                 b.caption?.text = item.displayName
 
