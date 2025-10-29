@@ -2,6 +2,11 @@
 
 ## Changelog
 
+### 0.18.10
+- added `ic_audio_overlay` vector icon (semi-transparent circular music badge) for audio thumbnails
+- updated both item layouts (`item_media.xml` and `item_media_grid.xml`) to include a centered `@+id/audio_icon`
+- updated ResultsFragment.kt to toggle visibility of `b.audioIcon` for audio items
+
 ### 0.18.9
 - added `ic_play_overlay` vector icon (semi-transparent circular play badge) for video thumbnails
 - updated both item layouts (`item_media.xml` and `item_media_grid.xml`) to include a centered `@+id/play_icon`
