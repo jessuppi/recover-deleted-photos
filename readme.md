@@ -2,6 +2,9 @@
 
 ## Changelog
 
+### 0.18.7
+- fixed blank video thumbnails by extracting preview frames with Coil and disabling hardware bitmaps
+
 ### 0.18.6
 - removed custom MIME hint for videos to let `coil-video` pick the correct decoder
 - kept MIME parameters active only for still images to preserve format accuracy
