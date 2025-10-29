@@ -2,6 +2,10 @@
 
 ## Changelog
 
+### 0.18.8
+- improved video thumbnail reliability by passing MIME type hints for both images and videos to help Coil choose correct decoders
+- added system-level fallback using `ContentResolver.loadThumbnail` for devices where Coil’s video frame extraction fails
+
 ### 0.18.7
 - fixed blank video thumbnails by extracting preview frames with Coil and disabling hardware bitmaps
 
