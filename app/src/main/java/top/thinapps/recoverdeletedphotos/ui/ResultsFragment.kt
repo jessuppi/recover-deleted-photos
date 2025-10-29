@@ -21,6 +21,7 @@ import androidx.recyclerview.widget.SimpleItemAnimator
 import coil.load
 import coil.request.videoFrameMillis
 import coil.request.Parameters
+import coil.size.ViewSizeResolver
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -78,7 +79,7 @@ class ResultsFragment : Fragment() {
         vb.list.adapter = adapter
         updateLayoutManager()
 
-        // no blink patch to prevent flicker on sort
+        // prevent change-anim flicker on fast updates
         (vb.list.itemAnimator as? SimpleItemAnimator)?.supportsChangeAnimations = false
 
         applySortAndShow()
@@ -87,7 +88,7 @@ class ResultsFragment : Fragment() {
         vb.empty.isVisible = adapter.itemCount == 0
         updateRecoverButton()
 
-        // recover selected items (snackbar only after success)
+        // recover selected items then show snackbar confirmation
         vb.recoverButton.setOnClickListener {
             val chosen = adapter.currentList.filter { selectedIds.contains(it.id) }
             if (chosen.isEmpty()) return@setOnClickListener
@@ -101,18 +102,17 @@ class ResultsFragment : Fragment() {
                 val toMusic = folderLabel.contains("Music")
                 try {
                     withContext(Dispatchers.IO) {
-                        // if Recovery.copyAll returns a count, set recoveredCount = Recovery.copyAll(requireContext(), chosen)
+                        // copy recovered files to the chosen destination
                         Recovery.copyAll(requireContext(), chosen)
                     }
+                    // clear selection and refresh
                     selectedIds.clear()
                     adapter.notifyDataSetChanged()
-                    // show final confirmation snackbar only after recovery finishes
                     SnackbarUtils.showRecovered(requireActivity(), recoveredCount, toMusic)
                 } finally {
-                    // let button state follow current selection; clear transient states and refresh
+                    // reset button state and text based on current selection
                     vb.recoverButton.isPressed = false
                     vb.recoverButton.isActivated = false
-                    // if the button is checkable anywhere, also ensure it's unchecked
                     vb.recoverButton.isSelected = false
                     updateRecoverButton()
                     vb.recoverButton.refreshDrawableState()
@@ -120,7 +120,7 @@ class ResultsFragment : Fragment() {
             }
         }
 
-        // set up sort dropdown
+        // configure sort dropdown
         val sortLabels = listOf(
             getString(R.string.sort_newest_first),
             getString(R.string.sort_oldest_first),
@@ -150,7 +150,7 @@ class ResultsFragment : Fragment() {
             override fun onNothingSelected(parent: AdapterView<*>?) = Unit
         }
 
-        // shared menu helper for grid or list toggle
+        // menu with grid/list toggle
         withMenu(R.menu.menu_results, onCreate = { menu ->
             val item = menu.findItem(R.id.action_toggle_layout)
             refreshToggleIcon(item)
@@ -167,15 +167,13 @@ class ResultsFragment : Fragment() {
         }
     }
 
-    /**
-     * clears the results from the shared viewmodel and navigates to the home fragment
-     */
+    // clears results in shared viewmodel and goes back to home
     private fun exitAndCleanup() {
         vm.results = emptyList()
         findNavController().popBackStack(R.id.homeFragment, false)
     }
 
-    // update menu item icon and enforce theme tint to avoid white on white
+    // update menu icon and tint based on current layout mode
     private fun refreshToggleIcon(item: MenuItem?) {
         if (item == null) return
 
@@ -196,7 +194,7 @@ class ResultsFragment : Fragment() {
         if (iconTint != null) item.icon?.setTintList(iconTint)
     }
 
-    // update layout manager for grid or list
+    // switch between grid and list layout managers
     private fun updateLayoutManager() {
         vb.list.layoutManager = if (useGrid) {
             GridLayoutManager(requireContext(), 3)
@@ -206,13 +204,11 @@ class ResultsFragment : Fragment() {
         (vb.list.itemAnimator as? SimpleItemAnimator)?.supportsChangeAnimations = false
     }
 
-    // apply sorting then update adapter and scroll to top
+    // sort the current results and submit to adapter
     private fun applySortAndShow() {
         val base = vm.results.orEmpty()
 
-        val collator = Collator.getInstance().apply {
-            strength = Collator.PRIMARY
-        }
+        val collator = Collator.getInstance().apply { strength = Collator.PRIMARY }
 
         val sorted = when (currentSort) {
             Sort.DATE_DESC -> base.sortedByDescending { it.dateAddedSec }
@@ -233,7 +229,7 @@ class ResultsFragment : Fragment() {
         }
     }
 
-    // toggle selection for tapped item
+    // toggle selection state for tapped item
     private fun toggleSelection(item: MediaItem) {
         if (!selectedIds.remove(item.id)) selectedIds.add(item.id)
         updateRecoverButton()
@@ -241,7 +237,7 @@ class ResultsFragment : Fragment() {
         if (idx != -1) adapter.notifyItemChanged(idx)
     }
 
-    // enable recover button only when items are selected
+    // update recover button enabled state and label
     private fun updateRecoverButton() {
         val count = selectedIds.size
         vb.recoverButton.isEnabled = count > 0
@@ -255,9 +251,9 @@ class ResultsFragment : Fragment() {
         _vb = null
     }
 
-    // -- helpers ------------------------------------------------------------------------------
+    // helpers ------------------------------------------------------------------------------
 
-    // decide folder label based on mime type of the chosen items
+    // choose destination label based on mime type mix
     private fun getRecoveryFolderLabel(chosen: List<MediaItem>): String {
         val cr = requireContext().contentResolver
         val allAudio = chosen.all { item ->
@@ -267,7 +263,7 @@ class ResultsFragment : Fragment() {
         return if (allAudio) "Music/Recovered" else "Pictures/Recovered"
     }
 
-    // adapter for grid or list
+    // adapter that renders either grid or list cells
     private inner class MediaAdapter(
         private val isGrid: () -> Boolean,
         private val onToggleSelect: (MediaItem) -> Unit,
@@ -278,6 +274,13 @@ class ResultsFragment : Fragment() {
             override fun areContentsTheSame(oldItem: MediaItem, newItem: MediaItem) = oldItem == newItem
         }
     ) {
+        // enable stable ids so thumbnails stay attached on fast scroll
+        init {
+            setHasStableIds(true)
+        }
+
+        override fun getItemId(position: Int): Long = getItem(position).id
+
         override fun getItemViewType(position: Int) = if (isGrid()) 1 else 0
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
@@ -295,67 +298,103 @@ class ResultsFragment : Fragment() {
             }
         }
 
-        // list item holder
+        // list item view holder
         private inner class ListVH(private val b: ItemMediaBinding) : RecyclerView.ViewHolder(b.root) {
             fun bind(item: MediaItem) {
+                // load thumbnail for images and extract a frame for videos
                 b.thumb.load(item.uri) {
                     crossfade(true)
+
+                    // determine if this item is a video
                     val mt = item.mimeType.takeIf { it.isNotBlank() }
                     val isVideo = item.isProbablyVideo || (mt?.startsWith("video/") == true)
 
                     if (isVideo) {
-                        // rely on coil-video decoder for media store videos
+                        // grab a frame at 1s and force software bitmap to avoid blank hardware frames on some devices
                         videoFrameMillis(1_000)
-                        // enable only if some devices still fail to render frames
-                        // allowHardware(false)
+                        allowHardware(false)
+                        // include the frame time in the cache key to avoid wrong-frame reuse
+                        memoryCacheKey("${item.uri}#t=1000ms")
                     } else if (mt != null) {
-                        // pass mime hint for non-videos to improve image decoding
+                        // pass mime hint to improve decoding for images
                         parameters(Parameters.Builder().set("coil#image_source_mime_type", mt).build())
                     }
+
+                    // always size to view so we don't decode full-resolution frames
+                    size(ViewSizeResolver(b.thumb))
+
+                    // show consistent ui during decode or on failure
+                    placeholder(R.drawable.ic_thumb_placeholder)
+                    error(R.drawable.ic_thumb_error)
                 }
+
                 b.name?.text = item.displayName
                 b.meta?.text = buildString {
                     append(item.dateReadable)
                     if (item.sizeBytes > 0) append("\n${formatSize(item.sizeBytes)}")
                 }
+
+                // selection overlay and checkbox state
                 val selected = isSelected(item.id)
                 b.root.findViewById<View>(R.id.overlay)?.isVisible = selected
                 b.check.setOnCheckedChangeListener(null)
                 b.check.isChecked = selected
                 b.check.setOnCheckedChangeListener { _, _ -> onToggleSelect(item) }
+
+                // show small badge for trashed origin
                 val trashed = (item.origin == MediaItem.Origin.TRASHED)
                 b.badge?.isVisible = trashed
+
+                // click handlers toggle selection
                 b.root.setOnClickListener { onToggleSelect(item) }
                 b.root.setOnLongClickListener { onToggleSelect(item); true }
             }
         }
 
-        // grid item holder
+        // grid item view holder
         private inner class GridVH(private val b: ItemMediaGridBinding) : RecyclerView.ViewHolder(b.root) {
             fun bind(item: MediaItem) {
+                // load thumbnail for images and extract a frame for videos
                 b.thumb.load(item.uri) {
                     crossfade(true)
+
+                    // determine if this item is a video
                     val mt = item.mimeType.takeIf { it.isNotBlank() }
                     val isVideo = item.isProbablyVideo || (mt?.startsWith("video/") == true)
 
                     if (isVideo) {
-                        // rely on coil-video decoder for media store videos
+                        // grab a frame at 1s and force software bitmap to avoid blank hardware frames on some devices
                         videoFrameMillis(1_000)
-                        // enable only if some devices still fail to render frames
-                        // allowHardware(false)
+                        allowHardware(false)
+                        // include the frame time in the cache key to avoid wrong-frame reuse
+                        memoryCacheKey("${item.uri}#t=1000ms")
                     } else if (mt != null) {
-                        // pass mime hint for non-videos to improve image decoding
+                        // pass mime hint to improve decoding for images
                         parameters(Parameters.Builder().set("coil#image_source_mime_type", mt).build())
                     }
+
+                    // always size to view so we don't decode full-resolution frames
+                    size(ViewSizeResolver(b.thumb))
+
+                    // show consistent ui during decode or on failure
+                    placeholder(R.drawable.ic_thumb_placeholder)
+                    error(R.drawable.ic_thumb_error)
                 }
+
                 b.caption?.text = item.displayName
+
+                // selection overlay and checkbox state
                 val selected = isSelected(item.id)
                 b.root.findViewById<View>(R.id.overlay)?.isVisible = selected
                 b.check.setOnCheckedChangeListener(null)
                 b.check.isChecked = selected
                 b.check.setOnCheckedChangeListener { _, _ -> onToggleSelect(item) }
+
+                // show small badge for trashed origin
                 val trashed = (item.origin == MediaItem.Origin.TRASHED)
                 b.badge?.isVisible = trashed
+
+                // click handlers toggle selection
                 b.root.setOnClickListener { onToggleSelect(item) }
                 b.root.setOnLongClickListener { onToggleSelect(item); true }
             }
