@@ -50,7 +50,7 @@ class ResultsFragment : Fragment() {
     private val selectedIds = linkedSetOf<Long>()
     private lateinit var adapter: MediaAdapter
 
-    // simple enum for sorting modes
+    // sorting modes
     private enum class Sort { DATE_DESC, DATE_ASC, SIZE_DESC, SIZE_ASC, NAME_ASC, NAME_DESC }
     private var currentSort: Sort = Sort.DATE_DESC
 
@@ -167,7 +167,7 @@ class ResultsFragment : Fragment() {
         }
     }
 
-    // clears results in shared viewmodel and goes back to home
+    // clear results and return home
     private fun exitAndCleanup() {
         vm.results = emptyList()
         findNavController().popBackStack(R.id.homeFragment, false)
@@ -204,7 +204,7 @@ class ResultsFragment : Fragment() {
         (vb.list.itemAnimator as? SimpleItemAnimator)?.supportsChangeAnimations = false
     }
 
-    // sort the current results and submit to adapter
+    // sort results and submit to adapter
     private fun applySortAndShow() {
         val base = vm.results.orEmpty()
 
@@ -305,27 +305,23 @@ class ResultsFragment : Fragment() {
                 b.thumb.load(item.uri) {
                     crossfade(true)
 
-                    // determine if this item is a video
+                    // decide if this item is a video
                     val mt = item.mimeType.takeIf { it.isNotBlank() }
                     val isVideo = item.isProbablyVideo || (mt?.startsWith("video/") == true)
 
                     if (isVideo) {
-                        // grab a frame at 1s and force software bitmap to avoid blank hardware frames on some devices
+                        // get a frame at 1s and force software bitmap to avoid blank hardware frames on some devices
                         videoFrameMillis(1_000)
                         allowHardware(false)
-                        // include the frame time in the cache key to avoid wrong-frame reuse
+                        // include frame time in cache key to avoid wrong-frame reuse
                         memoryCacheKey("${item.uri}#t=1000ms")
                     } else if (mt != null) {
                         // pass mime hint to improve decoding for images
                         parameters(Parameters.Builder().set("coil#image_source_mime_type", mt).build())
                     }
 
-                    // always size to view so we don't decode full-resolution frames
+                    // size decode work to the ImageView
                     size(ViewSizeResolver(b.thumb))
-
-                    // show consistent ui during decode or on failure
-                    placeholder(R.drawable.ic_thumb_placeholder)
-                    error(R.drawable.ic_thumb_error)
                 }
 
                 b.name?.text = item.displayName
@@ -358,27 +354,23 @@ class ResultsFragment : Fragment() {
                 b.thumb.load(item.uri) {
                     crossfade(true)
 
-                    // determine if this item is a video
+                    // decide if this item is a video
                     val mt = item.mimeType.takeIf { it.isNotBlank() }
                     val isVideo = item.isProbablyVideo || (mt?.startsWith("video/") == true)
 
                     if (isVideo) {
-                        // grab a frame at 1s and force software bitmap to avoid blank hardware frames on some devices
+                        // get a frame at 1s and force software bitmap to avoid blank hardware frames on some devices
                         videoFrameMillis(1_000)
                         allowHardware(false)
-                        // include the frame time in the cache key to avoid wrong-frame reuse
+                        // include frame time in cache key to avoid wrong-frame reuse
                         memoryCacheKey("${item.uri}#t=1000ms")
                     } else if (mt != null) {
                         // pass mime hint to improve decoding for images
                         parameters(Parameters.Builder().set("coil#image_source_mime_type", mt).build())
                     }
 
-                    // always size to view so we don't decode full-resolution frames
+                    // size decode work to the ImageView
                     size(ViewSizeResolver(b.thumb))
-
-                    // show consistent ui during decode or on failure
-                    placeholder(R.drawable.ic_thumb_placeholder)
-                    error(R.drawable.ic_thumb_error)
                 }
 
                 b.caption?.text = item.displayName
@@ -411,7 +403,7 @@ private fun formatSize(bytes: Long): String {
     return String.format("%.1f %s", scaled, units[group])
 }
 
-// resolve a colorstatelist from a theme attr with an optional fallback attr
+// resolve a color state list from a theme attr with an optional fallback attr
 private fun Fragment.resolveColorStateListAttr(@AttrRes attr: Int, @AttrRes fallbackAttr: Int? = null): ColorStateList? {
     val primary = requireContext().theme.obtainStyledAttributes(intArrayOf(attr)).use { it.getColorStateList(0) }
     if (primary != null) return primary
