@@ -12,8 +12,8 @@ android {
         applicationId "top.thinapps.recoverdeletedphotos"
         minSdk 21
         targetSdk 35
-        versionCode 103
-        versionName "0.18.6"
+        versionCode 104
+        versionName "0.18.7"
 
         // forces the use of the support library for vector drawables
         vectorDrawables.useSupportLibrary = true
