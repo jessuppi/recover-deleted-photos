@@ -45,6 +45,17 @@
             tools:visibility="visible"
             tools:ignore="ContentDescription" />
 
+        <!-- audio icon overlay for audio files -->
+        <ImageView
+            android:id="@+id/audio_icon"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_audio_overlay"
+            android:visibility="gone"
+            tools:visibility="visible"
+            tools:ignore="ContentDescription" />
+
         <!-- selection overlay that tints the thumb when selected -->
         <View
             android:id="@+id/overlay"
