@@ -2,6 +2,11 @@
 
 ## Changelog
 
+### 0.18.9
+- added `ic_play_overlay` vector icon (semi-transparent circular play badge) for video thumbnails
+- updated both item layouts (`item_media.xml` and `item_media_grid.xml`) to include a centered `@+id/play_icon`
+- updated ResultsFragment.kt to toggle visibility of `b.playIcon` for video items
+
 ### 0.18.8
 - improved video thumbnail reliability by passing MIME type hints for both images and videos to help Coil choose correct decoders
 - added system-level fallback using `ContentResolver.loadThumbnail` for devices where Coil’s video frame extraction fails
