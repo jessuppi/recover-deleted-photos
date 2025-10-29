@@ -11,6 +11,7 @@ import androidx.core.content.res.use
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DiffUtil
@@ -19,8 +20,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SimpleItemAnimator
 import coil.load
-import coil.request.videoFrameMillis
 import coil.request.Parameters
+import coil.request.videoFrameMillis
 import coil.size.ViewSizeResolver
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -263,6 +264,55 @@ class ResultsFragment : Fragment() {
         return if (allAudio) "Music/Recovered" else "Pictures/Recovered"
     }
 
+    // platform-fallback loader for stubborn video frame decodes
+    // coil is tried first (software bitmap + timestamp); if it errors, we call loadThumbnail() on a worker
+    private fun loadVideoThumbWithFallback(iv: android.widget.ImageView, uri: android.net.Uri, mime: String?) {
+        iv.load(uri) {
+            crossfade(true)
+            videoFrameMillis(0)               // try first keyframe
+            allowHardware(false)              // force software bitmap to avoid empty HW frames
+            memoryCacheKey("$uri#t=0ms")
+            if (!mime.isNullOrBlank()) {
+                parameters(Parameters.Builder().set("coil#image_source_mime_type", mime).build())
+            }
+            size(ViewSizeResolver(iv))
+            listener(
+                onError = { _, _ ->
+                    val owner = iv.findViewTreeLifecycleOwner() ?: return@listener
+                    owner.lifecycleScope.launch(Dispatchers.IO) {
+                        try {
+                            // fall back to platform thumbnail path (different extractor/codec stack)
+                            val w = iv.width.coerceAtLeast(200)
+                            val h = iv.height.coerceAtLeast(200)
+                            val bmp = iv.context.contentResolver.loadThumbnail(
+                                uri,
+                                android.util.Size(w, h),
+                                android.os.CancellationSignal()
+                            )
+                            withContext(Dispatchers.Main) {
+                                iv.setImageBitmap(bmp)
+                            }
+                        } catch (_: Throwable) {
+                            // final retry: ask coil for a later frame (1s) which often bypasses bad first keyframes
+                            withContext(Dispatchers.Main) {
+                                iv.load(uri) {
+                                    crossfade(true)
+                                    videoFrameMillis(1_000)
+                                    allowHardware(false)
+                                    memoryCacheKey("$uri#t=1000ms")
+                                    if (!mime.isNullOrBlank()) {
+                                        parameters(Parameters.Builder().set("coil#image_source_mime_type", mime).build())
+                                    }
+                                    size(ViewSizeResolver(iv))
+                                }
+                            }
+                        }
+                    }
+                }
+            )
+        }
+    }
+
     // adapter that renders either grid or list cells
     private inner class MediaAdapter(
         private val isGrid: () -> Boolean,
@@ -301,27 +351,21 @@ class ResultsFragment : Fragment() {
         // list item view holder
         private inner class ListVH(private val b: ItemMediaBinding) : RecyclerView.ViewHolder(b.root) {
             fun bind(item: MediaItem) {
-                // load thumbnail for images and extract a frame for videos
-                b.thumb.load(item.uri) {
-                    crossfade(true)
+                val mt = item.mimeType.takeIf { it.isNotBlank() }
+                val isVideo = item.isProbablyVideo || (mt?.startsWith("video/") == true)
 
-                    // decide if this item is a video
-                    val mt = item.mimeType.takeIf { it.isNotBlank() }
-                    val isVideo = item.isProbablyVideo || (mt?.startsWith("video/") == true)
-
-                    if (isVideo) {
-                        // get a frame at 1s and force software bitmap to avoid blank hardware frames on some devices
-                        videoFrameMillis(1_000)
-                        allowHardware(false)
-                        // include frame time in cache key to avoid wrong-frame reuse
-                        memoryCacheKey("${item.uri}#t=1000ms")
-                    } else if (mt != null) {
-                        // pass mime hint to improve decoding for images
-                        parameters(Parameters.Builder().set("coil#image_source_mime_type", mt).build())
+                if (isVideo) {
+                    // videos: software decode + MIME hint + platform fallback on error
+                    loadVideoThumbWithFallback(b.thumb, item.uri, mt)
+                } else {
+                    // images: normal Coil path with MIME hint (helps ambiguous extensions)
+                    b.thumb.load(item.uri) {
+                        crossfade(true)
+                        if (mt != null) {
+                            parameters(Parameters.Builder().set("coil#image_source_mime_type", mt).build())
+                        }
+                        size(ViewSizeResolver(b.thumb))
                     }
-
-                    // size decode work to the ImageView
-                    size(ViewSizeResolver(b.thumb))
                 }
 
                 b.name?.text = item.displayName
@@ -350,27 +394,21 @@ class ResultsFragment : Fragment() {
         // grid item view holder
         private inner class GridVH(private val b: ItemMediaGridBinding) : RecyclerView.ViewHolder(b.root) {
             fun bind(item: MediaItem) {
-                // load thumbnail for images and extract a frame for videos
-                b.thumb.load(item.uri) {
-                    crossfade(true)
+                val mt = item.mimeType.takeIf { it.isNotBlank() }
+                val isVideo = item.isProbablyVideo || (mt?.startsWith("video/") == true)
 
-                    // decide if this item is a video
-                    val mt = item.mimeType.takeIf { it.isNotBlank() }
-                    val isVideo = item.isProbablyVideo || (mt?.startsWith("video/") == true)
-
-                    if (isVideo) {
-                        // get a frame at 1s and force software bitmap to avoid blank hardware frames on some devices
-                        videoFrameMillis(1_000)
-                        allowHardware(false)
-                        // include frame time in cache key to avoid wrong-frame reuse
-                        memoryCacheKey("${item.uri}#t=1000ms")
-                    } else if (mt != null) {
-                        // pass mime hint to improve decoding for images
-                        parameters(Parameters.Builder().set("coil#image_source_mime_type", mt).build())
+                if (isVideo) {
+                    // videos: software decode + MIME hint + platform fallback on error
+                    loadVideoThumbWithFallback(b.thumb, item.uri, mt)
+                } else {
+                    // images: normal Coil path with MIME hint (helps ambiguous extensions)
+                    b.thumb.load(item.uri) {
+                        crossfade(true)
+                        if (mt != null) {
+                            parameters(Parameters.Builder().set("coil#image_source_mime_type", mt).build())
+                        }
+                        size(ViewSizeResolver(b.thumb))
                     }
-
-                    // size decode work to the ImageView
-                    size(ViewSizeResolver(b.thumb))
                 }
 
                 b.caption?.text = item.displayName
