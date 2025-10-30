@@ -5,13 +5,13 @@
     android:viewportWidth="24"
     android:viewportHeight="24">
 
-    <!-- dark semi-transparent circle -->
+    <!-- semi-transparent dark circle background -->
     <path
         android:fillColor="#66000000"
         android:pathData="M12,2A10,10 0 1,0 22,12A10,10 0 0,0 12,2z" />
 
-    <!-- white music note -->
+    <!-- white double musical notes -->
     <path
         android:fillColor="#FFFFFFFF"
-        android:pathData="M9,7v8.5A2.5,2.5 0 1,0 11,18V10h4V7H9z" />
+        android:pathData="M8,8v6.5A1.5,1.5 0 1,0 9.5,16V10h3v4.5A1.5,1.5 0 1,0 14,16V8H8z" />
 </vector>
