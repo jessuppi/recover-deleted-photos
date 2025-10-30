@@ -1,6 +1,7 @@
 package top.thinapps.recoverdeletedphotos.ui
 
 import android.content.res.ColorStateList
+import android.graphics.Color
 import android.os.Bundle
 import android.view.*
 import android.widget.AdapterView
@@ -51,10 +52,10 @@ class ResultsFragment : Fragment() {
     private val selectedIds = linkedSetOf<Long>()
     private lateinit var adapter: MediaAdapter
 
-    // recovery in progress guard (prevents premature re-enable and locks selection)
+    // prevents user actions during recovery
     private var isRecovering = false
 
-    // sorting modes
+    // sorting options
     private enum class Sort { DATE_DESC, DATE_ASC, SIZE_DESC, SIZE_ASC, NAME_ASC, NAME_DESC }
     private var currentSort: Sort = Sort.DATE_DESC
 
@@ -66,7 +67,7 @@ class ResultsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // handle system back same as toolbar up to always go home
+        // handle system back to always go home
         val backCallback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 exitAndCleanup()
@@ -83,25 +84,22 @@ class ResultsFragment : Fragment() {
         vb.list.adapter = adapter
         updateLayoutManager()
 
-        // prevent change-anim flicker on fast updates
+        // disable change animations for faster redraws
         (vb.list.itemAnimator as? SimpleItemAnimator)?.supportsChangeAnimations = false
 
         applySortAndShow()
-
-        // show empty state if needed
         vb.empty.isVisible = adapter.itemCount == 0
         updateRecoverButton()
 
-        // recover selected items then show snackbar confirmation
+        // handle recover button click
         vb.recoverButton.setOnClickListener {
             if (isRecovering) return@setOnClickListener
-
             val chosen = adapter.currentList.filter { selectedIds.contains(it.id) }
             if (chosen.isEmpty()) return@setOnClickListener
 
             isRecovering = true
-            updateRecoverButton() // disables + shows "recovering"
-            adapter.notifyDataSetChanged() // lock item interactions
+            updateRecoverButton()
+            adapter.notifyDataSetChanged()
 
             viewLifecycleOwner.lifecycleScope.launch {
                 val recoveredCount = chosen.size
@@ -110,30 +108,26 @@ class ResultsFragment : Fragment() {
 
                 try {
                     withContext(Dispatchers.IO) {
-                        // copy recovered files to the chosen destination
                         Recovery.copyAll(requireContext(), chosen)
                     }
-                    // clear selection and refresh
                     selectedIds.clear()
                     adapter.notifyDataSetChanged()
-                    // success snackbar after copy completes
                     SnackbarUtils.showRecovered(requireActivity(), recoveredCount, toMusic)
                 } catch (_: Throwable) {
-                    // optionally show error snackbar/toast here
+                    // optional: handle copy failure
                 } finally {
-                    // leave the cta disabled until work finished; then re-enable based on selection
                     isRecovering = false
                     vb.recoverButton.isPressed = false
                     vb.recoverButton.isActivated = false
                     vb.recoverButton.isSelected = false
                     updateRecoverButton()
-                    adapter.notifyDataSetChanged() // unlock item interactions
+                    adapter.notifyDataSetChanged()
                     vb.recoverButton.refreshDrawableState()
                 }
             }
         }
 
-        // configure sort dropdown
+        // sort dropdown setup
         val sortLabels = listOf(
             getString(R.string.sort_newest_first),
             getString(R.string.sort_oldest_first),
@@ -142,8 +136,7 @@ class ResultsFragment : Fragment() {
             getString(R.string.sort_name_az_full),
             getString(R.string.sort_name_za_full)
         )
-        vb.sortDropdown.adapter =
-            ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, sortLabels)
+        vb.sortDropdown.adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, sortLabels)
 
         vb.sortDropdown.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, v: View?, position: Int, id: Long) {
@@ -163,7 +156,7 @@ class ResultsFragment : Fragment() {
             override fun onNothingSelected(parent: AdapterView<*>?) = Unit
         }
 
-        // menu with grid/list toggle
+        // toolbar menu setup
         withMenu(R.menu.menu_results, onCreate = { menu ->
             val item = menu.findItem(R.id.action_toggle_layout)
             refreshToggleIcon(item)
@@ -186,11 +179,10 @@ class ResultsFragment : Fragment() {
         findNavController().popBackStack(R.id.homeFragment, false)
     }
 
-    // update menu icon and tint based on current layout mode
+    // update layout toggle icon based on mode
     private fun refreshToggleIcon(item: MenuItem?) {
         if (item == null) return
-
-        val iconTint: ColorStateList? = resolveColorStateListAttr(
+        val iconTint = resolveColorStateListAttr(
             androidx.appcompat.R.attr.colorControlNormal,
             com.google.android.material.R.attr.colorOnSurface
         )
@@ -207,28 +199,23 @@ class ResultsFragment : Fragment() {
         if (iconTint != null) item.icon?.setTintList(iconTint)
     }
 
-    // switch between grid and list layout managers
+    // switch between grid and list layout
     private fun updateLayoutManager() {
-        vb.list.layoutManager = if (useGrid) {
-            GridLayoutManager(requireContext(), 3)
-        } else {
-            LinearLayoutManager(requireContext())
-        }
+        vb.list.layoutManager = if (useGrid) GridLayoutManager(requireContext(), 3) else LinearLayoutManager(requireContext())
         (vb.list.itemAnimator as? SimpleItemAnimator)?.supportsChangeAnimations = false
     }
 
-    // sort results and submit to adapter
+    // sort results and refresh adapter
     private fun applySortAndShow() {
         val base = vm.results.orEmpty()
-
         val collator = Collator.getInstance().apply { strength = Collator.PRIMARY }
 
         val sorted = when (currentSort) {
             Sort.DATE_DESC -> base.sortedByDescending { it.dateAddedSec }
-            Sort.DATE_ASC  -> base.sortedBy { it.dateAddedSec }
+            Sort.DATE_ASC -> base.sortedBy { it.dateAddedSec }
             Sort.SIZE_DESC -> base.sortedByDescending { it.sizeBytes }
-            Sort.SIZE_ASC  -> base.sortedBy { it.sizeBytes }
-            Sort.NAME_ASC  -> base.sortedWith(compareBy(collator) { it.displayName ?: "" })
+            Sort.SIZE_ASC -> base.sortedBy { it.sizeBytes }
+            Sort.NAME_ASC -> base.sortedWith(compareBy(collator) { it.displayName ?: "" })
             Sort.NAME_DESC -> base.sortedWith(compareBy(collator) { it.displayName ?: "" }).asReversed()
         }
 
@@ -242,7 +229,7 @@ class ResultsFragment : Fragment() {
         }
     }
 
-    // toggle selection state for tapped item
+    // toggle selection for media item
     private fun toggleSelection(item: MediaItem) {
         if (isRecovering) return
         if (!selectedIds.remove(item.id)) selectedIds.add(item.id)
@@ -251,7 +238,7 @@ class ResultsFragment : Fragment() {
         if (idx != -1) adapter.notifyItemChanged(idx)
     }
 
-    // update recover button enabled state and label
+    // update recover button label and state
     private fun updateRecoverButton() {
         if (isRecovering) {
             vb.recoverButton.isEnabled = false
@@ -270,9 +257,7 @@ class ResultsFragment : Fragment() {
         _vb = null
     }
 
-    // helpers ------------------------------------------------------------------------------
-
-    // choose destination label based on mime type mix
+    // detect audio vs image/video targets for destination folder
     private fun getRecoveryFolderLabel(chosen: List<MediaItem>): String {
         val cr = requireContext().contentResolver
         val allAudio = chosen.all { item ->
@@ -282,56 +267,43 @@ class ResultsFragment : Fragment() {
         return if (allAudio) "Music/Recovered" else "Pictures/Recovered"
     }
 
-    // platform-fallback loader for stubborn video frame decodes
-    // coil is tried first (software bitmap + timestamp); if it errors, we call loadThumbnail() on a worker
+    // load video frames with a graceful fallback
     private fun loadVideoThumbWithFallback(iv: android.widget.ImageView, uri: android.net.Uri, mime: String?) {
         iv.load(uri) {
             crossfade(true)
-            videoFrameMillis(0)               // try first keyframe
-            allowHardware(false)              // force software bitmap to avoid empty HW frames
+            videoFrameMillis(0)
+            allowHardware(false)
             memoryCacheKey("$uri#t=0ms")
-            if (!mime.isNullOrBlank()) {
-                parameters(Parameters.Builder().set("coil#image_source_mime_type", mime).build())
-            }
+            if (!mime.isNullOrBlank()) parameters(Parameters.Builder().set("coil#image_source_mime_type", mime).build())
             size(ViewSizeResolver(iv))
-            listener(
-                onError = { _, _ ->
-                    val owner = iv.findViewTreeLifecycleOwner() ?: return@listener
-                    owner.lifecycleScope.launch(Dispatchers.IO) {
-                        try {
-                            // fall back to platform thumbnail path (different extractor/codec stack)
-                            val w = iv.width.coerceAtLeast(200)
-                            val h = iv.height.coerceAtLeast(200)
-                            val bmp = iv.context.contentResolver.loadThumbnail(
-                                uri,
-                                android.util.Size(w, h),
-                                android.os.CancellationSignal()
-                            )
-                            withContext(Dispatchers.Main) {
-                                iv.setImageBitmap(bmp)
-                            }
-                        } catch (_: Throwable) {
-                            // final retry: ask coil for a later frame (1s) which often bypasses bad first keyframes
-                            withContext(Dispatchers.Main) {
-                                iv.load(uri) {
-                                    crossfade(true)
-                                    videoFrameMillis(1_000)
-                                    allowHardware(false)
-                                    memoryCacheKey("$uri#t=1000ms")
-                                    if (!mime.isNullOrBlank()) {
-                                        parameters(Parameters.Builder().set("coil#image_source_mime_type", mime).build())
-                                    }
-                                    size(ViewSizeResolver(iv))
+            listener(onError = { _, _ ->
+                val owner = iv.findViewTreeLifecycleOwner() ?: return@listener
+                owner.lifecycleScope.launch(Dispatchers.IO) {
+                    try {
+                        val w = iv.width.coerceAtLeast(200)
+                        val h = iv.height.coerceAtLeast(200)
+                        val bmp = iv.context.contentResolver.loadThumbnail(uri, android.util.Size(w, h), android.os.CancellationSignal())
+                        withContext(Dispatchers.Main) { iv.setImageBitmap(bmp) }
+                    } catch (_: Throwable) {
+                        withContext(Dispatchers.Main) {
+                            iv.load(uri) {
+                                crossfade(true)
+                                videoFrameMillis(1_000)
+                                allowHardware(false)
+                                memoryCacheKey("$uri#t=1000ms")
+                                if (!mime.isNullOrBlank()) {
+                                    parameters(Parameters.Builder().set("coil#image_source_mime_type", mime).build())
                                 }
+                                size(ViewSizeResolver(iv))
                             }
                         }
                     }
                 }
-            )
+            })
         }
     }
 
-    // adapter that renders either grid or list cells
+    // adapter for list/grid modes
     private inner class MediaAdapter(
         private val isGrid: () -> Boolean,
         private val onToggleSelect: (MediaItem) -> Unit,
@@ -342,13 +314,11 @@ class ResultsFragment : Fragment() {
             override fun areContentsTheSame(oldItem: MediaItem, newItem: MediaItem) = oldItem == newItem
         }
     ) {
-        // enable stable ids so thumbnails stay attached on fast scroll
         init {
             setHasStableIds(true)
         }
 
         override fun getItemId(position: Int): Long = getItem(position).id
-
         override fun getItemViewType(position: Int) = if (isGrid()) 1 else 0
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
@@ -366,38 +336,37 @@ class ResultsFragment : Fragment() {
             }
         }
 
-        // list item view holder
+        // list mode
         private inner class ListVH(private val b: ItemMediaBinding) : RecyclerView.ViewHolder(b.root) {
             fun bind(item: MediaItem) {
                 val mt = item.mimeType.takeIf { it.isNotBlank() }
                 val isVideo = item.isProbablyVideo || (mt?.startsWith("video/") == true)
                 val isAudio = !isVideo && (mt?.startsWith("audio/") == true)
 
+                // theme-aware audio background
+                val bgColor = if (isAudio)
+                    b.thumb.resolveThemeColorInt(com.google.android.material.R.attr.colorSecondaryContainer, com.google.android.material.R.attr.colorSecondary)
+                else Color.TRANSPARENT
+                b.thumb.setBackgroundColor(bgColor)
+
                 if (isVideo) {
-                    // videos: software decode + MIME hint + platform fallback on error
                     loadVideoThumbWithFallback(b.thumb, item.uri, mt)
                 } else {
-                    // images or audio: normal Coil path with MIME hint (helps ambiguous extensions)
                     b.thumb.load(item.uri) {
                         crossfade(true)
-                        if (mt != null) {
-                            parameters(Parameters.Builder().set("coil#image_source_mime_type", mt).build())
-                        }
+                        if (mt != null) parameters(Parameters.Builder().set("coil#image_source_mime_type", mt).build())
                         size(ViewSizeResolver(b.thumb))
                     }
                 }
 
-                // overlays
                 b.playIcon?.isVisible = isVideo
                 b.audioIcon?.isVisible = isAudio
-
                 b.name?.text = item.displayName
                 b.meta?.text = buildString {
                     append(item.dateReadable)
                     if (item.sizeBytes > 0) append("\n${formatSize(item.sizeBytes)}")
                 }
 
-                // selection overlay and checkbox state
                 val selected = isSelected(item.id)
                 b.root.findViewById<View>(R.id.overlay)?.isVisible = selected
 
@@ -410,44 +379,41 @@ class ResultsFragment : Fragment() {
                 b.check.isChecked = selected
                 b.check.setOnCheckedChangeListener { _, _ -> if (!isRecovering) onToggleSelect(item) }
 
-                // show small badge for trashed origin
                 val trashed = (item.origin == MediaItem.Origin.TRASHED)
                 b.badge?.isVisible = trashed
 
-                // click handlers toggle selection
                 b.root.setOnClickListener { if (!isRecovering) onToggleSelect(item) }
                 b.root.setOnLongClickListener { if (!isRecovering) onToggleSelect(item); !isRecovering }
             }
         }
 
-        // grid item view holder
+        // grid mode
         private inner class GridVH(private val b: ItemMediaGridBinding) : RecyclerView.ViewHolder(b.root) {
             fun bind(item: MediaItem) {
                 val mt = item.mimeType.takeIf { it.isNotBlank() }
                 val isVideo = item.isProbablyVideo || (mt?.startsWith("video/") == true)
                 val isAudio = !isVideo && (mt?.startsWith("audio/") == true)
 
+                // theme-aware audio background
+                val bgColor = if (isAudio)
+                    b.thumb.resolveThemeColorInt(com.google.android.material.R.attr.colorSecondaryContainer, com.google.android.material.R.attr.colorSecondary)
+                else Color.TRANSPARENT
+                b.thumb.setBackgroundColor(bgColor)
+
                 if (isVideo) {
-                    // videos: software decode + MIME hint + platform fallback on error
                     loadVideoThumbWithFallback(b.thumb, item.uri, mt)
                 } else {
-                    // images or audio: normal Coil path with MIME hint (helps ambiguous extensions)
                     b.thumb.load(item.uri) {
                         crossfade(true)
-                        if (mt != null) {
-                            parameters(Parameters.Builder().set("coil#image_source_mime_type", mt).build())
-                        }
+                        if (mt != null) parameters(Parameters.Builder().set("coil#image_source_mime_type", mt).build())
                         size(ViewSizeResolver(b.thumb))
                     }
                 }
 
-                // overlays
                 b.playIcon?.isVisible = isVideo
                 b.audioIcon?.isVisible = isAudio
-
                 b.caption?.text = item.displayName
 
-                // selection overlay and checkbox state
                 val selected = isSelected(item.id)
                 b.root.findViewById<View>(R.id.overlay)?.isVisible = selected
 
@@ -460,11 +426,9 @@ class ResultsFragment : Fragment() {
                 b.check.isChecked = selected
                 b.check.setOnCheckedChangeListener { _, _ -> if (!isRecovering) onToggleSelect(item) }
 
-                // show small badge for trashed origin
                 val trashed = (item.origin == MediaItem.Origin.TRASHED)
                 b.badge?.isVisible = trashed
 
-                // click handlers toggle selection
                 b.root.setOnClickListener { if (!isRecovering) onToggleSelect(item) }
                 b.root.setOnLongClickListener { if (!isRecovering) onToggleSelect(item); !isRecovering }
             }
@@ -472,7 +436,7 @@ class ResultsFragment : Fragment() {
     }
 }
 
-// format readable file size
+// format file sizes
 private fun formatSize(bytes: Long): String {
     if (bytes <= 0) return "0 B"
     val units = arrayOf("B", "KB", "MB", "GB", "TB")
@@ -481,11 +445,21 @@ private fun formatSize(bytes: Long): String {
     return String.format("%.1f %s", scaled, units[group])
 }
 
-// resolve a color state list from a theme attr with an optional fallback attr
+// resolve color state list for icons or controls
 private fun Fragment.resolveColorStateListAttr(@AttrRes attr: Int, @AttrRes fallbackAttr: Int? = null): ColorStateList? {
     val primary = requireContext().theme.obtainStyledAttributes(intArrayOf(attr)).use { it.getColorStateList(0) }
     if (primary != null) return primary
     return if (fallbackAttr != null) {
         requireContext().theme.obtainStyledAttributes(intArrayOf(fallbackAttr)).use { it.getColorStateList(0) }
     } else null
+}
+
+// resolve a raw color int from a theme attr with optional fallback
+private fun View.resolveThemeColorInt(@AttrRes attr: Int, @AttrRes fallbackAttr: Int? = null): Int {
+    val ta = context.theme.obtainStyledAttributes(intArrayOf(attr))
+    val color = try { ta.getColor(0, Color.TRANSPARENT) } finally { ta.recycle() }
+    if (color != Color.TRANSPARENT) return color
+    if (fallbackAttr == null) return color
+    val fb = context.theme.obtainStyledAttributes(intArrayOf(fallbackAttr))
+    return try { fb.getColor(0, Color.TRANSPARENT) } finally { fb.recycle() }
 }
