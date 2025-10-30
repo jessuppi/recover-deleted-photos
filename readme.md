@@ -2,6 +2,9 @@
 
 ## Changelog
 
+### 0.18.11
+- fixed recover button re-enabling during copy by adding `isRecovering` flag so it stays disabled with “Recovering” label until completion
+
 ### 0.18.10
 - added `ic_audio_overlay` vector icon (semi-transparent circular music badge) for audio thumbnails
 - updated both item layouts (`item_media.xml` and `item_media_grid.xml`) to include a centered `@+id/audio_icon`
