@@ -2,6 +2,9 @@
 
 ## Changelog
 
+### 0.18.12
+- prevented item selection while recovery runs by guarding `toggleSelection` and disabling item views and checkboxes until recovery completes
+
 ### 0.18.11
 - fixed recover button re-enabling during copy by adding `isRecovering` flag so it stays disabled with “Recovering” label until completion
 
