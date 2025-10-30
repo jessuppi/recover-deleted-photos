@@ -2,6 +2,10 @@
 
 ## Changelog
 
+### 0.18.3
+- added theme-aware background colors for audio thumbnails for improved visual consistency
+- introduced a helper function to resolve theme colors with proper fallback and resource recycling
+  
 ### 0.18.12
 - prevented item selection while recovery runs by guarding `toggleSelection` and disabling item views and checkboxes until recovery completes
 
