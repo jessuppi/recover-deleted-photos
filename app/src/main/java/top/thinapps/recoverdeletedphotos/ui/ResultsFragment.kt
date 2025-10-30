@@ -51,6 +51,9 @@ class ResultsFragment : Fragment() {
     private val selectedIds = linkedSetOf<Long>()
     private lateinit var adapter: MediaAdapter
 
+    // recovery in progress guard (prevents premature re-enable)
+    private var isRecovering = false
+
     // sorting modes
     private enum class Sort { DATE_DESC, DATE_ASC, SIZE_DESC, SIZE_ASC, NAME_ASC, NAME_DESC }
     private var currentSort: Sort = Sort.DATE_DESC
@@ -91,16 +94,19 @@ class ResultsFragment : Fragment() {
 
         // recover selected items then show snackbar confirmation
         vb.recoverButton.setOnClickListener {
+            if (isRecovering) return@setOnClickListener
+
             val chosen = adapter.currentList.filter { selectedIds.contains(it.id) }
             if (chosen.isEmpty()) return@setOnClickListener
 
-            vb.recoverButton.isEnabled = false
-            vb.recoverButton.text = getString(R.string.recovering)
+            isRecovering = true
+            updateRecoverButton() // disables + shows "recovering"
 
             viewLifecycleOwner.lifecycleScope.launch {
-                var recoveredCount = chosen.size
+                val recoveredCount = chosen.size
                 val folderLabel = getRecoveryFolderLabel(chosen)
                 val toMusic = folderLabel.contains("Music")
+
                 try {
                     withContext(Dispatchers.IO) {
                         // copy recovered files to the chosen destination
@@ -109,9 +115,13 @@ class ResultsFragment : Fragment() {
                     // clear selection and refresh
                     selectedIds.clear()
                     adapter.notifyDataSetChanged()
+                    // success snackbar after copy completes
                     SnackbarUtils.showRecovered(requireActivity(), recoveredCount, toMusic)
+                } catch (_: Throwable) {
+                    // optionally show error snackbar/toast here
                 } finally {
-                    // reset button state and text based on current selection
+                    // leave the cta disabled until work finished; then re-enable based on selection
+                    isRecovering = false
                     vb.recoverButton.isPressed = false
                     vb.recoverButton.isActivated = false
                     vb.recoverButton.isSelected = false
@@ -240,6 +250,11 @@ class ResultsFragment : Fragment() {
 
     // update recover button enabled state and label
     private fun updateRecoverButton() {
+        if (isRecovering) {
+            vb.recoverButton.isEnabled = false
+            vb.recoverButton.text = getString(R.string.recovering)
+            return
+        }
         val count = selectedIds.size
         vb.recoverButton.isEnabled = count > 0
         vb.recoverButton.text = if (count > 0)
