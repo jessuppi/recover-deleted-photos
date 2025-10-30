@@ -2,6 +2,9 @@
 
 ## Changelog
 
+### 0.18.4
+- replaced app launcher icon (`ic_launcher_foreground.png`) with proper padding for adaptive icon masks
+
 ### 0.18.3
 - added theme-aware background colors for audio thumbnails for improved visual consistency
 - introduced a helper function to resolve theme colors with proper fallback and resource recycling
