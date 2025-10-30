@@ -51,7 +51,7 @@ class ResultsFragment : Fragment() {
     private val selectedIds = linkedSetOf<Long>()
     private lateinit var adapter: MediaAdapter
 
-    // recovery in progress guard (prevents premature re-enable)
+    // recovery in progress guard (prevents premature re-enable and locks selection)
     private var isRecovering = false
 
     // sorting modes
@@ -101,6 +101,7 @@ class ResultsFragment : Fragment() {
 
             isRecovering = true
             updateRecoverButton() // disables + shows "recovering"
+            adapter.notifyDataSetChanged() // lock item interactions
 
             viewLifecycleOwner.lifecycleScope.launch {
                 val recoveredCount = chosen.size
@@ -126,6 +127,7 @@ class ResultsFragment : Fragment() {
                     vb.recoverButton.isActivated = false
                     vb.recoverButton.isSelected = false
                     updateRecoverButton()
+                    adapter.notifyDataSetChanged() // unlock item interactions
                     vb.recoverButton.refreshDrawableState()
                 }
             }
@@ -242,6 +244,7 @@ class ResultsFragment : Fragment() {
 
     // toggle selection state for tapped item
     private fun toggleSelection(item: MediaItem) {
+        if (isRecovering) return
         if (!selectedIds.remove(item.id)) selectedIds.add(item.id)
         updateRecoverButton()
         val idx = adapter.currentList.indexOfFirst { it.id == item.id }
@@ -397,17 +400,23 @@ class ResultsFragment : Fragment() {
                 // selection overlay and checkbox state
                 val selected = isSelected(item.id)
                 b.root.findViewById<View>(R.id.overlay)?.isVisible = selected
+
+                val disabled = isRecovering
+                b.root.isEnabled = !disabled
+                b.check.isEnabled = !disabled
+                b.root.alpha = if (disabled) 0.92f else 1f
+
                 b.check.setOnCheckedChangeListener(null)
                 b.check.isChecked = selected
-                b.check.setOnCheckedChangeListener { _, _ -> onToggleSelect(item) }
+                b.check.setOnCheckedChangeListener { _, _ -> if (!isRecovering) onToggleSelect(item) }
 
                 // show small badge for trashed origin
                 val trashed = (item.origin == MediaItem.Origin.TRASHED)
                 b.badge?.isVisible = trashed
 
                 // click handlers toggle selection
-                b.root.setOnClickListener { onToggleSelect(item) }
-                b.root.setOnLongClickListener { onToggleSelect(item); true }
+                b.root.setOnClickListener { if (!isRecovering) onToggleSelect(item) }
+                b.root.setOnLongClickListener { if (!isRecovering) onToggleSelect(item); !isRecovering }
             }
         }
 
@@ -441,17 +450,23 @@ class ResultsFragment : Fragment() {
                 // selection overlay and checkbox state
                 val selected = isSelected(item.id)
                 b.root.findViewById<View>(R.id.overlay)?.isVisible = selected
+
+                val disabled = isRecovering
+                b.root.isEnabled = !disabled
+                b.check.isEnabled = !disabled
+                b.root.alpha = if (disabled) 0.92f else 1f
+
                 b.check.setOnCheckedChangeListener(null)
                 b.check.isChecked = selected
-                b.check.setOnCheckedChangeListener { _, _ -> onToggleSelect(item) }
+                b.check.setOnCheckedChangeListener { _, _ -> if (!isRecovering) onToggleSelect(item) }
 
                 // show small badge for trashed origin
                 val trashed = (item.origin == MediaItem.Origin.TRASHED)
                 b.badge?.isVisible = trashed
 
                 // click handlers toggle selection
-                b.root.setOnClickListener { onToggleSelect(item) }
-                b.root.setOnLongClickListener { onToggleSelect(item); true }
+                b.root.setOnClickListener { if (!isRecovering) onToggleSelect(item) }
+                b.root.setOnLongClickListener { if (!isRecovering) onToggleSelect(item); !isRecovering }
             }
         }
     }
