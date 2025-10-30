@@ -2,6 +2,11 @@
 
 ## Changelog
 
+### 1.0.0
+- first stable public release of Recover Deleted Photos
+- compliant with Android 13+ media access rules and Play Store policies, including Scoped Storage
+- confirmed stability of foreground media scanning and recovery operations
+
 ### 0.18.14
 - replaced app launcher icon (`ic_launcher_foreground.png`) with proper padding for adaptive icon masks
 
