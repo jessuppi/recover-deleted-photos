@@ -2,6 +2,10 @@
 
 ## Changelog
 
+### 1.0.2
+- wired new home screen buttons to open `Pictures/Recovered` and `Music/Recovered` in the system file manager
+- added graceful fallback to toast on older devices or when no compatible file manager is available
+
 ### 1.0.1
 - added two new secondary action buttons on the home screen: View Recovered Photos/Videos and View Recovered Audio
 
