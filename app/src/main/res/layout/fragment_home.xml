@@ -122,6 +122,26 @@
         android:minHeight="48dp"
         android:text="@string/start_scan" />
 
+    <!-- secondary action button: view recovered photos/videos -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/button_view_recovered_photos_videos"
+        style="@style/Widget.Material3.Button.OutlinedButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="48dp"
+        android:minHeight="48dp"
+        android:text="@string/view_recovered_photos_videos" />
+
+    <!-- secondary action button: view recovered audio -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/button_view_recovered_audio"
+        style="@style/Widget.Material3.Button.OutlinedButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:minHeight="48dp"
+        android:text="@string/view_recovered_audio" />
+
     <!-- home footer message -->
     <TextView
         android:id="@+id/homeFooter"
@@ -130,6 +150,6 @@
         android:layout_marginTop="48dp"
         android:text="@string/home_footer_message"
         android:textAppearance="?attr/textAppearanceBodySmall"
-        android:textAlignment="center"/>
+        android:textAlignment="center" />
 
 </LinearLayout>
