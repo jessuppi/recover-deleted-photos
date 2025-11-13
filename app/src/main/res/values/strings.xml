@@ -17,6 +17,8 @@
     <string name="home_title">Recover Deleted Photos</string>
     <string name="home_subtitle">Scan your device automatically for deleted media</string>
     <string name="start_scan">Start Scan</string>
+    <string name="view_recovered_photos_videos">View Recovered Photos/Videos</string>
+    <string name="view_recovered_audio">View Recovered Audio</string>
 
     <!-- scan screen -->
     <string name="scan_title">Scanning</string>
@@ -33,7 +35,6 @@
 
     <string name="cancel">Cancel</string>
     <string name="cancelling">Cancelling...</string>
-
 
     <!-- results screen -->
     <string name="results_title">Results</string>
@@ -88,7 +89,5 @@
     <!-- android version requirement -->
     <string name="android_13_required_title">Not supported</string>
     <string name="android_13_required_msg">This feature requires Android 13 or later.</string>
-    
-    <string name="action_view_photos_videos">View Recovered Photos/Videos</string>
-    <string name="action_view_audio">View Recovered Audio</string>
+
 </resources>
