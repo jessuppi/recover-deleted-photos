@@ -2,6 +2,9 @@
 
 ## Changelog
 
+### 1.0.1
+- added two new secondary action buttons on the home screen: View Recovered Photos/Videos and View Recovered Audio
+
 ### 1.0.0
 - first stable public release of Recover Deleted Photos
 - compliant with Android 13+ media access rules and Play Store policies, including Scoped Storage
