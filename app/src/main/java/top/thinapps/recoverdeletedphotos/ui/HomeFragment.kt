@@ -7,17 +7,19 @@ import android.net.Uri
 import android.os.Build
 import android.os.Build.VERSION_CODES.TIRAMISU
 import android.os.Bundle
+import android.provider.DocumentsContract
 import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import androidx.navigation.fragment.findNavController
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
+import androidx.navigation.fragment.findNavController
 import top.thinapps.recoverdeletedphotos.MainActivity
 import top.thinapps.recoverdeletedphotos.R
 import top.thinapps.recoverdeletedphotos.databinding.FragmentHomeBinding
@@ -126,6 +128,16 @@ class HomeFragment : Fragment() {
             }
         }
 
+        // open Pictures/Recovered where recovered photos and videos are stored
+        vb.buttonViewRecoveredPhotosVideos.setOnClickListener {
+            openRecoveredFolder("Pictures/Recovered")
+        }
+
+        // open Music/Recovered where recovered audio files are stored
+        vb.buttonViewRecoveredAudio.setOnClickListener {
+            openRecoveredFolder("Music/Recovered")
+        }
+
         // subtle entrance animation for title and subtitle
         // makes the screen feel alive without being flashy
         val interp = FastOutSlowInInterpolator()
@@ -201,6 +213,41 @@ class HomeFragment : Fragment() {
             R.id.action_home_to_scan,
             bundleOf(ARG_TYPE to type.name)
         )
+    }
+
+    // opens a recovered folder via documents provider on android 10+
+    private fun openRecoveredFolder(relativePath: String) {
+        val ctx = context ?: return
+
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            Toast.makeText(
+                ctx,
+                "Recovered folder is only available on Android 10 and above.",
+                Toast.LENGTH_SHORT
+            ).show()
+            return
+        }
+
+        val docUri = DocumentsContract.buildDocumentUri(
+            "com.android.externalstorage.documents",
+            "primary:$relativePath"
+        )
+
+        val intent = Intent(Intent.ACTION_VIEW).apply {
+            setDataAndType(docUri, DocumentsContract.Document.MIME_TYPE_DIR)
+            addCategory(Intent.CATEGORY_DEFAULT)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+
+        try {
+            startActivity(intent)
+        } catch (e: Exception) {
+            Toast.makeText(
+                ctx,
+                "No file manager found to open $relativePath.",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
     }
 
     override fun onDestroyView() {
