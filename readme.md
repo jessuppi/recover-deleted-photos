@@ -2,6 +2,12 @@
 
 ## Changelog
 
+### 1.1.1
+- added a new in-app viewer for recovered audio files
+- added a dedicated `RecoveredAudioFragment` with in-app browsing of files in `Music/Recovered`  
+- wired the Home screen “Recovered Audio” button to navigate to the new viewer  
+- added required nav graph entries and supporting strings  
+
 ### 1.1.0
 - added a new in-app viewer for recovered photos and videos
 - browse all files saved in the `Pictures/Recovered` directory directly inside the app
