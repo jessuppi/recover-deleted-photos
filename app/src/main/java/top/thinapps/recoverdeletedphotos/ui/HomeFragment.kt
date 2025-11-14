@@ -127,18 +127,14 @@ class HomeFragment : Fragment() {
             }
         }
 
-        // open the new in-app Recovered Photos/Videos list (1.0.4)
+        // open the in-app Recovered Photos/Videos list
         vb.buttonViewRecoveredPhotosVideos.setOnClickListener {
             findNavController().navigate(R.id.action_home_to_recovered)
         }
 
-        // placeholder for Recovered Audio (future update)
+        // open the in-app Recovered Audio list
         vb.buttonViewRecoveredAudio.setOnClickListener {
-            Toast.makeText(
-                requireContext(),
-                "Recovered Audio viewer coming soon.",
-                Toast.LENGTH_SHORT
-            ).show()
+            findNavController().navigate(R.id.action_home_to_recovered_audio)
         }
 
         // subtle entrance animation for title and subtitle
