@@ -127,16 +127,12 @@ class HomeFragment : Fragment() {
             }
         }
 
-        // placeholder for recovered photos/videos list (coming in 1.1.1)
+        // open the new in-app Recovered Photos/Videos list (1.0.4)
         vb.buttonViewRecoveredPhotosVideos.setOnClickListener {
-            Toast.makeText(
-                requireContext(),
-                "Recovered Photos/Videos viewer coming soon.",
-                Toast.LENGTH_SHORT
-            ).show()
+            findNavController().navigate(R.id.action_home_to_recovered)
         }
 
-        // placeholder for recovered audio list (coming later)
+        // placeholder for Recovered Audio (future update)
         vb.buttonViewRecoveredAudio.setOnClickListener {
             Toast.makeText(
                 requireContext(),
