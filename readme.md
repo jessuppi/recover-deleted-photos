@@ -2,6 +2,13 @@
 
 ## Changelog
 
+### 1.1.0
+- added a new in-app viewer for recovered photos and videos
+- browse all files saved in the `Pictures/Recovered` directory directly inside the app
+- wired the Home screen “Recovered Photos/Videos” button to the new viewer
+- kept the “Recovered Audio” button as a placeholder for a future update
+- added new UI strings and navigation entries needed for the recovered viewer
+
 ### 1.0.3
 - removed the unreliable folder-opening feature from the Home screen to avoid device-specific issues
 - added safe placeholder messages for the “Recovered Photos/Videos” and “Recovered Audio” buttons
