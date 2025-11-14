@@ -2,6 +2,11 @@
 
 ## Changelog
 
+### 1.0.3
+- removed the unreliable folder-opening feature from the Home screen to avoid device-specific issues
+- added safe placeholder messages for the “Recovered Photos/Videos” and “Recovered Audio” buttons
+- prepared the UI for an upcoming in-app recovered files viewer in future releases
+
 ### 1.0.2
 - wired new home screen buttons to open `Pictures/Recovered` and `Music/Recovered` in the system file manager
 - added graceful fallback to toast on older devices or when no compatible file manager is available
