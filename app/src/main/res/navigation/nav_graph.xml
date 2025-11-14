@@ -12,10 +12,15 @@
             android:id="@+id/action_home_to_scan"
             app:destination="@id/scanFragment" />
 
-        <!-- NEW: navigate to RecoveredFragment -->
+        <!-- navigate to RecoveredFragment (photos/videos) -->
         <action
             android:id="@+id/action_home_to_recovered"
             app:destination="@id/recoveredFragment" />
+
+        <!-- navigate to RecoveredAudioFragment -->
+        <action
+            android:id="@+id/action_home_to_recovered_audio"
+            app:destination="@id/recoveredAudioFragment" />
 
     </fragment>
 
@@ -50,10 +55,16 @@
             android:defaultValue="@null" />
     </fragment>
 
-    <!-- NEW: RecoveredFragment destination -->
+    <!-- RecoveredFragment destination (photos/videos) -->
     <fragment
         android:id="@+id/recoveredFragment"
         android:name="top.thinapps.recoverdeletedphotos.ui.RecoveredFragment"
         android:label="@string/recovered_media_title" />
+
+    <!-- RecoveredAudioFragment destination -->
+    <fragment
+        android:id="@+id/recoveredAudioFragment"
+        android:name="top.thinapps.recoverdeletedphotos.ui.RecoveredAudioFragment"
+        android:label="@string/recovered_audio_title" />
 
 </navigation>
