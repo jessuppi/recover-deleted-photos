@@ -90,11 +90,15 @@
     <string name="android_13_required_title">Not supported</string>
     <string name="android_13_required_msg">This feature requires Android 13 or later.</string>
 
-    <!-- recovered viewer (1.0.4) -->
+    <!-- recovered viewer (photos/videos) -->
     <string name="recovered_media_title">Recovered Photos/Videos</string>
     <string name="recovered_permission_required">Permission required to view recovered files.</string>
     <string name="recovered_loading">Loading recovered files...</string>
     <string name="recovered_empty">No recovered files found.</string>
     <string name="recovered_open_failed">Unable to open this file.</string>
+
+    <!-- recovered audio viewer (1.1.1) -->
+    <string name="recovered_audio_title">Recovered Audio</string>
+    <string name="recovered_audio_empty">No recovered audio files found.</string>
 
 </resources>
