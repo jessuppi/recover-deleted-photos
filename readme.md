@@ -2,6 +2,11 @@
 
 ## Changelog
 
+### 1.1.2
+- updated recovered photos/videos screen to use the same rich list layout as scan results  
+- updated recovered audio screen to use a consistent card-based list layout with audio icon thumb  
+- kept recovered viewers simple: no sorting, no grid mode, and no selection UI (tap to open only)  
+
 ### 1.1.1
 - added a new in-app viewer for recovered audio files
 - added a dedicated `RecoveredAudioFragment` with in-app browsing of files in `Music/Recovered`  
