@@ -2,6 +2,9 @@
 
 ## Changelog
 
+### 1.1.3
+- updated the Home screen layout so the privacy/info footer text is pinned to the bottom of the screen
+
 ### 1.1.2
 - updated recovered photos/videos screen to use the same rich list layout as scan results  
 - updated recovered audio screen to use a consistent card-based list layout with audio icon thumb  
