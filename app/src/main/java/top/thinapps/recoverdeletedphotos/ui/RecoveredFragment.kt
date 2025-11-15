@@ -11,7 +11,6 @@ import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
@@ -19,13 +18,21 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import coil.load
+import coil.request.Parameters
+import coil.size.ViewSizeResolver
+import coil.video.videoFrameMillis
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import top.thinapps.recoverdeletedphotos.MainActivity
 import top.thinapps.recoverdeletedphotos.R
 import top.thinapps.recoverdeletedphotos.databinding.FragmentRecoveredBinding
+import top.thinapps.recoverdeletedphotos.databinding.ItemMediaBinding
 import top.thinapps.recoverdeletedphotos.model.MediaItem
+import java.util.Locale
+import kotlin.math.log10
+import kotlin.math.pow
 
 class RecoveredFragment : Fragment() {
 
@@ -50,7 +57,7 @@ class RecoveredFragment : Fragment() {
         )
 
         vb.recycler.layoutManager = LinearLayoutManager(requireContext())
-        val adapter = SimpleAdapter { item -> openItem(item) }
+        val adapter = RecoveredAdapter { item -> openItem(item) }
         vb.recycler.adapter = adapter
 
         if (!hasPermission()) {
@@ -91,7 +98,7 @@ class RecoveredFragment : Fragment() {
         val resolver = requireContext().contentResolver
         val out = mutableListOf<MediaItem>()
 
-        fun q(collection: Uri) {
+        fun queryCollection(collection: Uri) {
             val projection = arrayOf(
                 MediaStore.MediaColumns._ID,
                 MediaStore.MediaColumns.DISPLAY_NAME,
@@ -118,7 +125,7 @@ class RecoveredFragment : Fragment() {
                     val name = c.getString(nameIdx) ?: "Unnamed"
                     val size = c.getLong(sizeIdx)
                     val date = c.getLong(dateIdx)
-                    val mime = c.getString(mimeIdx)
+                    val mime = c.getString(mimeIdx) ?: ""
                     val uri = ContentUris.withAppendedId(collection, id)
 
                     val item = MediaItem(
@@ -137,8 +144,9 @@ class RecoveredFragment : Fragment() {
             }
         }
 
-        q(MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-        q(MediaStore.Video.Media.EXTERNAL_CONTENT_URI)
+        // photos and videos from Pictures/Recovered
+        queryCollection(MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+        queryCollection(MediaStore.Video.Media.EXTERNAL_CONTENT_URI)
 
         return out
     }
@@ -155,13 +163,26 @@ class RecoveredFragment : Fragment() {
         try {
             startActivity(intent)
         } catch (e: Exception) {
-            Toast.makeText(ctx, getString(R.string.recovered_open_failed), Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                ctx,
+                getString(R.string.recovered_open_failed),
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
 
-    private inner class SimpleAdapter(
+    private fun formatSize(bytes: Long): String {
+        if (bytes <= 0) return "0 B"
+        val units = arrayOf("B", "KB", "MB", "GB", "TB")
+        val group = (log10(bytes.toDouble()) / log10(1024.0)).toInt()
+            .coerceAtMost(units.lastIndex)
+        val scaled = bytes / 1024.0.pow(group.toDouble())
+        return String.format(Locale.US, "%.1f %s", scaled, units[group])
+    }
+
+    private inner class RecoveredAdapter(
         private val click: (MediaItem) -> Unit
-    ) : RecyclerView.Adapter<SimpleAdapter.VH>() {
+    ) : RecyclerView.Adapter<RecoveredAdapter.VH>() {
 
         private val data = mutableListOf<MediaItem>()
 
@@ -171,24 +192,71 @@ class RecoveredFragment : Fragment() {
             notifyDataSetChanged()
         }
 
-        inner class VH(view: View) : RecyclerView.ViewHolder(view) {
-            private val t1: TextView = view.findViewById(android.R.id.text1)
-            private val t2: TextView = view.findViewById(android.R.id.text2)
+        inner class VH(val binding: ItemMediaBinding) :
+            RecyclerView.ViewHolder(binding.root) {
 
-            fun bind(i: MediaItem) {
-                t1.text = i.displayName
-                t2.text = i.dateReadable
-                itemView.setOnClickListener { click(i) }
+            fun bind(item: MediaItem) {
+                val b = binding
+
+                val isVideo = item.isProbablyVideo
+                val isAudio = item.mimeType.startsWith("audio/")
+
+                b.playIcon?.isVisible = isVideo
+                b.audioIcon?.isVisible = isAudio
+
+                // load thumbnail: video frame for videos, normal image for photos
+                val mt = item.mimeType.takeIf { it.isNotBlank() }
+
+                if (isVideo) {
+                    b.thumb.load(item.uri) {
+                        crossfade(true)
+                        videoFrameMillis(0)
+                        if (mt != null) {
+                            parameters(
+                                Parameters.Builder()
+                                    .set("coil#image_source_mime_type", mt)
+                                    .build()
+                            )
+                        }
+                        size(ViewSizeResolver(b.thumb))
+                    }
+                } else {
+                    b.thumb.load(item.uri) {
+                        crossfade(true)
+                        if (mt != null) {
+                            parameters(
+                                Parameters.Builder()
+                                    .set("coil#image_source_mime_type", mt)
+                                    .build()
+                            )
+                        }
+                        size(ViewSizeResolver(b.thumb))
+                    }
+                }
+
+                b.name?.text = item.displayName
+                b.meta?.text = buildString {
+                    append(item.dateReadable)
+                    if (item.sizeBytes > 0) {
+                        append("\n${formatSize(item.sizeBytes)}")
+                    }
+                }
+
+                // ensure selection visuals are off
+                b.check?.isChecked = false
+                b.overlay?.isVisible = false
+
+                b.root.setOnClickListener { click(item) }
             }
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
-            val view = LayoutInflater.from(parent.context)
-                .inflate(android.R.layout.simple_list_item_2, parent, false)
-            return VH(view)
+            val inflater = LayoutInflater.from(parent.context)
+            val binding = ItemMediaBinding.inflate(inflater, parent, false)
+            return VH(binding)
         }
 
-        override fun getItemCount() = data.size
+        override fun getItemCount(): Int = data.size
 
         override fun onBindViewHolder(holder: VH, position: Int) {
             holder.bind(data[position])
