@@ -277,8 +277,8 @@ class RecoveredFragment : Fragment() {
             }
         }
 
-        // recovered viewer is read-only; no selection visuals
-        binding.check?.isChecked = false
+        // recovered viewer is read-only; hide checkbox + overlay completely
+        binding.check?.isVisible = false
         binding.overlay?.isVisible = false
     }
 
