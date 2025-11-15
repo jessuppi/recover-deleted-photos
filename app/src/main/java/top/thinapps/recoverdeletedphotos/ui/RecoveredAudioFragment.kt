@@ -207,8 +207,8 @@ class RecoveredAudioFragment : Fragment() {
                     }
                 }
 
-                // ensure selection visuals are off
-                b.check?.isChecked = false
+                // recovered audio viewer is read-only; hide checkbox + overlay
+                b.check?.isVisible = false
                 b.overlay?.isVisible = false
 
                 b.root.setOnClickListener { click(item) }
