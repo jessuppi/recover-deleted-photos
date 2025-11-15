@@ -2,6 +2,10 @@
 
 ## Changelog
 
+### 1.1.4
+- removed checkboxes and selection UI from Recovered Photos/Videos
+- removed checkboxes and selection UI from Recovered Audio
+
 ### 1.1.3
 - updated the Home screen layout so the privacy/info footer text is pinned to the bottom of the screen
 
