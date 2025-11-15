@@ -6,148 +6,158 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:gravity="center"
     android:padding="24dp">
 
-    <!-- app hero icon -->
-    <ImageView
-        android:id="@+id/homeIcon"
-        android:layout_width="160dp"
-        android:layout_height="160dp"
-        android:src="@drawable/ic_empty_state"
-        android:contentDescription="@string/empty_art" />
-
-    <!-- app title -->
-    <TextView
-        android:id="@+id/title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:text="@string/home_title"
-        android:textAppearance="?attr/textAppearanceHeadlineSmall" />
-
-    <!-- app subtitle -->
-    <TextView
-        android:id="@+id/subtitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="@string/home_subtitle"
-        android:textAppearance="?attr/textAppearanceBodyMedium" />
-
-    <!-- message shown for unsupported android versions -->
-    <TextView
-        android:id="@+id/stateMessage"
+    <!-- main content block fills available space -->
+    <LinearLayout
+        android:id="@+id/homeContent"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:visibility="gone"
-        android:textAlignment="center"
-        android:textAppearance="?attr/textAppearanceBodyLarge"
-        tools:text="@string/android_13_required_msg" />
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:gravity="center_horizontal">
 
-    <!-- card containing type selection -->
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/homeTypeRow"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="48dp"
-        app:cardUseCompatPadding="true"
-        app:cardElevation="0dp"
-        app:cardBackgroundColor="@color/md_surface"
-        app:strokeWidth="1dp"
-        app:strokeColor="@color/md_outline"
-        app:shapeAppearanceOverlay="@style/Shape.App.Corner.Small">
+        <!-- app hero icon -->
+        <ImageView
+            android:id="@+id/homeIcon"
+            android:layout_width="160dp"
+            android:layout_height="160dp"
+            android:src="@drawable/ic_empty_state"
+            android:contentDescription="@string/empty_art" />
 
-        <!-- card content column -->
-        <LinearLayout
+        <!-- app title -->
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="@string/home_title"
+            android:textAppearance="?attr/textAppearanceHeadlineSmall" />
+
+        <!-- app subtitle -->
+        <TextView
+            android:id="@+id/subtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/home_subtitle"
+            android:textAppearance="?attr/textAppearanceBodyMedium" />
+
+        <!-- message shown for unsupported android versions -->
+        <TextView
+            android:id="@+id/stateMessage"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:paddingTop="12dp"
-            android:paddingBottom="12dp">
+            android:layout_marginTop="24dp"
+            android:visibility="gone"
+            android:textAlignment="center"
+            android:textAppearance="?attr/textAppearanceBodyLarge"
+            tools:text="@string/android_13_required_msg" />
 
-            <!-- card header label -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/filter_type_label"
-                android:textAppearance="?attr/textAppearanceTitleSmall" />
+        <!-- card containing type selection -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/homeTypeRow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="48dp"
+            app:cardUseCompatPadding="true"
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="@color/md_surface"
+            app:strokeWidth="1dp"
+            app:strokeColor="@color/md_outline"
+            app:shapeAppearanceOverlay="@style/Shape.App.Corner.Small">
 
-            <!-- radio group for choosing file type -->
-            <RadioGroup
-                android:id="@+id/homeTypeRadioGroup"
+            <!-- card content column -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginTop="8dp"
-                android:theme="@style/ThemeOverlay.App.RadioButton.WhiteCenter">
+                android:orientation="vertical"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp">
 
-                <!-- photo option -->
-                <RadioButton
-                    android:id="@+id/homeTypePhotos"
+                <!-- card header label -->
+                <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/type_photos"
-                    android:checked="true" />
+                    android:text="@string/filter_type_label"
+                    android:textAppearance="?attr/textAppearanceTitleSmall" />
 
-                <!-- video option -->
-                <RadioButton
-                    android:id="@+id/homeTypeVideos"
-                    android:layout_width="wrap_content"
+                <!-- radio group for choosing file type -->
+                <RadioGroup
+                    android:id="@+id/homeTypeRadioGroup"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="12dp"
-                    android:text="@string/type_videos" />
+                    android:orientation="horizontal"
+                    android:layout_marginTop="8dp"
+                    android:theme="@style/ThemeOverlay.App.RadioButton.WhiteCenter">
 
-                <!-- audio option -->
-                <RadioButton
-                    android:id="@+id/homeTypeAudio"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="12dp"
-                    android:text="@string/type_audio" />
-            </RadioGroup>
-        </LinearLayout>
-    </com.google.android.material.card.MaterialCardView>
+                    <!-- photo option -->
+                    <RadioButton
+                        android:id="@+id/homeTypePhotos"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/type_photos"
+                        android:checked="true" />
 
-    <!-- primary action button -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/startButton"
-        style="@style/Widget.Material3.Button"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:minHeight="48dp"
-        android:text="@string/start_scan" />
+                    <!-- video option -->
+                    <RadioButton
+                        android:id="@+id/homeTypeVideos"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:text="@string/type_videos" />
 
-    <!-- secondary action button: view recovered photos/videos -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/button_view_recovered_photos_videos"
-        style="@style/Widget.Material3.Button.OutlinedButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="48dp"
-        android:minHeight="48dp"
-        android:text="@string/view_recovered_photos_videos" />
+                    <!-- audio option -->
+                    <RadioButton
+                        android:id="@+id/homeTypeAudio"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:text="@string/type_audio" />
+                </RadioGroup>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 
-    <!-- secondary action button: view recovered audio -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/button_view_recovered_audio"
-        style="@style/Widget.Material3.Button.OutlinedButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:minHeight="48dp"
-        android:text="@string/view_recovered_audio" />
+        <!-- primary action button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/startButton"
+            style="@style/Widget.Material3.Button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:minHeight="48dp"
+            android:text="@string/start_scan" />
 
-    <!-- home footer message -->
+        <!-- secondary action button: view recovered photos/videos -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_view_recovered_photos_videos"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="48dp"
+            android:minHeight="48dp"
+            android:text="@string/view_recovered_photos_videos" />
+
+        <!-- secondary action button: view recovered audio -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_view_recovered_audio"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:minHeight="48dp"
+            android:text="@string/view_recovered_audio" />
+
+    </LinearLayout>
+
+    <!-- home footer message pinned to bottom -->
     <TextView
         android:id="@+id/homeFooter"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="48dp"
+        android:layout_marginTop="16dp"
         android:text="@string/home_footer_message"
         android:textAppearance="?attr/textAppearanceBodySmall"
         android:textAlignment="center" />
