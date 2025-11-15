@@ -4,24 +4,29 @@ import android.Manifest
 import android.content.ContentUris
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.Size
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.Toast
+import androidx.annotation.AttrRes
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import coil.request.Parameters
+import coil.request.videoFrameMillis
 import coil.size.ViewSizeResolver
-import coil.video.videoFrameMillis
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -84,16 +89,18 @@ class RecoveredFragment : Fragment() {
     }
 
     private fun hasPermission(): Boolean {
-        val perm = if (Build.VERSION.SDK_INT < 33)
+        val perm = if (Build.VERSION.SDK_INT < 33) {
             Manifest.permission.READ_EXTERNAL_STORAGE
-        else
+        } else {
             Manifest.permission.READ_MEDIA_IMAGES
+        }
 
         return ContextCompat.checkSelfPermission(
             requireContext(), perm
         ) == PackageManager.PERMISSION_GRANTED
     }
 
+    // query Photos + Videos under Pictures/Recovered
     private fun loadItems(): List<MediaItem> {
         val resolver = requireContext().contentResolver
         val out = mutableListOf<MediaItem>()
@@ -144,7 +151,6 @@ class RecoveredFragment : Fragment() {
             }
         }
 
-        // photos and videos from Pictures/Recovered
         queryCollection(MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
         queryCollection(MediaStore.Video.Media.EXTERNAL_CONTENT_URI)
 
@@ -162,7 +168,7 @@ class RecoveredFragment : Fragment() {
 
         try {
             startActivity(intent)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             Toast.makeText(
                 ctx,
                 getString(R.string.recovered_open_failed),
@@ -171,6 +177,7 @@ class RecoveredFragment : Fragment() {
         }
     }
 
+    // same bytes → human readable helper as elsewhere
     private fun formatSize(bytes: Long): String {
         if (bytes <= 0) return "0 B"
         val units = arrayOf("B", "KB", "MB", "GB", "TB")
@@ -178,6 +185,101 @@ class RecoveredFragment : Fragment() {
             .coerceAtMost(units.lastIndex)
         val scaled = bytes / 1024.0.pow(group.toDouble())
         return String.format(Locale.US, "%.1f %s", scaled, units[group])
+    }
+
+    // copied pattern from ResultsFragment: video thumb with Coil + graceful fallback
+    private fun loadVideoThumbWithFallback(iv: ImageView, uri: Uri, mime: String?) {
+        iv.load(uri) {
+            crossfade(true)
+            videoFrameMillis(0)
+            allowHardware(false)
+            memoryCacheKey("$uri#t=0ms")
+            if (!mime.isNullOrBlank()) {
+                parameters(
+                    Parameters.Builder()
+                        .set("coil#image_source_mime_type", mime)
+                        .build()
+                )
+            }
+            size(ViewSizeResolver(iv))
+            listener(
+                onError = { _, _ ->
+                    val owner = iv.findViewTreeLifecycleOwner() ?: return@listener
+                    owner.lifecycleScope.launch(Dispatchers.IO) {
+                        try {
+                            val w = iv.width.coerceAtLeast(200)
+                            val h = iv.height.coerceAtLeast(200)
+                            val thumb = iv.context.contentResolver.loadThumbnail(
+                                uri,
+                                Size(w, h),
+                                null
+                            )
+                            withContext(Dispatchers.Main) {
+                                iv.setImageBitmap(thumb)
+                            }
+                        } catch (_: Throwable) {
+                            withContext(Dispatchers.Main) {
+                                iv.load(uri) {
+                                    crossfade(true)
+                                    videoFrameMillis(1_000)
+                                    allowHardware(false)
+                                    memoryCacheKey("$uri#t=1000ms")
+                                    if (!mime.isNullOrBlank()) {
+                                        parameters(
+                                            Parameters.Builder()
+                                                .set("coil#image_source_mime_type", mime)
+                                                .build()
+                                        )
+                                    }
+                                    size(ViewSizeResolver(iv))
+                                }
+                            }
+                        }
+                    }
+                }
+            )
+        }
+    }
+
+    // simple audio vs image/video styling
+    private fun applyMediaStyling(binding: ItemMediaBinding, item: MediaItem) {
+        val mt = item.mimeType.takeIf { it.isNotBlank() }
+        val isVideo = item.isProbablyVideo || (mt?.startsWith("video/") == true)
+        val isAudio = !isVideo && (mt?.startsWith("audio/") == true)
+
+        binding.playIcon?.isVisible = isVideo
+        binding.audioIcon?.isVisible = isAudio
+
+        val bgColor = if (isAudio) {
+            binding.thumb.resolveThemeColorInt(
+                com.google.android.material.R.attr.colorSecondaryContainer,
+                com.google.android.material.R.attr.colorSecondary
+            )
+        } else {
+            Color.TRANSPARENT
+        }
+        binding.thumb.setBackgroundColor(bgColor)
+
+        if (isVideo) {
+            loadVideoThumbWithFallback(binding.thumb, item.uri, mt)
+        } else {
+            binding.thumb.load(item.uri) {
+                crossfade(true)
+                allowHardware(false)
+            }
+        }
+
+        binding.name?.text = item.displayName
+        binding.meta?.text = buildString {
+            append(item.dateReadable)
+            if (item.sizeBytes > 0) {
+                append("\n${formatSize(item.sizeBytes)}")
+            }
+        }
+
+        // recovered viewer is read-only; no selection visuals
+        binding.check?.isChecked = false
+        binding.overlay?.isVisible = false
     }
 
     private inner class RecoveredAdapter(
@@ -196,57 +298,8 @@ class RecoveredFragment : Fragment() {
             RecyclerView.ViewHolder(binding.root) {
 
             fun bind(item: MediaItem) {
-                val b = binding
-
-                val isVideo = item.isProbablyVideo
-                val isAudio = item.mimeType.startsWith("audio/")
-
-                b.playIcon?.isVisible = isVideo
-                b.audioIcon?.isVisible = isAudio
-
-                // load thumbnail: video frame for videos, normal image for photos
-                val mt = item.mimeType.takeIf { it.isNotBlank() }
-
-                if (isVideo) {
-                    b.thumb.load(item.uri) {
-                        crossfade(true)
-                        videoFrameMillis(0)
-                        if (mt != null) {
-                            parameters(
-                                Parameters.Builder()
-                                    .set("coil#image_source_mime_type", mt)
-                                    .build()
-                            )
-                        }
-                        size(ViewSizeResolver(b.thumb))
-                    }
-                } else {
-                    b.thumb.load(item.uri) {
-                        crossfade(true)
-                        if (mt != null) {
-                            parameters(
-                                Parameters.Builder()
-                                    .set("coil#image_source_mime_type", mt)
-                                    .build()
-                            )
-                        }
-                        size(ViewSizeResolver(b.thumb))
-                    }
-                }
-
-                b.name?.text = item.displayName
-                b.meta?.text = buildString {
-                    append(item.dateReadable)
-                    if (item.sizeBytes > 0) {
-                        append("\n${formatSize(item.sizeBytes)}")
-                    }
-                }
-
-                // ensure selection visuals are off
-                b.check?.isChecked = false
-                b.overlay?.isVisible = false
-
-                b.root.setOnClickListener { click(item) }
+                applyMediaStyling(binding, item)
+                binding.root.setOnClickListener { click(item) }
             }
         }
 
@@ -266,5 +319,26 @@ class RecoveredFragment : Fragment() {
     override fun onDestroyView() {
         _vb = null
         super.onDestroyView()
+    }
+}
+
+// theme helper copied from ResultsFragment style
+private fun View.resolveThemeColorInt(
+    @AttrRes attr: Int,
+    @AttrRes fallbackAttr: Int? = null
+): Int {
+    val ta = context.theme.obtainStyledAttributes(intArrayOf(attr))
+    val color = try {
+        ta.getColor(0, Color.TRANSPARENT)
+    } finally {
+        ta.recycle()
+    }
+    if (color != Color.TRANSPARENT) return color
+    if (fallbackAttr == null) return color
+    val fb = context.theme.obtainStyledAttributes(intArrayOf(fallbackAttr))
+    return try {
+        fb.getColor(0, Color.TRANSPARENT)
+    } finally {
+        fb.recycle()
     }
 }
